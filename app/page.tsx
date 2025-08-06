@@ -48,6 +48,16 @@ const defaultApps: App[] = [
   { id: 'google', title: 'Google', href: 'https://google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=32' },
   { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=32' },
   { id: 'twitter', title: 'Twitter', href: 'https://twitter.com', icon: 'https://www.google.com/s2/favicons?domain=twitter.com&sz=32' },
+  { id: 'netfree2', title: 'NetFree2', href: 'https://netfree2.cc/home', icon: 'https://www.google.com/s2/favicons?domain=netfree2.cc&sz=32' },
+];
+
+const defaultWidgets: Widget[] = [
+  { id: 'clock-1', type: 'clock', title: 'Clock Widget' },
+  { id: 'weather-1', type: 'weather', title: 'Weather Widget' },
+  { id: 'calendar-1', type: 'calendar', title: 'Calendar Widget' },
+  { id: 'analog-clock-1', type: 'analog-clock', title: 'Analog Clock Widget' },
+  { id: 'water-tracker-1', type: 'water-tracker', title: 'Water Tracker Widget' },
+  { id: 'quick-notes-1', type: 'quick-notes', title: 'Quick Notes Widget' },
 ];
 
 // Function to get favicon URL
@@ -979,7 +989,7 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
 
 export default function Home() {
   const [apps, setApps] = useState<App[]>(defaultApps);
-  const [widgets, setWidgets] = useState<Widget[]>([]);
+  const [widgets, setWidgets] = useState<Widget[]>(defaultWidgets);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
