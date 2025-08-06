@@ -1186,7 +1186,7 @@ export default function Home() {
     <main className={`min-h-screen px-4 py-8 transition-all duration-300 ${
       backgroundImage 
         ? 'bg-cover bg-center bg-no-repeat' 
-        : isDarkMode ? 'bg-[#191A1A]' : 'bg-[#E0E0E0]'
+        : 'bg-background'
     }`} style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : {}}>
       <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
         {/* Apps Grid with Drag and Drop */}
