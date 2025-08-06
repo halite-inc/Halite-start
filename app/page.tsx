@@ -90,7 +90,7 @@ function SortableLinkCard({ app, onRemove, isDark, isEditMode, isEditModalOpen, 
         }`}
         onClick={() => {
           if (!isEditMode && !isEditModalOpen) {
-            window.open(app.href, '_blank', 'noopener,noreferrer');
+            window.location.href = app.href;
           }
         }}
       >
