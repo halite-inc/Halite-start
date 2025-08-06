@@ -21,7 +21,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import Sidebar from './components/Sidebar';
+import LeftSidebar from './components/LeftSidebar';
 
 interface App {
   id: string;
@@ -70,7 +70,7 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
-function SortableLinkCard({ app, onRemove, isDark, isEditMode, isEditModalOpen, showAppTitles, backgroundImage, glassmorphismEnabled, appTitleColor }: { app: App; onRemove: (id: string) => void; isDark: boolean; isEditMode: boolean; isEditModalOpen: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white' }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, appTitleColor }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white' }) {
   const {
     attributes,
     listeners,
@@ -78,7 +78,7 @@ function SortableLinkCard({ app, onRemove, isDark, isEditMode, isEditModalOpen, 
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: app.id, disabled: !(isEditMode || isEditModalOpen) });
+  } = useSortable({ id: app.id, disabled: true });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -93,11 +93,11 @@ function SortableLinkCard({ app, onRemove, isDark, isEditMode, isEditModalOpen, 
     >
       {/* App Card */}
       <div
-        {...((isEditMode || isEditModalOpen) ? { ...attributes, ...listeners } : {})}
+
         className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} rounded-2xl transition duration-300 flex flex-col items-center justify-center text-center ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
-          (isEditMode || isEditModalOpen) ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+          'cursor-pointer'
         } ${
           glassmorphismEnabled
             ? isDark 
@@ -108,9 +108,7 @@ function SortableLinkCard({ app, onRemove, isDark, isEditMode, isEditModalOpen, 
               : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]'
         }`}
         onClick={() => {
-          if (!isEditMode && !isEditModalOpen) {
-            window.location.href = app.href;
-          }
+          window.location.href = app.href;
         }}
       >
         {/* App Icon */}
@@ -149,18 +147,7 @@ function SortableLinkCard({ app, onRemove, isDark, isEditMode, isEditModalOpen, 
         </div>
       )}
       
-      {/* Remove Button - Only show in edit mode */}
-      {(isEditMode || isEditModalOpen) && (
-        <button
-          onClick={() => onRemove(app.id)}
-          className={`absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold transition-opacity duration-200 z-10 ${
-            isEditModalOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-          }`}
-          title="Remove app"
-        >
-          ×
-        </button>
-      )}
+
     </div>
   );
 }
@@ -174,7 +161,7 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+  } = useSortable({ id: widget.id, disabled: true });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -196,11 +183,10 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
       className={`relative group ${isDragging ? 'z-50' : ''}`}
     >
       <div
-        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          'cursor-default'
         } ${
           glassmorphismEnabled
             ? isDark 
@@ -251,17 +237,6 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
           </div>
         </div>
       </div>
-      
-      {/* Delete Button - Only show when edit modal is open */}
-      {isEditModalOpen && (
-        <button
-          onClick={onRemove}
-          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
-          title="Remove widget"
-        >
-          ×
-        </button>
-      )}
     </div>
   );
 }
@@ -277,7 +252,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+  } = useSortable({ id: widget.id, disabled: true });
 
   useEffect(() => {
     const fetchLocationAndWeather = async () => {
@@ -358,11 +333,10 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
       className={`relative group ${isDragging ? 'z-50' : ''}`}
     >
       <div
-        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-start justify-center transition-all duration-300 relative overflow-hidden ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          'cursor-default'
         } ${
           glassmorphismEnabled
             ? isDark 
@@ -993,14 +967,12 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [showAppTitles, setShowAppTitles] = useState(true);
-  const [isModalClosing, setIsModalClosing] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState('');
   const [glassmorphismEnabled, setGlassmorphismEnabled] = useState(false);
   const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>('auto');
   const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>('auto');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1221,8 +1193,6 @@ export default function Home() {
                     app={app}
                     onRemove={removeApp}
                     isDark={isDarkMode}
-                    isEditMode={isEditMode}
-                    isEditModalOpen={isEditModalOpen}
                     showAppTitles={showAppTitles}
                     backgroundImage={backgroundImage}
                     glassmorphismEnabled={glassmorphismEnabled}
@@ -1354,237 +1324,43 @@ export default function Home() {
             : 'bg-white/20 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
           : isDarkMode ? 'bg-black border-gray-700' : 'bg-white border-gray-200'
       }`}>
-        {/* Edit Button */}
-        <button
-          onClick={() => {
-            if (!isEditMode) {
-              setIsEditMode(true);
-              setIsEditModalOpen(true);
-            } else {
-              setIsEditMode(false);
-            }
-          }}
-          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center ${
-            isEditMode ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'
-          } text-white`}
-          title={isEditMode ? 'Exit edit mode' : 'Add widgets'}
-        >
-          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </button>
-
-        {/* Add Button */}
+        {/* Settings Button */}
         <button
           onClick={() => {
             setIsSidebarOpen(true);
-            setIsEditModalOpen(false);
-            setIsEditMode(false);
           }}
-          className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-500 hover:bg-gray-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center"
-          title="Add new app"
-                  >
-            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+          className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+          title="Dashboard Settings"
+        >
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
       </div>
 
-      {/* Sidebar */}
-              <Sidebar
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-          apps={apps}
-          onAddApp={addApp}
-          isDarkMode={isDarkMode}
-          onToggleTheme={() => setIsDarkMode(!isDarkMode)}
-          showAppTitles={showAppTitles}
-          onToggleShowAppTitles={() => setShowAppTitles(!showAppTitles)}
-          backgroundImage={backgroundImage}
-          onSetBackgroundImage={setBackgroundImage}
-          glassmorphismEnabled={glassmorphismEnabled}
-          onToggleGlassmorphism={() => setGlassmorphismEnabled(!glassmorphismEnabled)}
-          appTitleColor={appTitleColor}
-          onSetAppTitleColor={setAppTitleColor}
-          widgetTextColor={widgetTextColor}
-          onSetWidgetTextColor={setWidgetTextColor}
-        />
+      {/* Left Sidebar */}
+      <LeftSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        apps={apps}
+        onAddApp={addApp}
+        isDarkMode={isDarkMode}
+        onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+        showAppTitles={showAppTitles}
+        onToggleShowAppTitles={() => setShowAppTitles(!showAppTitles)}
+        backgroundImage={backgroundImage}
+        onSetBackgroundImage={setBackgroundImage}
+        glassmorphismEnabled={glassmorphismEnabled}
+        onToggleGlassmorphism={() => setGlassmorphismEnabled(!glassmorphismEnabled)}
+        appTitleColor={appTitleColor}
+        onSetAppTitleColor={setAppTitleColor}
+        widgetTextColor={widgetTextColor}
+        onSetWidgetTextColor={setWidgetTextColor}
+        addWidget={addWidget}
+      />
 
-      {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-40 pointer-events-none">
-          {/* Modal */}
-          <div className={`fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md rounded-[2rem] shadow-2xl transition-all duration-300 ease-out z-50 pointer-events-auto mb-6 ${
-            isModalClosing ? 'animate-slide-down' : 'animate-slide-up'
-          } ${
-            glassmorphismEnabled
-              ? isDarkMode 
-                ? 'bg-[#2B2B2B]/90 backdrop-blur-md border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                : 'bg-white/90 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-              : isDarkMode ? 'bg-[#2B2B2B]' : 'bg-white'
-          }`}>
-            <div className="p-4">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex-1"></div>
-                <h2 className={`text-lg font-semibold text-center flex-1 ${
-                  isDarkMode ? 'text-white' : 'text-gray-800'
-                }`}>
-                  Add Widgets
-                </h2>
-                <div className="flex-1 flex justify-end">
-                                  <button
-                  onClick={() => {
-                    setIsModalClosing(true);
-                    setTimeout(() => {
-                      setIsEditModalOpen(false);
-                      setIsEditMode(false);
-                      setIsModalClosing(false);
-                    }, 300);
-                  }}
-                  className={`p-2 rounded-lg transition-colors ${
-                    isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
 
-              {/* Content */}
-              <div className={`space-y-3 ${
-                isDarkMode ? 'text-white' : 'text-gray-800'
-              }`}>
-                <p className={`text-xs text-center max-w-xs mx-auto ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Widget functionality coming soon! This will allow you to add custom widgets to your dashboard.
-                </p>
-                
-                {/* Widget Options with Previews */}
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Weather Widget Preview */}
-                  <button
-                    onClick={() => addWidget('weather')}
-                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex flex-col items-center justify-center transition-transform duration-300 hover:scale-105 ${
-                        isDarkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-black border-gray-300'
-                      }`}>
-                        <div className="text-base font-bold">22°</div>
-                        <div className="text-sm">Sunny</div>
-                      </div>
-                      <p className="text-xs font-medium">Weather</p>
-                    </div>
-                  </button>
-                  
-                  {/* Clock Widget Preview */}
-                  <button
-                    onClick={() => addWidget('clock')}
-                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex flex-col items-center justify-center transition-transform duration-300 hover:scale-105 ${
-                        isDarkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-black border-gray-300'
-                      }`}>
-                        <div className="text-base font-bold">2:30</div>
-                      </div>
-                      <p className="text-xs font-medium">Clock</p>
-                    </div>
-                  </button>
-
-                  {/* Calendar Widget Preview */}
-                  <button
-                    onClick={() => addWidget('calendar')}
-                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex flex-col items-center justify-center transition-transform duration-300 hover:scale-105 ${
-                        isDarkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-black border-gray-300'
-                      }`}>
-                        <div className="text-base font-bold">15</div>
-                        <div className="text-sm">Mon</div>
-                      </div>
-                      <p className="text-xs font-medium">Calendar</p>
-                    </div>
-                  </button>
-
-                  {/* Analog Clock Widget Preview */}
-                  <button
-                    onClick={() => addWidget('analog-clock')}
-                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex flex-col items-center justify-center transition-transform duration-300 hover:scale-105 ${
-                        isDarkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-black border-gray-300'
-                      }`}>
-                        <div className="relative w-16 h-16">
-                          <div className={`w-full h-full rounded-full border-2 flex items-center justify-center ${
-                            isDarkMode ? 'border-gray-600' : 'border-gray-300'
-                          }`}>
-                            <div className={`w-0.5 h-1 rounded-full ${
-                              isDarkMode ? 'bg-white' : 'bg-gray-800'
-                            }`}></div>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-xs font-medium">Analog</p>
-                    </div>
-                  </button>
-
-                  {/* Water Tracker Widget Preview */}
-                  <button
-                    onClick={() => addWidget('water-tracker')}
-                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex flex-col items-center justify-center transition-transform duration-300 hover:scale-105 ${
-                        isDarkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-black border-gray-300'
-                      }`}>
-                        <div className="text-base font-bold text-blue-400">0ml</div>
-                        <div className="text-sm">Water</div>
-                      </div>
-                      <p className="text-xs font-medium">Water</p>
-                    </div>
-                  </button>
-
-                  {/* Quick Notes Widget Preview */}
-                  <button
-                    onClick={() => addWidget('quick-notes')}
-                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex flex-col items-center justify-center transition-transform duration-300 hover:scale-105 ${
-                        isDarkMode ? 'bg-amber-900 text-amber-100 border-amber-700' : 'bg-amber-800 text-amber-100 border-amber-600'
-                      }`}>
-                        <div className="text-xs text-center leading-tight">
-                          <div className="text-amber-300/70">New note...</div>
-                        </div>
-                      </div>
-                      <p className="text-xs font-medium">Quick Notes</p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
