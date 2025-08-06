@@ -1208,6 +1208,12 @@ export default function Home() {
         : 'bg-background'
     }`} style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : {}}>
       <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
+        {/* Page Title */}
+        <div className="text-center mb-8">
+          <h1 className={`text-3xl font-bold mb-2 ${
+            isDarkMode ? 'text-white' : 'text-gray-800'
+          }`}>My Favorites</h1>
+        </div>
         {/* Apps Grid with Drag and Drop */}
         <DndContext
           sensors={sensors}
