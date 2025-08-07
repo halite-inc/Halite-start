@@ -70,7 +70,7 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, appTitleColor }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white' }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, appTitleColor, isEditModalOpen }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean }) {
   const {
     attributes,
     listeners,
@@ -78,7 +78,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: app.id, disabled: true });
+  } = useSortable({ id: app.id, disabled: !isEditModalOpen });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -93,11 +93,11 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
     >
       {/* App Card */}
       <div
-
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} rounded-2xl transition duration-300 flex flex-col items-center justify-center text-center ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
-          'cursor-pointer'
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${
           glassmorphismEnabled
             ? isDark 
@@ -108,7 +108,9 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
               : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]'
         }`}
         onClick={() => {
-          window.location.href = app.href;
+          if (!isEditModalOpen) {
+            window.location.href = app.href;
+          }
         }}
       >
         {/* App Icon */}
@@ -147,7 +149,16 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
         </div>
       )}
       
-
+      {/* Delete Button - Only show when edit modal is open */}
+      {isEditModalOpen && (
+        <button
+          onClick={() => onRemove(app.id)}
+          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
+          title="Remove app"
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 }
@@ -161,7 +172,7 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: widget.id, disabled: true });
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -183,10 +194,11 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
       className={`relative group ${isDragging ? 'z-50' : ''}`}
     >
       <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
-          'cursor-default'
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
           glassmorphismEnabled
             ? isDark 
@@ -237,6 +249,17 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
           </div>
         </div>
       </div>
+      
+      {/* Delete Button - Only show when edit modal is open */}
+      {isEditModalOpen && (
+        <button
+          onClick={onRemove}
+          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
+          title="Remove widget"
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 }
@@ -252,7 +275,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: widget.id, disabled: true });
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
 
   useEffect(() => {
     const fetchLocationAndWeather = async () => {
@@ -333,10 +356,11 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
       className={`relative group ${isDragging ? 'z-50' : ''}`}
     >
       <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-start justify-center transition-all duration-300 relative overflow-hidden ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
-          'cursor-default'
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
           glassmorphismEnabled
             ? isDark 
@@ -1197,6 +1221,7 @@ export default function Home() {
                     backgroundImage={backgroundImage}
                     glassmorphismEnabled={glassmorphismEnabled}
                     appTitleColor={appTitleColor}
+                    isEditModalOpen={isEditModalOpen}
                   />
                 ))}
               </div>
@@ -1324,6 +1349,29 @@ export default function Home() {
             : 'bg-white/20 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
           : isDarkMode ? 'bg-black border-gray-700' : 'bg-white border-gray-200'
       }`}>
+        {/* Edit Mode Button */}
+        <button
+          onClick={() => {
+            setIsEditModalOpen(!isEditModalOpen);
+          }}
+          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center ${
+            isEditModalOpen 
+              ? 'bg-red-500 hover:bg-red-600 text-white' 
+              : 'bg-green-500 hover:bg-green-600 text-white'
+          }`}
+          title={isEditModalOpen ? "Exit Edit Mode" : "Enter Edit Mode"}
+        >
+          {isEditModalOpen ? (
+            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          )}
+        </button>
+        
         {/* Settings Button */}
         <button
           onClick={() => {
