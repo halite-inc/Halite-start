@@ -22,6 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import LeftSidebar from './components/LeftSidebar';
+import { getImageObjectUrl, deleteImageBlob } from './lib/idb';
 
 interface App {
   id: string;
@@ -1111,16 +1112,26 @@ export default function Home() {
         console.log('✅ Show app titles loaded:', savedShowAppTitles === 'true');
       }
 
-      // Load background image
-      const savedBackgroundImage = localStorage.getItem('backgroundImage');
-      if (savedBackgroundImage) {
-        setBackgroundImage(savedBackgroundImage);
-        console.log('✅ Background image loaded:', savedBackgroundImage);
-        
-        // Apply background image immediately
-        document.documentElement.style.setProperty('--app-bg-image', `url(${savedBackgroundImage.replace(/'/g, "\\'")})`);
-        document.documentElement.classList.add('has-app-bg');
-      }
+      // Load background image, prefer IndexedDB
+      (async () => {
+        try {
+          const urlFromIdb = await getImageObjectUrl('backgroundImage');
+          if (urlFromIdb) {
+            setBackgroundImage(urlFromIdb);
+            document.documentElement.style.setProperty('--app-bg-image', `url(${urlFromIdb.replace(/'/g, "\\'")})`);
+            document.documentElement.classList.add('has-app-bg');
+            console.log('✅ Background image loaded from IndexedDB');
+            return;
+          }
+        } catch {}
+        const savedBackgroundImage = localStorage.getItem('backgroundImage');
+        if (savedBackgroundImage) {
+          setBackgroundImage(savedBackgroundImage);
+          document.documentElement.style.setProperty('--app-bg-image', `url(${savedBackgroundImage.replace(/'/g, "\\'")})`);
+          document.documentElement.classList.add('has-app-bg');
+          console.log('✅ Background image loaded from localStorage');
+        }
+      })();
 
       // Load app title color
       const savedAppTitleColor = localStorage.getItem('appTitleColor');
@@ -1251,8 +1262,11 @@ export default function Home() {
       // Save show app titles
       localStorage.setItem('showAppTitles', showAppTitles.toString());
       
-      // Save background image
-      localStorage.setItem('backgroundImage', backgroundImage);
+      // Save background image only if it's a data URL or remote URL.
+      // For IndexedDB case we use object URL at runtime and don't persist the blob in localStorage.
+      if (!backgroundImage.startsWith('blob:')) {
+        localStorage.setItem('backgroundImage', backgroundImage);
+      }
       
       // Save visual modes
       localStorage.setItem('normalModeEnabled', normalModeEnabled.toString());
@@ -1775,7 +1789,13 @@ export default function Home() {
         backgroundImage={backgroundImage}
         onSetBackgroundImage={(url) => {
           console.log('🖼️ Background image changed to:', url);
+          if (typeof window !== 'undefined' && url && !url.startsWith('blob:') && !url.startsWith('idb:')) {
+            try { localStorage.setItem('backgroundImage', url); } catch {}
+          }
           setBackgroundImage(url);
+          if (typeof window !== 'undefined' && url) {
+            window.location.reload();
+          }
         }}
         glassmorphismEnabled={glassmorphismEnabled}
         onToggleGlassmorphism={() => {
