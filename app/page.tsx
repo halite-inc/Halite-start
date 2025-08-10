@@ -1562,11 +1562,24 @@ export default function Home() {
           <div className="liquid-glass-noise" />
         </>
       )}
-      <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
+        <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
 
-        {/* Search Bar moved into sidebar (below Widgets). Page-level bar removed. */}
+          {/* Search Bar */}
+          {showSearchBar && (
+            <div className="mb-4">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search apps..."
+                className={`w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 transition-all ${
+                  isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500'
+                }`}
+              />
+            </div>
+          )}
 
-        {/* Apps Grid with Drag and Drop */}
+          {/* Apps Grid with Drag and Drop */}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -1590,8 +1603,8 @@ export default function Home() {
                     showAppTitles={showAppTitles}
                     backgroundImage={backgroundImage}
                     glassmorphismEnabled={glassmorphismEnabled}
-                     liquidGlassEnabled={liquidGlassEnabled}
                     appTitleColor={appTitleColor}
+                    liquidGlassEnabled={liquidGlassEnabled}
                     isEditModalOpen={isEditModalOpen}
                     jiggleIndex={index}
                   />
@@ -1802,8 +1815,7 @@ export default function Home() {
           });
         }}
         showAppTitles={showAppTitles}
-        showSearchBar={showSearchBar}
-        searchTerm={searchTerm}
+          showSearchBar={showSearchBar}
         onToggleShowAppTitles={() => {
           setShowAppTitles(prev => {
             const next = !prev;
@@ -1811,14 +1823,13 @@ export default function Home() {
             return next;
           });
         }}
-        onToggleSearchBar={() => {
-          setShowSearchBar(prev => {
-            const next = !prev;
-            console.log('🔎 Show search bar toggled from', prev, 'to', next);
-            return next;
-          });
-        }}
-        onSearch={(term) => setSearchTerm(term)}
+          onToggleSearchBar={() => {
+            setShowSearchBar(prev => {
+              const next = !prev;
+              console.log('🔎 Show search bar toggled from', prev, 'to', next);
+              return next;
+            });
+          }}
         backgroundImage={backgroundImage}
         onSetBackgroundImage={(url) => {
           console.log('🖼️ Background image changed to:', url);

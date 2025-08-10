@@ -23,12 +23,10 @@ interface LeftSidebarProps {
   onAddApp: (app: App) => void;
   isDarkMode: boolean;
   onToggleTheme: () => void;
-  showSearchBar: boolean;
-  onToggleSearchBar: () => void;
-  searchTerm: string;
-  onSearch: (term: string) => void;
   showAppTitles: boolean;
+  showSearchBar?: boolean;
   onToggleShowAppTitles: () => void;
+  onToggleSearchBar?: () => void;
   backgroundImage: string;
   onSetBackgroundImage: (url: string) => void;
   glassmorphismEnabled: boolean;
@@ -52,12 +50,10 @@ export default function LeftSidebar({
   onAddApp, 
   isDarkMode, 
   onToggleTheme, 
-  showSearchBar,
-  onToggleSearchBar,
-  searchTerm,
-  onSearch,
   showAppTitles, 
+  showSearchBar,
   onToggleShowAppTitles, 
+  onToggleSearchBar,
   backgroundImage, 
   onSetBackgroundImage, 
   glassmorphismEnabled, 
@@ -359,30 +355,6 @@ export default function LeftSidebar({
 
 
                 </div>
-                {/* Main Search Bar below Widgets */}
-                {showSearchBar && (
-                  <div className="pt-3 border-t mt-4 ${isDarkMode ? 'border-white/10' : 'border-gray-200'}">
-                    <label className={`block text-xs font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Search</label>
-                    <div className="relative">
-                      <span className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
-                        </svg>
-                      </span>
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => onSearch(e.target.value)}
-                        placeholder="Search apps and widgets..."
-                        className={`w-full pl-9 pr-3 py-2 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-blue-500/60 transition-all ${
-                          isDarkMode 
-                            ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' 
-                            : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500'
-                        }`}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
             )}
@@ -409,30 +381,6 @@ export default function LeftSidebar({
                     isDarkMode ? 'text-gray-300' : 'text-gray-700'
                   }`}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
-                    </svg>
-                    Show Search Bar
-                  </label>
-                  <button
-                    onClick={onToggleSearchBar}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showSearchBar 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showSearchBar ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
                     </svg>
                     Show App Titles
@@ -448,6 +396,30 @@ export default function LeftSidebar({
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                         showAppTitles ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    Show Search Bar
+                  </label>
+                  <button
+                    onClick={onToggleSearchBar}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      showSearchBar 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        showSearchBar ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
