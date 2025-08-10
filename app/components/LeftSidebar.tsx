@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { saveImageBlob, deleteImageBlob } from '../lib/idb';
 
 interface App {
   id: string;
@@ -22,6 +23,8 @@ interface LeftSidebarProps {
   onAddApp: (app: App) => void;
   isDarkMode: boolean;
   onToggleTheme: () => void;
+  showSearchBar: boolean;
+  onToggleSearchBar: () => void;
   showAppTitles: boolean;
   onToggleShowAppTitles: () => void;
   backgroundImage: string;
@@ -47,6 +50,8 @@ export default function LeftSidebar({
   onAddApp, 
   isDarkMode, 
   onToggleTheme, 
+  showSearchBar,
+  onToggleSearchBar,
   showAppTitles, 
   onToggleShowAppTitles, 
   backgroundImage, 
@@ -101,19 +106,26 @@ export default function LeftSidebar({
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (result) {
-          onSetBackgroundImage(result);
-          setSelectedFile(null);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        setSelectedFile(file);
+        await saveImageBlob('backgroundImage', file);
+        onSetBackgroundImage('idb:backgroundImage');
+        setSelectedFile(null);
+      } catch (e) {
+        // Fallback to DataURL if IndexedDB fails for any reason
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const result = ev.target?.result as string;
+          if (result) {
+            onSetBackgroundImage(result);
+            setSelectedFile(null);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -369,6 +381,30 @@ export default function LeftSidebar({
                     isDarkMode ? 'text-gray-300' : 'text-gray-700'
                   }`}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    Show Search Bar
+                  </label>
+                  <button
+                    onClick={onToggleSearchBar}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      showSearchBar 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        showSearchBar ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
                     </svg>
                     Show App Titles
@@ -590,7 +626,10 @@ export default function LeftSidebar({
                   Set Background
                 </button>
                 <button
-                  onClick={() => onSetBackgroundImage('')}
+                  onClick={async () => {
+                    try { await deleteImageBlob('backgroundImage'); } catch {}
+                    onSetBackgroundImage('');
+                  }}
                   className={`px-4 py-2 rounded-xl font-medium transition-all ${
                     isDarkMode ? 'bg-white/5 text-white ring-1 ring-white/10 hover:bg-white/10' : 'bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50'
                   }`}

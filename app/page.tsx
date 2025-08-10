@@ -1020,6 +1020,7 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [showAppTitles, setShowAppTitles] = useState(true);
+  const [showSearchBar, setShowSearchBar] = useState<boolean>(true);
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(false);
   const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>('auto');
@@ -1110,6 +1111,11 @@ export default function Home() {
       if (savedShowAppTitles !== null) {
         setShowAppTitles(savedShowAppTitles === 'true');
         console.log('✅ Show app titles loaded:', savedShowAppTitles === 'true');
+      }
+      const savedShowSearchBar = localStorage.getItem('showSearchBar');
+      if (savedShowSearchBar !== null) {
+        setShowSearchBar(savedShowSearchBar === 'true');
+        console.log('✅ Show search bar loaded:', savedShowSearchBar === 'true');
       }
 
       // Load background image, prefer IndexedDB
@@ -1248,6 +1254,7 @@ export default function Home() {
       console.log('💾 Saving user settings to localStorage:', {
         theme: isDarkMode ? 'dark' : 'light',
         showAppTitles,
+        showSearchBar,
         backgroundImage,
         normalModeEnabled,
         glassmorphismEnabled,
@@ -1261,6 +1268,7 @@ export default function Home() {
       
       // Save show app titles
       localStorage.setItem('showAppTitles', showAppTitles.toString());
+      localStorage.setItem('showSearchBar', showSearchBar.toString());
       
       // Save background image only if it's a data URL or remote URL.
       // For IndexedDB case we use object URL at runtime and don't persist the blob in localStorage.
@@ -1549,6 +1557,34 @@ export default function Home() {
       )}
       <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
 
+        {/* Search Bar */}
+        {showSearchBar && (
+          <div className="max-w-3xl mx-auto -mt-8 mb-4">
+            <div className={`w-full rounded-2xl ring-1 px-4 py-2 flex items-center gap-2 ${
+              isDarkMode ? 'bg-white/5 ring-white/10 text-white placeholder-gray-400' : 'bg-white ring-gray-200 text-gray-900 placeholder-gray-500 shadow-sm'
+            }`}>
+              <svg className={`w-4 h-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search apps and widgets..."
+                className={`flex-1 bg-transparent outline-none text-sm ${isDarkMode ? 'placeholder-gray-400 text-white' : 'placeholder-gray-500 text-gray-900'}`}
+                onChange={(e) => {
+                  // Simple client-side filter: scroll to first app matching term
+                  const term = e.target.value.toLowerCase();
+                  if (!term) return;
+                  const idx = apps.findIndex(a => a.title.toLowerCase().includes(term));
+                  if (idx >= 0) {
+                    const el = document.querySelectorAll('[data-app-card]')[idx] as HTMLElement | undefined;
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Apps Grid with Drag and Drop */}
         <DndContext
           sensors={sensors}
@@ -1567,8 +1603,8 @@ export default function Home() {
                     showAppTitles={showAppTitles}
                     backgroundImage={backgroundImage}
                     glassmorphismEnabled={glassmorphismEnabled}
+                     liquidGlassEnabled={liquidGlassEnabled}
                     appTitleColor={appTitleColor}
-                    liquidGlassEnabled={liquidGlassEnabled}
                     isEditModalOpen={isEditModalOpen}
                     jiggleIndex={index}
                   />
@@ -1779,10 +1815,18 @@ export default function Home() {
           });
         }}
         showAppTitles={showAppTitles}
+        showSearchBar={showSearchBar}
         onToggleShowAppTitles={() => {
           setShowAppTitles(prev => {
             const next = !prev;
             console.log('📱 Show app titles toggled from', prev, 'to', next);
+            return next;
+          });
+        }}
+        onToggleSearchBar={() => {
+          setShowSearchBar(prev => {
+            const next = !prev;
+            console.log('🔎 Show search bar toggled from', prev, 'to', next);
             return next;
           });
         }}
