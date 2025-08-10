@@ -30,6 +30,40 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Background image variable applied on the main wrapper via inline style in page.
+   Also set a fallback on body to reduce flash between SSR and hydration. */
+html {
+  --app-bg-image: none;
+}
+
+.has-app-bg body {
+  background-image: var(--app-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Apple Liquid Glass Theme */
+.liquid-glass-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,0.20), transparent 60%),
+              radial-gradient(1000px 600px at 80% 20%, rgba(255,255,255,0.14), transparent 60%),
+              radial-gradient(900px 600px at 50% 80%, rgba(255,255,255,0.10), transparent 60%);
+  /* No backdrop blur here so wallpaper stays sharp; blur is applied only on cards/widgets */
+}
+
+.liquid-glass-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0 0 0 0 0.03 0 0 0 0.06 0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.35;
+}
+
 @keyframes slide-up {
   from {
     transform: translateY(100%);
@@ -54,4 +88,42 @@ body {
 
 .animate-slide-down {
   animation: slide-down 0.3s ease-out;
+}
+
+/* Reusable custom scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(100, 116, 139, 0.6) transparent; /* slate-500 on transparent track */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.6); /* slate-500 */
+  border-radius: 9999px;
+  border: 2px solid transparent; /* creates padding */
+  background-clip: content-box;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.8);
+}
+
+/* Dark mode tweaks */
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(148, 163, 184, 0.6) transparent; /* slate-400 */
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.6);
+}
+
+.dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.85);
 }

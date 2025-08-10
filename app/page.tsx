@@ -70,7 +70,7 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, appTitleColor, isEditModalOpen }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number }) {
   const {
     attributes,
     listeners,
@@ -94,25 +94,31 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
       {/* App Card */}
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} rounded-2xl transition duration-300 flex flex-col items-center justify-center text-center ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
+        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} rounded-2xl transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${
-          glassmorphismEnabled
-            ? isDark 
-              ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-black/5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
-              : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]'
-            : isDark 
-              ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]' 
-              : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]'
-        }`}
+          liquidGlassEnabled
+            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:bg-white/15'
+            : glassmorphismEnabled
+              ? (isDark 
+                  ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
+                  : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]')
+              : (isDark 
+                  ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]' 
+                  : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={() => {
           if (!isEditModalOpen) {
             window.location.href = app.href;
           }
         }}
       >
+        {liquidGlassEnabled && (
+          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/40 to-transparent opacity-30" />
+        )}
         {/* App Icon */}
         <div>
           {app.icon ? (
@@ -163,8 +169,10 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
   );
 }
 
-function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white' }) {
+function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [time, setTime] = useState(new Date());
+  const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Add loading flag
   const {
     attributes,
     listeners,
@@ -180,6 +188,10 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
     }, 1000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   const style = {
@@ -200,15 +212,21 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          glassmorphismEnabled
-            ? isDark 
-              ? 'bg-indigo-900/20 backdrop-blur-md text-white border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-              : 'bg-indigo-50/20 backdrop-blur-md text-indigo-900 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-            : isDark 
-              ? 'bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-900 text-white shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-sm' 
-              : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50 text-indigo-900 shadow-[0_12px_40px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-indigo-100'
-        }`}
+          liquidGlassEnabled
+            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            : glassmorphismEnabled
+            ? (isDark 
+                  ? 'bg-indigo-900/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                  : 'bg-indigo-50/20 backdrop-blur-md text-indigo-900 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark 
+                  ? 'bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-900 text-white shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-sm' 
+                  : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50 text-indigo-900 shadow-[0_12px_40px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-indigo-100')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
+        {liquidGlassEnabled && (
+          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+        )}
         {/* Decorative elements */}
         <div className="absolute top-2 right-2 w-2 h-2 bg-white/20 rounded-full"></div>
         <div className="absolute bottom-2 left-2 w-1.5 h-1.5 bg-white/20 rounded-full"></div>
@@ -221,31 +239,23 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
         }`}></div>
         
         <div className="text-center flex flex-col justify-center items-center h-full relative z-10">
-          <div className={`text-2xl sm:text-3xl font-bold leading-none tracking-wider font-mono ${
+          <div suppressHydrationWarning className={`text-2xl sm:text-3xl font-bold leading-none tracking-wider font-mono ${
             widgetTextColor === 'auto' 
               ? (isDark ? 'text-white' : 'text-gray-800')
               : widgetTextColor === 'black' 
                 ? 'text-black' 
                 : 'text-white'
           }`}>
-            {time.toLocaleTimeString('en-US', { 
-              hour12: false, 
-              hour: 'numeric', 
-              minute: '2-digit'
-            })}
+            {mounted ? time.toLocaleTimeString('en-US', { hour12: false, hour: 'numeric', minute: '2-digit' }) : '00:00'}
           </div>
-          <div className={`text-xs sm:text-sm font-medium mt-1 leading-none tracking-wide ${
+          <div suppressHydrationWarning className={`text-xs sm:text-sm font-medium mt-1 leading-none tracking-wide ${
             widgetTextColor === 'auto' 
               ? (isDark ? 'text-gray-300' : 'text-gray-600')
               : widgetTextColor === 'black' 
                 ? 'text-black' 
                 : 'text-white'
           }`}>
-            {time.toLocaleTimeString('en-US', { 
-              hour12: true, 
-              hour: 'numeric', 
-              minute: '2-digit'
-            }).split(' ')[1]}
+            {mounted ? time.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' }).split(' ')[1] : 'AM'}
           </div>
         </div>
       </div>
@@ -264,10 +274,11 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
   );
 }
 
-function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white' }) {
+function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [weather, setWeather] = useState({ temp: '22°', condition: 'Sunny', location: 'Loading...' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const {
     attributes,
     listeners,
@@ -342,6 +353,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
     if (typeof window !== 'undefined') {
       fetchLocationAndWeather();
     }
+    setMounted(true);
   }, []);
 
   const style = {
@@ -362,15 +374,21 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          glassmorphismEnabled
-            ? isDark 
-              ? 'bg-blue-400/20 backdrop-blur-md text-black border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-              : 'bg-blue-300/20 backdrop-blur-md text-black border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-            : isDark 
-              ? 'bg-gradient-to-br from-blue-400 via-gray-300 to-blue-400 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
-              : 'bg-gradient-to-br from-blue-300 via-gray-200 to-blue-300 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm'
-        }`}
+          liquidGlassEnabled
+            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            : glassmorphismEnabled
+            ? (isDark 
+                  ? 'bg-blue-400/20 backdrop-blur-md text-black border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                  : 'bg-blue-300/20 backdrop-blur-md text-black border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark 
+                  ? 'bg-gradient-to-br from-blue-400 via-gray-300 to-blue-400 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+                  : 'bg-gradient-to-br from-blue-300 via-gray-200 to-blue-300 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
+        {liquidGlassEnabled && (
+          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+        )}
         {/* Rain droplet effect */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-2 left-3 w-1 h-1 bg-white rounded-full"></div>
@@ -382,43 +400,38 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         </div>
         
         <div className="flex flex-col justify-center items-start h-full px-4 pl-6 relative z-10">
-          <div className={`text-xs sm:text-sm font-bold leading-none mb-1 ${
+          <div suppressHydrationWarning className={`text-xs sm:text-sm font-bold leading-none mb-1 ${
             isDark ? 'text-black' : 'text-black'
           }`}>
-            {loading ? 'Loading...' : error ? 'Location unavailable' : weather.location}
+            {mounted ? (loading ? 'Loading...' : error ? 'Location unavailable' : weather.location) : 'Loading...'}
           </div>
           <div className="flex items-center gap-1 mb-1">
             <div className="text-xs">
-              {loading ? '⏳' : error ? '⚠️' : 
+              {mounted ? (loading ? '⏳' : error ? '⚠️' : 
                 weather.condition === 'Sunny' ? '☀️' :
                 weather.condition === 'Cloudy' ? '☁️' :
                 weather.condition === 'Rainy' ? '🌧️' :
                 weather.condition === 'Partly Cloudy' ? '⛅' :
-                weather.condition === 'Clear' ? '🌙' : '⚡'
-              }
+                weather.condition === 'Clear' ? '🌙' : '⚡') : '⏳'}
             </div>
-            <div className={`text-xs leading-none ${
+            <div suppressHydrationWarning className={`text-xs leading-none ${
               widgetTextColor === 'auto' 
                 ? (isDark ? 'text-black' : 'text-black')
                 : widgetTextColor === 'black' 
                   ? 'text-black' 
                   : 'text-white'
             }`}>
-              {loading ? 'Getting weather...' : error ? 'Check permissions' : weather.condition}
+              {mounted ? (loading ? 'Getting weather...' : error ? 'Check permissions' : weather.condition) : 'Getting weather...'}
             </div>
           </div>
-          <div className={`text-xs leading-none mb-2 ${
+          <div suppressHydrationWarning className={`text-xs leading-none mb-2 ${
             widgetTextColor === 'auto' 
               ? (isDark ? 'text-black/80' : 'text-black/80')
               : widgetTextColor === 'black' 
                 ? 'text-black/80' 
                 : 'text-white/80'
           }`}>
-            {new Date().toLocaleDateString('en-US', { 
-              weekday: 'short',
-              day: 'numeric',
-              month: 'short'
-            })}
+            {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }) : ''}
           </div>
           <div className={`text-2xl sm:text-3xl font-bold leading-none ${
             widgetTextColor === 'auto' 
@@ -446,8 +459,9 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
   );
 }
 
-function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white' }) {
+function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [date, setDate] = useState(new Date());
+  const [mounted, setMounted] = useState(false);
   const {
     attributes,
     listeners,
@@ -457,25 +471,34 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
     isDragging,
   } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
 
-  // Get current week dates
+  // Get current week dates (Monday-first)
   const getWeekDates = () => {
     const today = new Date();
-    const currentDay = today.getDay();
+    const currentDay = today.getDay(); // 0 (Sun) - 6 (Sat)
     const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - currentDay + 1); // Start from Monday
+    // Adjust so Monday is the start; handle Sunday gracefully
+    const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+    weekStart.setDate(today.getDate() + diffToMonday);
     
-    const weekDates = [];
+    const weekDates = [] as Date[];
     for (let i = 0; i < 7; i++) {
-      const date = new Date(weekStart);
-      date.setDate(weekStart.getDate() + i);
-      weekDates.push(date);
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      weekDates.push(d);
     }
     return weekDates;
   };
 
+  useEffect(() => setMounted(true), []);
   const weekDates = getWeekDates();
-  const currentDate = date.getDate();
-  const currentMonth = date.toLocaleDateString('en-US', { month: 'long' });
+  const currentDate = mounted ? date.getDate() : new Date().getDate();
+  const currentMonth = mounted ? date.toLocaleDateString('en-US', { month: 'long' }) : new Date().toLocaleDateString('en-US', { month: 'long' });
+  const today = new Date();
+  const isSameDay = (a: Date, b: Date) => (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -495,70 +518,53 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          glassmorphismEnabled
-            ? isDark 
-              ? 'bg-gray-800/20 backdrop-blur-md text-white border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-              : 'bg-white/20 backdrop-blur-md text-gray-800 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-            : isDark 
-              ? 'bg-gray-800/90 text-white shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-gray-700/30' 
-              : 'bg-white/95 text-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-sm border border-gray-200/50'
-        }`}
+          liquidGlassEnabled
+            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            : glassmorphismEnabled
+            ? (isDark 
+                  ? 'bg-gray-800/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                  : 'bg-white/20 backdrop-blur-md text-gray-800 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark 
+                  ? 'bg-gray-800/90 text-white shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-gray-700/30' 
+                  : 'bg-white/95 text-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-sm border border-gray-200/50')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
+        {liquidGlassEnabled && (
+          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+        )}
+        {/* Subtle accent */}
+        <div className="pointer-events-none absolute -top-6 -right-8 w-20 h-20 bg-gradient-to-br from-indigo-500/15 via-violet-500/15 to-fuchsia-500/15 blur-2xl" />
 
+        {/* Center current day number overlay with top margin */}
+        <div className="absolute inset-0 flex justify-center items-start z-0 pointer-events-none">
+          <div className={`mt-[43.5px] sm:mt-[51.5px] text-5xl sm:text-6xl font-extrabold tracking-tight ${
+            liquidGlassEnabled
+              ? (isDark ? 'text-white/25' : 'text-gray-900/25')
+              : glassmorphismEnabled
+                ? (isDark ? 'text-white/20' : 'text-gray-900/20')
+                : (isDark ? 'text-white/12' : 'text-gray-900/12')
+          }`}>
+            {currentDate}
+          </div>
+        </div>
         
+
         <div className="flex flex-col justify-start items-start h-full p-3 pt-6 relative z-10">
           {/* Current Date Display */}
-          <div className="flex items-center justify-center w-full mb-4 mt-1">
-            <div className={`text-xl font-bold leading-none ${
+          <div className="flex items-center justify-center w-full mt-[12px] mb-3">
+            <div suppressHydrationWarning className={`text-[13px] sm:text-sm font-semibold leading-none ${
               widgetTextColor === 'auto' 
                 ? (isDark ? 'text-white' : 'text-gray-900')
                 : widgetTextColor === 'black' 
                   ? 'text-black' 
                   : 'text-white'
             }`}>
-              {currentMonth} <span className="text-2xl">{currentDate}</span>
+              {currentMonth}
             </div>
           </div>
           
-          {/* Week View */}
-          <div className="w-full">
-            {/* Days of the week */}
-            <div className="flex justify-between mb-1">
-              {['T', 'W', 'T', 'F', 'S', 'S', 'M'].map((day, index) => (
-                <div key={index} className={`text-xs leading-tight ${
-                  widgetTextColor === 'auto' 
-                    ? (isDark ? 'text-white' : 'text-gray-500')
-                    : widgetTextColor === 'black' 
-                      ? 'text-black' 
-                      : 'text-white'
-                }`}>
-                  {day}
-                </div>
-              ))}
-            </div>
-            
-            {/* Dates */}
-            <div className="flex justify-between">
-              {weekDates.map((weekDate, index) => {
-                const isCurrentDay = weekDate.getDate() === currentDate;
-                return (
-                  <div key={index} className={`w-5 h-5 rounded-full flex items-center justify-center text-xs leading-tight ${
-                    isCurrentDay 
-                      ? isDark 
-                        ? 'bg-gray-700 text-white' 
-                        : 'bg-gray-800 text-white'
-                      : widgetTextColor === 'auto' 
-                        ? (isDark ? 'text-white' : 'text-gray-500')
-                        : widgetTextColor === 'black' 
-                          ? 'text-black' 
-                          : 'text-white'
-                  }`}>
-                    {weekDate.getDate()}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          {/* Week View removed for minimal look */}
         </div>
       </div>
       
@@ -576,7 +582,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   );
 }
 
-function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white' }) {
+function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [waterIntake, setWaterIntake] = useState(() => {
     // Initialize with saved value or 0
     if (typeof window !== 'undefined') {
@@ -655,15 +661,21 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          glassmorphismEnabled
-            ? isDark 
-              ? 'bg-blue-400/20 backdrop-blur-md text-white border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-              : 'bg-blue-300/20 backdrop-blur-md text-white border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-            : isDark 
-              ? 'bg-gradient-to-br from-blue-400 via-cyan-300 to-blue-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-sm' 
-              : 'bg-gradient-to-br from-blue-300 via-cyan-200 to-blue-400 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-blue-200'
-        }`}
+          liquidGlassEnabled
+            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            : glassmorphismEnabled
+            ? (isDark 
+                  ? 'bg-blue-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                  : 'bg-blue-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark 
+                  ? 'bg-gradient-to-br from-blue-400 via-cyan-300 to-blue-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-sm' 
+                  : 'bg-gradient-to-br from-blue-300 via-cyan-200 to-blue-400 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-blue-200')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
+        {liquidGlassEnabled && (
+          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+        )}
         <div className="text-center flex flex-col justify-center items-center h-full relative px-2 py-3">
           {/* Animated water droplets background */}
           <div className="absolute inset-0 opacity-20 overflow-hidden">
@@ -755,7 +767,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
   );
 }
 
-function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white' }) {
+function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [notes, setNotes] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`notes_${widget.id}`);
@@ -796,15 +808,21 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          glassmorphismEnabled
-            ? isDark 
-              ? 'bg-yellow-500/15 backdrop-blur-md text-yellow-100 border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-              : 'bg-yellow-400/15 backdrop-blur-md text-yellow-50 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-            : isDark 
-              ? 'bg-gradient-to-br from-orange-600 via-yellow-600 to-orange-700 text-yellow-100 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm border border-orange-500/30' 
-              : 'bg-gradient-to-br from-orange-500 via-yellow-500 to-orange-600 text-yellow-50 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-sm border border-orange-400/30'
-        }`}
+          liquidGlassEnabled
+            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            : glassmorphismEnabled
+            ? (isDark 
+                  ? 'bg-yellow-500/15 backdrop-blur-md text-yellow-100 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                  : 'bg-yellow-400/15 backdrop-blur-md text-yellow-50 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark 
+                  ? 'bg-gradient-to-br from-orange-600 via-yellow-600 to-orange-700 text-yellow-100 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm border border-orange-500/30' 
+                  : 'bg-gradient-to-br from-orange-500 via-yellow-500 to-orange-600 text-yellow-50 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-sm border border-orange-400/30')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
+        {liquidGlassEnabled && (
+          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+        )}
         {/* Subtle texture overlay */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-2 left-2 w-1 h-1 bg-yellow-300 rounded-full"></div>
@@ -851,8 +869,9 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
 
 
 
-function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white' }) {
+function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [time, setTime] = useState(new Date());
+  const [mounted, setMounted] = useState(false);
   const {
     attributes,
     listeners,
@@ -869,6 +888,7 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
 
     return () => clearInterval(timer);
   }, []);
+  useEffect(() => setMounted(true), []);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -876,9 +896,9 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
   };
 
   // Calculate clock hands angles
-  const seconds = time.getSeconds();
-  const minutes = time.getMinutes();
-  const hours = time.getHours() % 12;
+  const seconds = mounted ? time.getSeconds() : 0;
+  const minutes = mounted ? time.getMinutes() : 0;
+  const hours = mounted ? (time.getHours() % 12) : 0;
   
   const secondDegrees = (seconds / 60) * 360;
   const minuteDegrees = ((minutes + seconds / 60) / 60) * 360;
@@ -892,20 +912,25 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 ${
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          glassmorphismEnabled
-            ? isDark 
-              ? 'bg-gray-900/20 backdrop-blur-md text-white border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-              : 'bg-white/20 backdrop-blur-md text-black border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-            : isDark 
-              ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-sm' 
-              : 'bg-gradient-to-br from-white via-gray-50 to-white text-black shadow-[0_12px_40px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-gray-100'
+          liquidGlassEnabled
+            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            : glassmorphismEnabled
+            ? (isDark 
+                  ? 'bg-gray-900/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                  : 'bg-white/20 backdrop-blur-md text-black border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark 
+                  ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-sm' 
+                  : 'bg-gradient-to-br from-white via-gray-50 to-white text-black shadow-[0_12px_40px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-gray-100')
         }`}
       >
+        {liquidGlassEnabled && (
+          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+        )}
         <div className="relative w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 lg:w-26 lg:h-26 xl:w-28 xl:h-28">
           {/* Clock face */}
           <div className={`w-full h-full rounded-full ${isDark ? 'bg-black' : 'bg-white'} shadow-[inset_0_1px_4px_rgba(0,0,0,0.08)] flex items-center justify-center relative p-2`}>
@@ -988,57 +1013,21 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
 }
 
 export default function Home() {
-  const [apps, setApps] = useState<App[]>(() => {
-    if (typeof window !== 'undefined') {
-      const savedApps = localStorage.getItem('favoriteApps');
-      if (savedApps) return JSON.parse(savedApps);
-    }
-    return defaultApps;
-  });
-  const [widgets, setWidgets] = useState<Widget[]>(() => {
-    if (typeof window !== 'undefined') {
-      const savedWidgets = localStorage.getItem('widgets');
-      if (savedWidgets) return JSON.parse(savedWidgets);
-    }
-    return defaultWidgets;
-  });
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [apps, setApps] = useState<App[]>([]);
+  const [widgets, setWidgets] = useState<Widget[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) return savedTheme === 'dark';
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return !!prefersDark;
-    }
-    return false;
-  });
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [showAppTitles, setShowAppTitles] = useState(true);
-  const [backgroundImage, setBackgroundImage] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('backgroundImage') || '';
-    }
-    return '';
-  });
-  const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('glassmorphismEnabled');
-      return saved ? saved === 'true' : false;
-    }
-    return false;
-  });
-  const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('appTitleColor') as 'auto' | 'black' | 'white') || 'auto';
-    }
-    return 'auto';
-  });
-  const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('widgetTextColor') as 'auto' | 'black' | 'white') || 'auto';
-    }
-    return 'auto';
-  });
+  const [backgroundImage, setBackgroundImage] = useState<string>('');
+  const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(false);
+  const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>('auto');
+  const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>('auto');
+  const [liquidGlassEnabled, setLiquidGlassEnabled] = useState<boolean>(false);
+  const [normalModeEnabled, setNormalModeEnabled] = useState<boolean>(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Add loading flag
+  const [isResetting, setIsResetting] = useState(false); // Add reset flag
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1051,81 +1040,372 @@ export default function Home() {
     })
   );
 
-  // (Removed initial loading effect by switching to lazy initial state)
-
-  // Save apps to localStorage whenever apps change
+  // Set mounted state to prevent hydration mismatch
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    setMounted(true);
+  }, []);
+
+
+
+  // Load saved state on mount to avoid hydration mismatch
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
+    
+    console.log('🔄 Loading saved state from localStorage...');
+    setIsLoading(true); // Set loading to true before loading
+    
+    try {
+      // Load apps
+      const savedApps = localStorage.getItem('favoriteApps');
+      if (savedApps) {
+        const parsedApps = JSON.parse(savedApps);
+        setApps(parsedApps);
+        console.log('✅ Apps loaded:', parsedApps.length);
+      } else {
+        setApps(defaultApps);
+        console.log('🔄 No apps saved, using defaults');
+      }
+
+      // Load widgets
+      const savedWidgets = localStorage.getItem('widgets');
+      if (savedWidgets) {
+        const parsedWidgets = JSON.parse(savedWidgets);
+        setWidgets(parsedWidgets);
+        console.log('✅ Widgets loaded:', parsedWidgets.length);
+      } else {
+        setWidgets(defaultWidgets);
+        console.log('🔄 No widgets saved, using defaults');
+      }
+
+      // Load theme
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        const isDark = savedTheme === 'dark';
+        setIsDarkMode(isDark);
+        console.log('✅ Theme loaded from localStorage:', savedTheme);
+        
+        // Apply theme to document immediately
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else {
+        // Use system preference if no theme saved
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setIsDarkMode(prefersDark);
+        console.log('🌐 Using system preference:', prefersDark ? 'dark' : 'light');
+        
+        // Apply system preference to document
+        if (prefersDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+
+      // Load show app titles
+      const savedShowAppTitles = localStorage.getItem('showAppTitles');
+      if (savedShowAppTitles !== null) {
+        setShowAppTitles(savedShowAppTitles === 'true');
+        console.log('✅ Show app titles loaded:', savedShowAppTitles === 'true');
+      }
+
+      // Load background image
+      const savedBackgroundImage = localStorage.getItem('backgroundImage');
+      if (savedBackgroundImage) {
+        setBackgroundImage(savedBackgroundImage);
+        console.log('✅ Background image loaded:', savedBackgroundImage);
+        
+        // Apply background image immediately
+        document.documentElement.style.setProperty('--app-bg-image', `url(${savedBackgroundImage.replace(/'/g, "\\'")})`);
+        document.documentElement.classList.add('has-app-bg');
+      }
+
+      // Load app title color
+      const savedAppTitleColor = localStorage.getItem('appTitleColor');
+      if (savedAppTitleColor) {
+        setAppTitleColor(savedAppTitleColor as 'auto' | 'black' | 'white');
+        console.log('✅ App title color loaded:', savedAppTitleColor);
+      }
+
+      // Load widget text color
+      const savedWidgetTextColor = localStorage.getItem('widgetTextColor');
+      if (savedWidgetTextColor) {
+        setWidgetTextColor(savedWidgetTextColor as 'auto' | 'black' | 'white');
+        console.log('✅ Widget text color loaded:', savedWidgetTextColor);
+      }
+
+      // Load visual modes - this is critical for persistence
+      const savedNormal = localStorage.getItem('normalModeEnabled');
+      const savedGlass = localStorage.getItem('glassmorphismEnabled');
+      const savedLiquid = localStorage.getItem('liquidGlassEnabled');
+      
+      console.log('🔍 Mode settings found in localStorage:', { 
+        normal: savedNormal, 
+        glass: savedGlass, 
+        liquid: savedLiquid 
+      });
+      
+      // Set modes based on saved values, ensuring only one is active
+      if (savedNormal === 'true') {
+        setNormalModeEnabled(true);
+        setGlassmorphismEnabled(false);
+        setLiquidGlassEnabled(false);
+        console.log('✅ Normal mode restored from localStorage');
+      } else if (savedGlass === 'true') {
+        setNormalModeEnabled(false);
+        setGlassmorphismEnabled(true);
+        setLiquidGlassEnabled(false);
+        console.log('✅ Glassmorphism mode restored from localStorage');
+      } else if (savedLiquid === 'true') {
+        setNormalModeEnabled(false);
+        setGlassmorphismEnabled(false);
+        setLiquidGlassEnabled(true);
+        console.log('✅ Liquid glass mode restored from localStorage');
+      } else {
+        // No modes saved, default to normal
+        setNormalModeEnabled(true);
+        setGlassmorphismEnabled(false);
+        setLiquidGlassEnabled(false);
+        console.log('🔄 No modes saved, defaulting to normal mode');
+      }
+      
+      // Log the states immediately after setting them
+      console.log('🔄 States set during loading:', {
+        normal: savedNormal === 'true',
+        glass: savedGlass === 'true',
+        liquid: savedLiquid === 'true'
+      });
+      
+      // Force a re-render after setting all states
+      setTimeout(() => {
+        console.log('🔄 Final state after loading:', {
+          normal: normalModeEnabled,
+          glass: glassmorphismEnabled,
+          liquid: liquidGlassEnabled
+        });
+      }, 100);
+      
+      console.log('✅ All settings loaded successfully');
+      setIsLoading(false); // Mark loading as complete
+      console.log('🚀 Loading complete - save effect now enabled');
+      
+    } catch (error) {
+      console.error('❌ Error loading settings:', error);
+      // Fallback to defaults on error
+      setApps(defaultApps);
+      setWidgets(defaultWidgets);
+      setNormalModeEnabled(true);
+      setGlassmorphismEnabled(false);
+      setLiquidGlassEnabled(false);
+      setIsLoading(false); // Mark loading as complete even on error
+    }
+  }, [mounted]);
+
+  // Save apps to localStorage only when explicitly changed by user (not during load/reset)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isResetting && !isLoading) {
       localStorage.setItem('favoriteApps', JSON.stringify(apps));
     }
-  }, [apps]);
+  }, [apps, isResetting, isLoading]);
 
-  // Save widgets to localStorage whenever widgets change
+  // Save widgets to localStorage only when explicitly changed by user (not during load/reset)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !isResetting && !isLoading) {
       localStorage.setItem('widgets', JSON.stringify(widgets));
     }
-  }, [widgets]);
+  }, [widgets, isResetting, isLoading]);
 
-  // Save theme to localStorage and apply to document
+  // Reset completion - localStorage saving is now passive and only happens on user changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isResetting && apps.length > 0 && widgets.length > 0) {
+      const timer = setTimeout(() => {
+        setIsResetting(false);
+        console.log('🔄 Reset complete - localStorage is now read-only until user makes changes');
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isResetting, apps, widgets]);
+
+
+
+  // Comprehensive save effect for all settings - only save on user changes, not during load/reset
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isLoading && !isResetting) { // Only save when not loading and not resetting
+      console.log('💾 Saving user settings to localStorage:', {
+        theme: isDarkMode ? 'dark' : 'light',
+        showAppTitles,
+        backgroundImage,
+        normalModeEnabled,
+        glassmorphismEnabled,
+        liquidGlassEnabled,
+        appTitleColor,
+        widgetTextColor
+      });
+
+      // Save theme
       localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      
+      // Save show app titles
+      localStorage.setItem('showAppTitles', showAppTitles.toString());
+      
+      // Save background image
+      localStorage.setItem('backgroundImage', backgroundImage);
+      
+      // Save visual modes
+      localStorage.setItem('normalModeEnabled', normalModeEnabled.toString());
+      localStorage.setItem('glassmorphismEnabled', glassmorphismEnabled.toString());
+      localStorage.setItem('liquidGlassEnabled', liquidGlassEnabled.toString());
+      
+      // Save colors
+      localStorage.setItem('appTitleColor', appTitleColor);
+      localStorage.setItem('widgetTextColor', widgetTextColor);
+
+      // Apply theme to document
       if (isDarkMode) {
         document.documentElement.classList.add('dark');
+        console.log('🌙 Dark mode applied to document');
       } else {
         document.documentElement.classList.remove('dark');
+        console.log('☀️ Light mode applied to document');
       }
+
+      // Apply background image
+      if (backgroundImage) {
+        document.documentElement.style.setProperty('--app-bg-image', `url(${backgroundImage.replace(/'/g, "\\'")})`);
+        document.documentElement.classList.add('has-app-bg');
+      } else {
+        document.documentElement.style.setProperty('--app-bg-image', 'none');
+        document.documentElement.classList.remove('has-app-bg');
+      }
+
+      console.log('✅ All settings saved to localStorage successfully');
     }
-  }, [isDarkMode]);
-
-  // Save background image to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('backgroundImage', backgroundImage);
-    }
-  }, [backgroundImage]);
-
-
-
-  // Save glassmorphism setting to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('glassmorphismEnabled', glassmorphismEnabled.toString());
-    }
-  }, [glassmorphismEnabled]);
-
-  // Save app title color setting to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('appTitleColor', appTitleColor);
-    }
-  }, [appTitleColor]);
-
-  // Save widget text color setting to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('widgetTextColor', widgetTextColor);
-    }
-  }, [widgetTextColor]);
+  }, [
+    isDarkMode, 
+    showAppTitles, 
+    backgroundImage, 
+    normalModeEnabled, 
+    glassmorphismEnabled, 
+    liquidGlassEnabled, 
+    appTitleColor, 
+    widgetTextColor,
+    isLoading,
+    isResetting
+  ]);
 
   const resetSettings = () => {
+    // Show confirmation dialog
+    if (typeof window !== 'undefined') {
+      const confirmed = window.confirm(
+        '⚠️ Are you sure you want to reset all settings?\n\n' +
+        'This will:\n' +
+        '• Reset all visual settings to defaults\n' +
+        '• Restore default app cards (YouTube, GitHub, etc.)\n' +
+        '• Restore default widgets (Clock, Weather, etc.)\n' +
+        '• Clear all custom apps and widgets\n' +
+        '• Clear all saved preferences\n\n' +
+        'This action cannot be undone!'
+      );
+      
+      if (!confirmed) {
+        console.log('❌ Reset cancelled by user');
+        return;
+      }
+    }
+    
+    console.log('🔄 Resetting all settings to defaults...');
+    
+    // Set reset flag to prevent useEffect from overwriting localStorage
+    setIsResetting(true);
+    
+    // Clear localStorage first and ensure it's completely empty
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+      
+      // Double-check that localStorage is actually cleared
+      if (localStorage.length > 0) {
+        console.warn('⚠️ localStorage not fully cleared, forcing removal of remaining items');
+        // Force remove any remaining items
+        Object.keys(localStorage).forEach(key => {
+          localStorage.removeItem(key);
+        });
+      }
+      
+      console.log('🗑️ localStorage cleared, length:', localStorage.length);
+    }
+    
+    // Reset visual settings to defaults
     setIsDarkMode(false);
     setShowAppTitles(true);
     setBackgroundImage('');
     setGlassmorphismEnabled(false);
+    setLiquidGlassEnabled(false);
+    setNormalModeEnabled(true);
     setAppTitleColor('auto');
     setWidgetTextColor('auto');
+    
+    // Restore default apps and widgets
+    setApps(defaultApps);
+    setWidgets(defaultWidgets);
+    
+    // Set default values in localStorage immediately after clearing
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('theme');
-      localStorage.removeItem('backgroundImage');
-      localStorage.removeItem('glassmorphismEnabled');
-      localStorage.removeItem('appTitleColor');
-      localStorage.removeItem('widgetTextColor');
+      try {
+        // Set default values in localStorage
+        localStorage.setItem('theme', 'light');
+        localStorage.setItem('showAppTitles', 'true');
+        localStorage.setItem('backgroundImage', '');
+        localStorage.setItem('normalModeEnabled', 'true');
+        localStorage.setItem('glassmorphismEnabled', 'false');
+        localStorage.setItem('liquidGlassEnabled', 'false');
+        localStorage.setItem('appTitleColor', 'auto');
+        localStorage.setItem('widgetTextColor', 'auto');
+        
+        // Save apps and widgets with explicit stringification
+        const appsJson = JSON.stringify(defaultApps);
+        const widgetsJson = JSON.stringify(defaultWidgets);
+        
+        localStorage.setItem('favoriteApps', appsJson);
+        localStorage.setItem('widgets', widgetsJson);
+        
+        // Add timestamp for reset tracking
+        localStorage.setItem('lastResetDate', new Date().toDateString());
+        
+        // Simple verification that save was successful
+        if (localStorage.getItem('favoriteApps') === appsJson && localStorage.getItem('widgets') === widgetsJson) {
+          console.log('✅ Default apps and widgets saved to localStorage successfully');
+        } else {
+          console.warn('⚠️ localStorage save verification failed, but continuing...');
+        }
+        
+        // Verify the save was successful
+        const savedApps = localStorage.getItem('favoriteApps');
+        const savedWidgets = localStorage.getItem('widgets');
+        console.log('🔍 Verification - saved apps:', savedApps ? JSON.parse(savedApps).length : 'none');
+        console.log('🔍 Verification - saved widgets:', savedWidgets ? JSON.parse(savedWidgets).length : 'none');
+        
+        // Simple verification that save was successful
+        if (savedApps === appsJson && savedWidgets === widgetsJson) {
+          console.log('✅ All settings reset to defaults and saved to localStorage successfully');
+        } else {
+          console.warn('⚠️ localStorage save verification failed, but continuing...');
+        }
+      } catch (error) {
+        console.error('❌ Error saving to localStorage during reset:', error);
+      }
     }
+    
+    // Apply theme to document
     if (typeof document !== 'undefined') {
       document.documentElement.classList.remove('dark');
+      document.documentElement.style.setProperty('--app-bg-image', 'none');
+      document.documentElement.classList.remove('has-app-bg');
     }
+    
+    // Note: isResetting will be set to false by a useEffect when the state updates complete
   };
 
   const addApp = (app: App) => {
@@ -1144,6 +1424,22 @@ export default function Home() {
       title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : 'Quick Notes Widget'
     };
     setWidgets([...widgets, widget]);
+  };
+
+  const quickAddFavoriteApp = () => {
+    if (typeof window === 'undefined') return;
+    const title = window.prompt('Enter app name (e.g., Twitter, GitHub)');
+    if (!title || !title.trim()) return;
+    const rawUrl = window.prompt('Enter URL (e.g., twitter.com or https://twitter.com)');
+    if (!rawUrl || !rawUrl.trim()) return;
+    const url = rawUrl.trim();
+    const normalizedHref = url.startsWith('http') ? url : `https://${url}`;
+    const app: App = {
+      id: Date.now().toString(),
+      title: title.trim(),
+      href: normalizedHref,
+    };
+    addApp(app);
   };
 
   const removeApp = (id: string) => {
@@ -1199,12 +1495,44 @@ export default function Home() {
     }
   };
 
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <main className="min-h-screen px-4 py-8 bg-white">
+        <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
+          <div className="text-center text-gray-500">Loading...</div>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className={`min-h-screen px-4 py-8 transition-all duration-300 ${
-      backgroundImage 
-        ? 'bg-cover bg-center bg-no-repeat' 
-        : 'bg-background'
-    }`} style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : {}}>
+    <main suppressHydrationWarning
+      className={`min-h-screen px-4 py-8 transition-all duration-300 ${
+        backgroundImage ? 'bg-cover bg-center bg-no-repeat' : ''
+      } ${isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white'}`}
+      style={{
+        ...(backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : {}),
+        backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff'
+      }}
+    >
+      {/* Global keyframes for iOS-style jiggle */}
+      <style>{`
+        @keyframes iosJiggle {
+          0%, 100% { transform: rotate(-1deg) translateY(0); }
+          50% { transform: rotate(1deg) translateY(-0.5px); }
+        }
+        .ios-jiggle {
+          animation: iosJiggle 0.22s ease-in-out infinite;
+        }
+      `}</style>
+      {/* Apple Liquid Glass overlays */}
+      {liquidGlassEnabled && (
+        <>
+          <div className="liquid-glass-overlay" />
+          <div className="liquid-glass-noise" />
+        </>
+      )}
       <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
 
         {/* Apps Grid with Drag and Drop */}
@@ -1216,7 +1544,7 @@ export default function Home() {
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
             <div className="mb-6 mt-[240px]">
               <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14 gap-y-10 gap-x-0.5 sm:gap-y-11 sm:gap-x-0.5 lg:gap-x-0.5 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px]">
-                {apps.map((app) => (
+                {apps.map((app, index) => (
                   <SortableLinkCard
                     key={app.id}
                     app={app}
@@ -1226,7 +1554,9 @@ export default function Home() {
                     backgroundImage={backgroundImage}
                     glassmorphismEnabled={glassmorphismEnabled}
                     appTitleColor={appTitleColor}
+                    liquidGlassEnabled={liquidGlassEnabled}
                     isEditModalOpen={isEditModalOpen}
+                    jiggleIndex={index}
                   />
                 ))}
               </div>
@@ -1244,7 +1574,7 @@ export default function Home() {
             >
               <SortableContext items={widgets.map(widget => widget.id)} strategy={rectSortingStrategy}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 gap-y-4 gap-x-0 sm:gap-y-5 sm:gap-x-1 lg:gap-x-2">
-                  {widgets.map((widget) => (
+                  {widgets.map((widget, index) => (
                     widget.type === 'clock' ? (
                       <SortableClockWidget
                         key={widget.id}
@@ -1255,8 +1585,10 @@ export default function Home() {
                         }}
                         isEditModalOpen={isEditModalOpen}
                         backgroundImage={backgroundImage}
-                        glassmorphismEnabled={glassmorphismEnabled}
+                         glassmorphismEnabled={glassmorphismEnabled}
+                         liquidGlassEnabled={liquidGlassEnabled}
                         widgetTextColor={widgetTextColor}
+                        jiggleIndex={index}
                       />
                     ) : (
                       widget.type === 'weather' ? (
@@ -1269,8 +1601,10 @@ export default function Home() {
                           }}
                           isEditModalOpen={isEditModalOpen}
                           backgroundImage={backgroundImage}
-                          glassmorphismEnabled={glassmorphismEnabled}
+                             glassmorphismEnabled={glassmorphismEnabled}
+                             liquidGlassEnabled={liquidGlassEnabled}
                           widgetTextColor={widgetTextColor}
+                          jiggleIndex={index}
                         />
                       ) : (
                         widget.type === 'calendar' ? (
@@ -1283,8 +1617,10 @@ export default function Home() {
                             }}
                             isEditModalOpen={isEditModalOpen}
                             backgroundImage={backgroundImage}
-                            glassmorphismEnabled={glassmorphismEnabled}
+                               glassmorphismEnabled={glassmorphismEnabled}
+                               liquidGlassEnabled={liquidGlassEnabled}
                             widgetTextColor={widgetTextColor}
+                            jiggleIndex={index}
                           />
                         ) : (
                           widget.type === 'water-tracker' ? (
@@ -1297,8 +1633,10 @@ export default function Home() {
                               }}
                               isEditModalOpen={isEditModalOpen}
                               backgroundImage={backgroundImage}
-                              glassmorphismEnabled={glassmorphismEnabled}
+                               glassmorphismEnabled={glassmorphismEnabled}
+                               liquidGlassEnabled={liquidGlassEnabled}
                               widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
                             />
                           ) : widget.type === 'quick-notes' ? (
                             <QuickNotesWidget
@@ -1311,7 +1649,9 @@ export default function Home() {
                               isEditModalOpen={isEditModalOpen}
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
+                                liquidGlassEnabled={liquidGlassEnabled}
                               widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
                             />
                           ) : (
                             <AnalogClockWidget
@@ -1324,7 +1664,9 @@ export default function Home() {
                               isEditModalOpen={isEditModalOpen}
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
+                               liquidGlassEnabled={liquidGlassEnabled}
                               widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
                             />
                           )
                         )
@@ -1346,46 +1688,62 @@ export default function Home() {
         )}
       </div>
 
-      {/* Floating Buttons Card */}
-      <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 rounded-full shadow-lg border p-2 flex gap-2 z-30 ${
-        glassmorphismEnabled
-          ? isDarkMode 
-            ? 'bg-black/20 backdrop-blur-md border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-            : 'bg-white/20 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-          : isDarkMode ? 'bg-black border-gray-700' : 'bg-white border-gray-200'
-      }`}>
+      {/* Floating Action Dock */}
+      <div
+        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-xl shadow-lg border px-1.5 py-1.5 sm:px-2 sm:py-2 flex items-center gap-1 sm:gap-2 backdrop-blur-xl z-30 ${
+          liquidGlassEnabled
+            ? 'bg-white/10 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.3)]'
+            : glassmorphismEnabled
+              ? (isDarkMode
+                  ? 'bg-black/30 border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.4)]'
+                  : 'bg-white/40 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.12)]')
+              : (isDarkMode
+                  ? 'bg-[#0f1115]/80 border-white/10 shadow-[0_10px_25px_rgba(0,0,0,0.45)]'
+                  : 'bg-white/80 border-gray-200/60 shadow-[0_10px_25px_rgba(0,0,0,0.08)]')
+        }`}
+      >
         {/* Edit Mode Button */}
         <button
           onClick={() => {
             setIsEditModalOpen(!isEditModalOpen);
           }}
-          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center ${
-            isEditModalOpen 
-              ? 'bg-red-500 hover:bg-red-600 text-white' 
-              : 'bg-green-500 hover:bg-green-600 text-white'
-          }`}
+          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 text-white ring-1 ring-white/10 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center`}
           title={isEditModalOpen ? "Exit Edit Mode" : "Enter Edit Mode"}
+          aria-label={isEditModalOpen ? 'Exit Edit Mode' : 'Enter Edit Mode'}
         >
           {isEditModalOpen ? (
-            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           )}
+        </button>
+
+        {/* Quick Add Favorite App Button (left of Settings) */}
+        <button
+          onClick={quickAddFavoriteApp}
+          className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 text-white ring-1 ring-white/10 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center"
+          title="Add Favorite App"
+          aria-label="Add Favorite App"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
         </button>
         
         {/* Settings Button */}
         <button
           onClick={() => {
-            setIsSidebarOpen(true);
+            setIsSidebarOpen(prev => !prev);
           }}
-          className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 text-white ring-1 ring-white/10 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center`}
           title="Dashboard Settings"
+          aria-label="Dashboard Settings"
         >
-          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -1399,20 +1757,76 @@ export default function Home() {
         apps={apps}
         onAddApp={addApp}
         isDarkMode={isDarkMode}
-        onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+        onToggleTheme={() => {
+          setIsDarkMode(prev => {
+            const next = !prev;
+            console.log('🌙 Theme toggled from', prev, 'to', next);
+            return next;
+          });
+        }}
         showAppTitles={showAppTitles}
-        onToggleShowAppTitles={() => setShowAppTitles(!showAppTitles)}
+        onToggleShowAppTitles={() => {
+          setShowAppTitles(prev => {
+            const next = !prev;
+            console.log('📱 Show app titles toggled from', prev, 'to', next);
+            return next;
+          });
+        }}
         backgroundImage={backgroundImage}
-        onSetBackgroundImage={setBackgroundImage}
+        onSetBackgroundImage={(url) => {
+          console.log('🖼️ Background image changed to:', url);
+          setBackgroundImage(url);
+        }}
         glassmorphismEnabled={glassmorphismEnabled}
-        onToggleGlassmorphism={() => setGlassmorphismEnabled(!glassmorphismEnabled)}
+        onToggleGlassmorphism={() => {
+          setGlassmorphismEnabled(prev => {
+            const next = !prev;
+            console.log('🔮 Glassmorphism toggled from', prev, 'to', next);
+            if (next) {
+              setLiquidGlassEnabled(false);
+              setNormalModeEnabled(false);
+            }
+            return next;
+          });
+        }}
+        liquidGlassEnabled={liquidGlassEnabled}
+        onToggleLiquidGlass={() => {
+          setLiquidGlassEnabled(prev => {
+            const next = !prev;
+            console.log('💧 Liquid glass toggled from', prev, 'to', next);
+            if (next) {
+              setGlassmorphismEnabled(false);
+              setNormalModeEnabled(false);
+            }
+            return next;
+          });
+        }}
+        normalModeEnabled={normalModeEnabled}
+        onToggleNormalMode={() => {
+          setNormalModeEnabled(prev => {
+            const next = !prev;
+            console.log('📱 Normal mode toggled from', prev, 'to', next);
+            if (next) {
+              setGlassmorphismEnabled(false);
+              setLiquidGlassEnabled(false);
+            }
+            return next;
+          });
+        }}
         appTitleColor={appTitleColor}
-        onSetAppTitleColor={setAppTitleColor}
+        onSetAppTitleColor={(color) => {
+          console.log('🎨 App title color changed to:', color);
+          setAppTitleColor(color);
+        }}
         widgetTextColor={widgetTextColor}
-        onSetWidgetTextColor={setWidgetTextColor}
+        onSetWidgetTextColor={(color) => {
+          console.log('🎨 Widget text color changed to:', color);
+          setWidgetTextColor(color);
+        }}
         addWidget={addWidget}
         onResetSettings={resetSettings}
       />
+
 
 
     </main>

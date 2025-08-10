@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalStorage Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { margin: 5px; padding: 8px 16px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>LocalStorage Persistence Test</h1>
+    
+    <div class="test-section">
+        <h3>Test LocalStorage Functionality</h3>
+        <button onclick="testLocalStorage()">Test Basic localStorage</button>
+        <button onclick="clearAllStorage()">Clear All Storage</button>
+        <div id="basic-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Dashboard Settings</h3>
+        <button onclick="setTestSettings()">Set Test Settings</button>
+        <button onclick="loadTestSettings()">Load Test Settings</button>
+        <button onclick="checkCurrentSettings()">Check Current Settings</button>
+        <div id="settings-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Current localStorage Contents</h3>
+        <button onclick="showAllStorage()">Show All Storage</button>
+        <pre id="storage-contents"></pre>
+    </div>
+
+    <script>
+        function testLocalStorage() {
+            try {
+                localStorage.setItem('test', 'value');
+                const result = localStorage.getItem('test');
+                if (result === 'value') {
+                    document.getElementById('basic-test-result').innerHTML = 
+                        '<div class="status success">✅ localStorage is working correctly</div>';
+                    localStorage.removeItem('test');
+                } else {
+                    document.getElementById('basic-test-result').innerHTML = 
+                        '<div class="status error">❌ localStorage read/write failed</div>';
+                }
+            } catch (error) {
+                document.getElementById('basic-test-result').innerHTML = 
+                    '<div class="status error">❌ localStorage error: ' + error.message + '</div>';
+            }
+        }
+
+        function setTestSettings() {
+            try {
+                localStorage.setItem('theme', 'dark');
+                localStorage.setItem('normalModeEnabled', 'true');
+                localStorage.setItem('glassmorphismEnabled', 'false');
+                localStorage.setItem('liquidGlassEnabled', 'false');
+                localStorage.setItem('showAppTitles', 'true');
+                localStorage.setItem('backgroundImage', 'https://example.com/test.jpg');
+                localStorage.setItem('appTitleColor', 'white');
+                localStorage.setItem('widgetTextColor', 'white');
+                
+                document.getElementById('settings-test-result').innerHTML = 
+                    '<div class="status success">✅ Test settings saved to localStorage</div>';
+            } catch (error) {
+                document.getElementById('settings-test-result').innerHTML = 
+                    '<div class="status error">❌ Error saving test settings: ' + error.message + '</div>';
+            }
+        }
+
+        function loadTestSettings() {
+            try {
+                const theme = localStorage.getItem('theme');
+                const normalMode = localStorage.getItem('normalModeEnabled');
+                const glassmorphism = localStorage.getItem('glassmorphismEnabled');
+                const liquidGlass = localStorage.getItem('liquidGlassEnabled');
+                const showTitles = localStorage.getItem('showAppTitles');
+                const bgImage = localStorage.getItem('backgroundImage');
+                const appColor = localStorage.getItem('appTitleColor');
+                const widgetColor = localStorage.getItem('widgetTextColor');
+                
+                const result = `
+                    <div class="status info">
+                        <strong>Loaded Settings:</strong><br>
+                        Theme: ${theme || 'not set'}<br>
+                        Normal Mode: ${normalMode || 'not set'}<br>
+                        Glassmorphism: ${glassmorphism || 'not set'}<br>
+                        Liquid Glass: ${liquidGlass || 'not set'}<br>
+                        Show Titles: ${showTitles || 'not set'}<br>
+                        Background: ${bgImage || 'not set'}<br>
+                        App Color: ${appColor || 'not set'}<br>
+                        Widget Color: ${widgetColor || 'not set'}
+                    </div>
+                `;
+                
+                document.getElementById('settings-test-result').innerHTML = result;
+            } catch (error) {
+                document.getElementById('settings-test-result').innerHTML = 
+                    '<div class="status error">❌ Error loading test settings: ' + error.message + '</div>';
+            }
+        }
+
+        function checkCurrentSettings() {
+            try {
+                const allKeys = Object.keys(localStorage);
+                const dashboardKeys = allKeys.filter(key => 
+                    ['theme', 'normalModeEnabled', 'glassmorphismEnabled', 'liquidGlassEnabled', 
+                     'showAppTitles', 'backgroundImage', 'appTitleColor', 'widgetTextColor'].includes(key)
+                );
+                
+                let result = '<div class="status info"><strong>Dashboard Settings Found:</strong><br>';
+                if (dashboardKeys.length === 0) {
+                    result += 'No dashboard settings found in localStorage';
+                } else {
+                    dashboardKeys.forEach(key => {
+                        const value = localStorage.getItem(key);
+                        result += `${key}: ${value}<br>`;
+                    });
+                }
+                result += '</div>';
+                
+                document.getElementById('settings-test-result').innerHTML = result;
+            } catch (error) {
+                document.getElementById('settings-test-result').innerHTML = 
+                    '<div class="status error">❌ Error checking current settings: ' + error.message + '</div>';
+            }
+        }
+
+        function clearAllStorage() {
+            try {
+                localStorage.clear();
+                document.getElementById('basic-test-result').innerHTML = 
+                    '<div class="status info">🗑️ All localStorage cleared</div>';
+                document.getElementById('settings-test-result').innerHTML = '';
+                document.getElementById('storage-contents').innerHTML = '';
+            } catch (error) {
+                document.getElementById('basic-test-result').innerHTML = 
+                    '<div class="status error">❌ Error clearing storage: ' + error.message + '</div>';
+            }
+        }
+
+        function showAllStorage() {
+            try {
+                const allKeys = Object.keys(localStorage);
+                let contents = '<strong>All localStorage contents:</strong>\n';
+                if (allKeys.length === 0) {
+                    contents += 'localStorage is empty';
+                } else {
+                    allKeys.forEach(key => {
+                        const value = localStorage.getItem(key);
+                        contents += `${key}: ${value}\n`;
+                    });
+                }
+                document.getElementById('storage-contents').textContent = contents;
+            } catch (error) {
+                document.getElementById('storage-contents').textContent = 'Error reading localStorage: ' + error.message;
+            }
+        }
+
+        // Auto-run basic test on page load
+        window.onload = function() {
+            testLocalStorage();
+            checkCurrentSettings();
+        };
+    </script>
+</body>
+</html>
