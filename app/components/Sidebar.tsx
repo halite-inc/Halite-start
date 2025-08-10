@@ -327,7 +327,7 @@ export default function Sidebar({ isOpen, onClose, apps, onAddApp, isDarkMode, o
                     value={newApp.title}
                     onChange={(e) => setNewApp({ ...newApp, title: e.target.value })}
                     onKeyPress={handleKeyPress}
-                    placeholder="e.g., Twitter, Spotify"
+                    placeholder="e.g., Twitter, GitHub"
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 

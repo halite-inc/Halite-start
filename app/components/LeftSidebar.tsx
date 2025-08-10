@@ -33,6 +33,7 @@ interface LeftSidebarProps {
   widgetTextColor: 'auto' | 'black' | 'white';
   onSetWidgetTextColor: (color: 'auto' | 'black' | 'white') => void;
   addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes') => void;
+  onResetSettings: () => void;
 }
 
 export default function LeftSidebar({ 
@@ -52,13 +53,15 @@ export default function LeftSidebar({
   onSetAppTitleColor, 
   widgetTextColor, 
   onSetWidgetTextColor,
-  addWidget 
+  addWidget,
+  onResetSettings 
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
   const [isAppsExpanded, setIsAppsExpanded] = useState(false);
   const [newBackgroundImage, setNewBackgroundImage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
 
   // Set mounted state after component mounts
   useEffect(() => {
@@ -98,6 +101,8 @@ export default function LeftSidebar({
       reader.readAsDataURL(file);
     }
   };
+
+
 
   // Don't render theme-dependent content until mounted
   if (!mounted) {
@@ -165,6 +170,26 @@ export default function LeftSidebar({
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
+            {/* Reset to Defaults */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <h3 className={`text-lg font-medium ${
+                  isDarkMode ? 'text-white' : 'text-gray-800'
+                }`}>
+                  Reset
+                </h3>
+                <button
+                  onClick={onResetSettings}
+                  className="px-3 py-1.5 text-sm rounded-lg font-medium transition-colors duration-200 bg-red-500 hover:bg-red-600 text-white"
+                  title="Reset all settings to defaults"
+                >
+                  Reset to Defaults
+                </button>
+              </div>
+              <p className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Resets theme, app titles, colors, glass effect, and background image.
+              </p>
+            </div>
             {/* Widgets Section */}
             <div className="mb-6">
               <h3 className={`text-lg font-medium mb-4 ${
@@ -180,6 +205,8 @@ export default function LeftSidebar({
                 }`}>
                   Add custom widgets to your dashboard
                 </p>
+
+
                 
                 {/* Widget Options with Previews */}
                 <div className="grid grid-cols-2 gap-3">
@@ -297,6 +324,8 @@ export default function LeftSidebar({
                       <p className="text-xs font-medium">Quick Notes</p>
                     </div>
                   </button>
+
+
                 </div>
               </div>
             </div>
@@ -488,7 +517,7 @@ export default function LeftSidebar({
                     value={newApp.title}
                     onChange={(e) => setNewApp({ ...newApp, title: e.target.value })}
                     onKeyPress={handleKeyPress}
-                    placeholder="e.g., Twitter, Spotify"
+                    placeholder="e.g., Twitter, GitHub"
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 

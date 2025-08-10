@@ -44,7 +44,7 @@ const defaultApps: App[] = [
   { id: 'flipkart', title: 'Flipkart', href: 'https://flipkart.com', icon: 'https://www.google.com/s2/favicons?domain=flipkart.com&sz=32' },
   { id: 'amazon', title: 'Amazon', href: 'https://amazon.com', icon: 'https://www.google.com/s2/favicons?domain=amazon.com&sz=32' },
   { id: 'booking', title: 'Booking.com', href: 'https://booking.com', icon: 'https://www.google.com/s2/favicons?domain=booking.com&sz=32' },
-  { id: 'spotify', title: 'Spotify', href: 'https://spotify.com', icon: 'https://www.google.com/s2/favicons?domain=spotify.com&sz=32' },
+
   { id: 'google', title: 'Google', href: 'https://google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=32' },
   { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=32' },
   { id: 'twitter', title: 'Twitter', href: 'https://twitter.com', icon: 'https://www.google.com/s2/favicons?domain=twitter.com&sz=32' },
@@ -849,6 +849,8 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
   );
 }
 
+
+
 function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white' }) {
   const [time, setTime] = useState(new Date());
   const {
@@ -986,16 +988,56 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
 }
 
 export default function Home() {
-  const [apps, setApps] = useState<App[]>(defaultApps);
-  const [widgets, setWidgets] = useState<Widget[]>(defaultWidgets);
+  const [apps, setApps] = useState<App[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedApps = localStorage.getItem('favoriteApps');
+      if (savedApps) return JSON.parse(savedApps);
+    }
+    return defaultApps;
+  });
+  const [widgets, setWidgets] = useState<Widget[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedWidgets = localStorage.getItem('widgets');
+      if (savedWidgets) return JSON.parse(savedWidgets);
+    }
+    return defaultWidgets;
+  });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) return savedTheme === 'dark';
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return !!prefersDark;
+    }
+    return false;
+  });
   const [showAppTitles, setShowAppTitles] = useState(true);
-  const [backgroundImage, setBackgroundImage] = useState('');
-  const [glassmorphismEnabled, setGlassmorphismEnabled] = useState(false);
-  const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>('auto');
-  const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>('auto');
+  const [backgroundImage, setBackgroundImage] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('backgroundImage') || '';
+    }
+    return '';
+  });
+  const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('glassmorphismEnabled');
+      return saved ? saved === 'true' : false;
+    }
+    return false;
+  });
+  const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('appTitleColor') as 'auto' | 'black' | 'white') || 'auto';
+    }
+    return 'auto';
+  });
+  const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('widgetTextColor') as 'auto' | 'black' | 'white') || 'auto';
+    }
+    return 'auto';
+  });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const sensors = useSensors(
@@ -1009,50 +1051,7 @@ export default function Home() {
     })
   );
 
-  // Set mounted state after component mounts
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Load apps and theme from localStorage on component mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedApps = localStorage.getItem('favoriteApps');
-      if (savedApps) {
-        setApps(JSON.parse(savedApps));
-      }
-      
-      const savedWidgets = localStorage.getItem('widgets');
-      if (savedWidgets) {
-        setWidgets(JSON.parse(savedWidgets));
-      }
-      
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) {
-        setIsDarkMode(savedTheme === 'dark');
-      }
-
-          const savedBackgroundImage = localStorage.getItem('backgroundImage');
-    if (savedBackgroundImage) {
-      setBackgroundImage(savedBackgroundImage);
-    }
-
-        const savedGlassmorphismEnabled = localStorage.getItem('glassmorphismEnabled');
-    if (savedGlassmorphismEnabled) {
-      setGlassmorphismEnabled(savedGlassmorphismEnabled === 'true');
-    }
-
-    const savedAppTitleColor = localStorage.getItem('appTitleColor');
-    if (savedAppTitleColor) {
-      setAppTitleColor(savedAppTitleColor as 'auto' | 'black' | 'white');
-    }
-
-    const savedWidgetTextColor = localStorage.getItem('widgetTextColor');
-    if (savedWidgetTextColor) {
-      setWidgetTextColor(savedWidgetTextColor as 'auto' | 'black' | 'white');
-    }
-    }
-  }, []);
+  // (Removed initial loading effect by switching to lazy initial state)
 
   // Save apps to localStorage whenever apps change
   useEffect(() => {
@@ -1070,7 +1069,7 @@ export default function Home() {
 
   // Save theme to localStorage and apply to document
   useEffect(() => {
-    if (mounted && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
       if (isDarkMode) {
         document.documentElement.classList.add('dark');
@@ -1078,7 +1077,7 @@ export default function Home() {
         document.documentElement.classList.remove('dark');
       }
     }
-  }, [isDarkMode, mounted]);
+  }, [isDarkMode]);
 
   // Save background image to localStorage
   useEffect(() => {
@@ -1109,6 +1108,25 @@ export default function Home() {
       localStorage.setItem('widgetTextColor', widgetTextColor);
     }
   }, [widgetTextColor]);
+
+  const resetSettings = () => {
+    setIsDarkMode(false);
+    setShowAppTitles(true);
+    setBackgroundImage('');
+    setGlassmorphismEnabled(false);
+    setAppTitleColor('auto');
+    setWidgetTextColor('auto');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('theme');
+      localStorage.removeItem('backgroundImage');
+      localStorage.removeItem('glassmorphismEnabled');
+      localStorage.removeItem('appTitleColor');
+      localStorage.removeItem('widgetTextColor');
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const addApp = (app: App) => {
     // Add favicon URL to the app
@@ -1180,19 +1198,6 @@ export default function Home() {
       }
     }
   };
-
-  // Don't render theme-dependent content until mounted
-  if (!mounted) {
-    return (
-      <main className="min-h-screen bg-gray-100 px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className={`min-h-screen px-4 py-8 transition-all duration-300 ${
@@ -1406,6 +1411,7 @@ export default function Home() {
         widgetTextColor={widgetTextColor}
         onSetWidgetTextColor={setWidgetTextColor}
         addWidget={addWidget}
+        onResetSettings={resetSettings}
       />
 
 
