@@ -1022,6 +1022,9 @@ export default function Home() {
   const [showAppTitles, setShowAppTitles] = useState(true);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [isSuggestOpen, setIsSuggestOpen] = useState<boolean>(false);
+  const [highlightIndex, setHighlightIndex] = useState<number>(-1);
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(false);
   const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>('auto');
@@ -1118,10 +1121,7 @@ export default function Home() {
         setShowSearchBar(savedShowSearchBar === 'true');
         console.log('✅ Show search bar loaded:', savedShowSearchBar === 'true');
       }
-      const savedSearchTerm = localStorage.getItem('searchTerm');
-      if (savedSearchTerm !== null) {
-        setSearchTerm(savedSearchTerm);
-      }
+      // Always start with an empty search term on load
 
       // Load background image, prefer IndexedDB
       (async () => {
@@ -1260,7 +1260,7 @@ export default function Home() {
         theme: isDarkMode ? 'dark' : 'light',
         showAppTitles,
         showSearchBar,
-        searchTerm,
+        // searchTerm intentionally not persisted so it starts empty on reload
         backgroundImage,
         normalModeEnabled,
         glassmorphismEnabled,
@@ -1275,7 +1275,7 @@ export default function Home() {
       // Save show app titles
       localStorage.setItem('showAppTitles', showAppTitles.toString());
       localStorage.setItem('showSearchBar', showSearchBar.toString());
-      localStorage.setItem('searchTerm', searchTerm);
+      // searchTerm not saved by design
       
       // Save background image only if it's a data URL or remote URL.
       // For IndexedDB case we use object URL at runtime and don't persist the blob in localStorage.
@@ -1324,6 +1324,44 @@ export default function Home() {
     isLoading,
     isResetting
   ]);
+
+  // Fetch Google suggestions (debounced)
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (!showSearchBar || term.length === 0) {
+      setSearchSuggestions([]);
+      setIsSuggestOpen(false);
+      setHighlightIndex(-1);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      try {
+        const url = `/api/suggest?q=${encodeURIComponent(term)}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('suggest fetch failed');
+        const data = await res.json();
+        const suggestions: string[] = Array.isArray(data?.suggestions) ? data.suggestions : [];
+        setSearchSuggestions(suggestions.slice(0, 8));
+        setIsSuggestOpen(suggestions.length > 0);
+        setHighlightIndex(-1);
+      } catch (e) {
+        // On CORS/error, hide suggestions gracefully
+        setSearchSuggestions([]);
+        setIsSuggestOpen(false);
+        setHighlightIndex(-1);
+      }
+    }, 200);
+    return () => clearTimeout(handle);
+  }, [searchTerm, showSearchBar]);
+
+  const submitSearch = (query: string) => {
+    const term = (query ?? '').trim();
+    if (!term) return;
+    if (typeof window !== 'undefined') {
+      const url = `https://www.google.com/search?q=${encodeURIComponent(term)}`;
+      window.open(url, '_blank');
+    }
+  };
 
   const resetSettings = () => {
     // Show confirmation dialog
@@ -1564,21 +1602,6 @@ export default function Home() {
       )}
         <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
 
-          {/* Search Bar */}
-          {showSearchBar && (
-            <div className="mb-4">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search apps..."
-                className={`w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 transition-all ${
-                  isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500'
-                }`}
-              />
-            </div>
-          )}
-
           {/* Apps Grid with Drag and Drop */}
         <DndContext
           sensors={sensors}
@@ -1588,27 +1611,33 @@ export default function Home() {
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
             <div className="mb-6 mt-[240px]">
               <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14 gap-y-10 gap-x-0.5 sm:gap-y-11 sm:gap-x-0.5 lg:gap-x-0.5 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px]">
-                {apps
-                  .filter(app => {
-                    if (!searchTerm) return true;
-                    const term = searchTerm.toLowerCase();
-                    return app.title.toLowerCase().includes(term) || (app.icon ?? '').toLowerCase().includes(term) || app.href.toLowerCase().includes(term);
-                  })
-                  .map((app, index) => (
-                  <SortableLinkCard
-                    key={app.id}
-                    app={app}
-                    onRemove={removeApp}
-                    isDark={isDarkMode}
-                    showAppTitles={showAppTitles}
-                    backgroundImage={backgroundImage}
-                    glassmorphismEnabled={glassmorphismEnabled}
-                    appTitleColor={appTitleColor}
-                    liquidGlassEnabled={liquidGlassEnabled}
-                    isEditModalOpen={isEditModalOpen}
-                    jiggleIndex={index}
-                  />
-                ))}
+                {(() => {
+                  const term = searchTerm.trim().toLowerCase();
+                  const filtered = apps.filter(app => {
+                    if (!term) return true;
+                    return (
+                      app.title.toLowerCase().includes(term) ||
+                      (app.icon ?? '').toLowerCase().includes(term) ||
+                      app.href.toLowerCase().includes(term)
+                    );
+                  });
+                  const toRender = filtered.length > 0 ? filtered : apps;
+                  return toRender.map((app, index) => (
+                    <SortableLinkCard
+                      key={app.id}
+                      app={app}
+                      onRemove={removeApp}
+                      isDark={isDarkMode}
+                      showAppTitles={showAppTitles}
+                      backgroundImage={backgroundImage}
+                      glassmorphismEnabled={glassmorphismEnabled}
+                      appTitleColor={appTitleColor}
+                      liquidGlassEnabled={liquidGlassEnabled}
+                      isEditModalOpen={isEditModalOpen}
+                      jiggleIndex={index}
+                    />
+                  ));
+                })()}
               </div>
             </div>
           </SortableContext>
@@ -1726,6 +1755,104 @@ export default function Home() {
                 </div>
               </SortableContext>
             </DndContext>
+          </div>
+        )}
+
+        {/* Search Bar under widget cards group */}
+        {showSearchBar && (
+          <div className={`mt-6 mb-6 relative rounded-2xl p-2 sm:p-2.5 shadow-lg ${
+            liquidGlassEnabled
+              ? 'bg-white/10 backdrop-blur-2xl ring-1 ring-white/20'
+              : glassmorphismEnabled
+                ? (isDarkMode ? 'bg-black/20 backdrop-blur-md ring-1 ring-white/10' : 'bg-white/40 backdrop-blur-md ring-1 ring-white/30')
+                : (isDarkMode ? 'bg-[#0f1115] ring-1 ring-white/10' : 'bg-white ring-1 ring-gray-200')
+          }`}>
+            <div className="flex items-stretch gap-2">
+              <div className="relative flex-1">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => searchSuggestions.length > 0 && setIsSuggestOpen(true)}
+                onBlur={() => setTimeout(() => setIsSuggestOpen(false), 120)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const chosen = highlightIndex >= 0 ? searchSuggestions[highlightIndex] : searchTerm;
+                    submitSearch(chosen);
+                    setIsSuggestOpen(false);
+                    return;
+                  }
+                  if (!isSuggestOpen || searchSuggestions.length === 0) return;
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setHighlightIndex((prev) => (prev + 1) % searchSuggestions.length);
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setHighlightIndex((prev) => (prev - 1 + searchSuggestions.length) % searchSuggestions.length);
+                  }
+                }}
+                placeholder="Search apps..."
+                className={`w-full px-3 py-2 rounded-full border-0 bg-transparent text-sm focus:outline-none focus:ring-0 transition-none ${
+                  isDarkMode
+                    ? 'text-white placeholder-gray-400'
+                    : 'text-gray-900 placeholder-gray-500'
+                }`}
+              />
+              </div>
+              <button
+                type="button"
+                onClick={() => submitSearch(highlightIndex >= 0 ? searchSuggestions[highlightIndex] : searchTerm)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold bg-transparent ring-0 transition-none ${
+                  isDarkMode ? 'text-white/80' : 'text-gray-800/80'
+                }`}
+                title="Search"
+                aria-label="Search"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+                </svg>
+              </button>
+            </div>
+            {isSuggestOpen && searchSuggestions.length > 0 && (
+              <div role="listbox" aria-label="Search suggestions" className={`absolute left-0 right-0 top-full z-30 mt-2 rounded-2xl p-2 sm:p-2.5 shadow-lg max-h-60 custom-scrollbar overflow-y-auto ${
+                liquidGlassEnabled
+                  ? 'bg-white/12 backdrop-blur-[40px] backdrop-saturate-200 ring-1 ring-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                  : glassmorphismEnabled
+                    ? (isDarkMode
+                        ? 'bg-black/25 backdrop-blur-[28px] backdrop-saturate-200 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                        : 'bg-white/36 backdrop-blur-[28px] backdrop-saturate-200 ring-1 ring-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]')
+                    : (isDarkMode
+                        ? 'bg-[#0f1115] ring-1 ring-white/10'
+                        : 'bg-white ring-1 ring-gray-200')
+              }`}>
+                {searchSuggestions.map((s, i) => (
+                  <button
+                    key={`${s}-${i}`}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setSearchTerm(s);
+                      setIsSuggestOpen(false);
+                      submitSearch(s);
+                    }}
+                    role="option"
+                    aria-selected={i === highlightIndex}
+                    aria-label={s}
+                    className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors duration-150 outline-none ${
+                      isDarkMode
+                        ? 'text-white font-medium hover:bg-white/10'
+                        : 'text-gray-900 font-medium hover:bg-gray-100'
+                    } ${i === highlightIndex
+                      ? (isDarkMode ? 'bg-white/10 ring-1 ring-white/20' : 'bg-gray-100 ring-1 ring-gray-200')
+                      : 'ring-0'} focus-visible:ring-2 focus-visible:ring-blue-500/40`}
+                    title={s}
+                  >
+                    <span className="truncate block">{s}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
