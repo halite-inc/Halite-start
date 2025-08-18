@@ -41,6 +41,14 @@ interface LeftSidebarProps {
   onSetWidgetTextColor: (color: 'auto' | 'black' | 'white') => void;
   addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes') => void;
   onResetSettings: () => void;
+  autofulIconsEnabled: boolean;
+  onToggleAutofulIcons: () => void;
+  hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce';
+  onSetHoverAnimationStyle: (style: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce') => void;
+  animateIconsEnabled: boolean;
+  onToggleAnimateIcons: () => void;
+  animateWidgetsEnabled: boolean;
+  onToggleAnimateWidgets: () => void;
 }
 
 export default function LeftSidebar({ 
@@ -67,7 +75,15 @@ export default function LeftSidebar({
   widgetTextColor, 
   onSetWidgetTextColor,
   addWidget,
-  onResetSettings 
+  onResetSettings,
+  autofulIconsEnabled,
+  onToggleAutofulIcons,
+  hoverAnimationStyle,
+  onSetHoverAnimationStyle,
+  animateIconsEnabled,
+  onToggleAnimateIcons,
+  animateWidgetsEnabled,
+  onToggleAnimateWidgets,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
@@ -81,6 +97,58 @@ export default function LeftSidebar({
   const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
   const [isAddAppOpen, setIsAddAppOpen] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [isHoverDropdownOpen, setIsHoverDropdownOpen] = useState(false);
+
+  const renderHoverIcon = (style: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce') => {
+    const common = 'w-3.5 h-3.5';
+    switch (style) {
+      case 'scale':
+        // Four corners implying scale
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 10V4h6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M14 4h6v6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 14v6h6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M14 20h6v-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      case 'tilt':
+        // Rotated square
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="7" y="7" width="10" height="10" transform="rotate(15 12 12)" />
+          </svg>
+        );
+      case 'skew':
+        // Skewed parallelogram
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polygon points="6,8 18,6 18,16 6,18" />
+          </svg>
+        );
+      case 'spin':
+        // Circular arrow
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5a7 7 0 017 7" strokeLinecap="round" />
+            <path d="M19 5v6h-6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M12 19a7 7 0 01-7-7" strokeLinecap="round" />
+          </svg>
+        );
+      case 'bounce':
+        // Up-down arrow
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 4v8" strokeLinecap="round" />
+            <path d="M9 9l3-3 3 3" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M12 20v-8" strokeLinecap="round" />
+            <path d="M9 15l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
 
 
   // Set mounted state after component mounts
@@ -396,6 +464,138 @@ export default function LeftSidebar({
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                         showAppTitles ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className={`rounded-xl p-3 ${isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" />
+                      </svg>
+                      Animate Icons
+                    </label>
+                    <button
+                      onClick={onToggleAnimateIcons}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        animateIconsEnabled 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          animateIconsEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  {animateIconsEnabled && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between">
+                      <label className={`text-sm font-medium flex items-center gap-2 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 12h16M4 16h10" />
+                        </svg>
+                        Hover Animation
+                      </label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsHoverDropdownOpen(v => !v)}
+                          className={`text-xs px-3 py-1.5 rounded-lg ring-1 transition-colors flex items-center gap-1 ${
+                            isDarkMode ? 'bg-[#0f1115] text-white ring-white/10 hover:bg-white/5' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'
+                          }`}
+                          aria-haspopup="listbox"
+                          aria-expanded={isHoverDropdownOpen}
+                        >
+                          <span className="capitalize flex items-center gap-1.5">
+                            {renderHoverIcon(hoverAnimationStyle)}
+                            {hoverAnimationStyle}
+                          </span>
+                          <svg className={`w-3.5 h-3.5 transition-transform ${isHoverDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {isHoverDropdownOpen && (
+                          <div className={`absolute right-0 mt-2 z-20 w-40 rounded-xl overflow-hidden shadow-lg ring-1 ${
+                            isDarkMode ? 'bg-[#121212] ring-white/10' : 'bg-white ring-gray-200'
+                          }`}
+                            role="listbox"
+                          >
+                            {(['scale','tilt','skew','spin','bounce'] as const).map(opt => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onMouseDown={(e) => { e.preventDefault(); onSetHoverAnimationStyle(opt); setIsHoverDropdownOpen(false); }}
+                                className={`w-full text-left px-3 py-2 text-xs capitalize transition-colors flex items-center gap-2 ${
+                                  isDarkMode ? 'text-white hover:bg-white/10' : 'text-gray-800 hover:bg-gray-100'
+                                } ${hoverAnimationStyle === opt ? (isDarkMode ? 'bg-white/5' : 'bg-gray-50') : ''}`}
+                                role="option"
+                                aria-selected={hoverAnimationStyle === opt}
+                              >
+                                {renderHoverIcon(opt)}
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  )}
+                  {animateIconsEnabled && (
+                  <div className="mt-3 flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M4 8h16M6 12h12" />
+                      </svg>
+                      Also apply to widgets
+                    </label>
+                    <button
+                      onClick={onToggleAnimateWidgets}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        animateWidgetsEnabled 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          animateWidgetsEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h6m0 0l-2-2m2 2l-2 2M15 17h6m0 0l-2-2m2 2l-2 2M8 12h8" />
+                    </svg>
+                    Autofil Icons
+                  </label>
+                  <button
+                    onClick={onToggleAutofulIcons}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      autofulIconsEnabled 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        autofulIconsEnabled ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
