@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { saveImageBlob, deleteImageBlob } from '../lib/idb';
 
 interface App {
@@ -12,7 +12,7 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer';
   title: string;
 }
 
@@ -33,13 +33,14 @@ interface LeftSidebarProps {
   onToggleGlassmorphism: () => void;
   liquidGlassEnabled: boolean;
   onToggleLiquidGlass: () => void;
+  
   normalModeEnabled: boolean;
   onToggleNormalMode: () => void;
   appTitleColor: 'auto' | 'black' | 'white';
   onSetAppTitleColor: (color: 'auto' | 'black' | 'white') => void;
   widgetTextColor: 'auto' | 'black' | 'white';
   onSetWidgetTextColor: (color: 'auto' | 'black' | 'white') => void;
-  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes') => void;
+  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer') => void;
   onResetSettings: () => void;
   autofulIconsEnabled: boolean;
   onToggleAutofulIcons: () => void;
@@ -49,6 +50,10 @@ interface LeftSidebarProps {
   onToggleAnimateIcons: () => void;
   animateWidgetsEnabled: boolean;
   onToggleAnimateWidgets: () => void;
+  centerAppsGroup?: boolean;
+  onToggleCenterAppsGroup?: () => void;
+  centerWidgetsGroup?: boolean;
+  onToggleCenterWidgetsGroup?: () => void;
 }
 
 export default function LeftSidebar({ 
@@ -68,6 +73,7 @@ export default function LeftSidebar({
   onToggleGlassmorphism, 
   liquidGlassEnabled,
   onToggleLiquidGlass,
+  
   normalModeEnabled,
   onToggleNormalMode,
   appTitleColor, 
@@ -84,6 +90,10 @@ export default function LeftSidebar({
   onToggleAnimateIcons,
   animateWidgetsEnabled,
   onToggleAnimateWidgets,
+  centerAppsGroup,
+  onToggleCenterAppsGroup,
+  centerWidgetsGroup,
+  onToggleCenterWidgetsGroup,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
@@ -98,6 +108,31 @@ export default function LeftSidebar({
   const [isAddAppOpen, setIsAddAppOpen] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [isHoverDropdownOpen, setIsHoverDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'widgets' | 'apps' | 'advanced'>('general');
+  const generalRef = useRef<HTMLDivElement | null>(null);
+  const appearanceRef = useRef<HTMLDivElement | null>(null);
+  const widgetsRef = useRef<HTMLDivElement | null>(null);
+  const appsRef = useRef<HTMLDivElement | null>(null);
+  const advancedRef = useRef<HTMLDivElement | null>(null);
+
+  const goToTab = (tab: 'general' | 'appearance' | 'widgets' | 'apps' | 'advanced') => {
+    setActiveTab(tab);
+    // Open relevant sections and close others
+    setIsPreferencesOpen(tab === 'general');
+    setIsBackgroundOpen(tab === 'appearance');
+    setIsWidgetsOpen(tab === 'widgets');
+    setIsAddAppOpen(tab === 'apps');
+    setIsAdvancedOpen(tab === 'advanced');
+    // Smooth scroll to section
+    const ref = tab === 'general' ? generalRef
+      : tab === 'appearance' ? appearanceRef
+      : tab === 'widgets' ? widgetsRef
+      : tab === 'apps' ? appsRef
+      : advancedRef;
+    setTimeout(() => {
+      ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  };
 
   const renderHoverIcon = (style: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce') => {
     const common = 'w-3.5 h-3.5';
@@ -204,6 +239,40 @@ export default function LeftSidebar({
     return null;
   }
 
+  // Derived styles based on active visual mode
+  const isGlass = glassmorphismEnabled;
+  const isLiquid = liquidGlassEnabled;
+  const sectionHeaderClass = `w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${
+    isLiquid
+      ? 'bg-white/10 backdrop-blur-2xl text-white ring-1 ring-white/15 hover:bg-white/15'
+      : isGlass
+        ? (isDarkMode
+            ? 'bg-black/25 backdrop-blur-md text-white ring-1 ring-white/10 hover:bg-black/35'
+            : 'bg-white/60 backdrop-blur-md text-gray-800 ring-1 ring-white/30 hover:bg-white/70')
+        : (isDarkMode
+            ? 'bg-[#121212] text-white hover:bg-[#191919]'
+            : 'bg-white text-gray-800 hover:bg-gray-50')
+  }`;
+  const panelClass = `${
+    isLiquid
+      ? 'rounded-2xl p-4 ring-1 ring-white/15 bg-white/10 backdrop-blur-2xl'
+      : isGlass
+        ? (isDarkMode
+            ? 'rounded-2xl p-4 bg-[#1b1b1b]/70 backdrop-blur-md ring-1 ring-white/10'
+            : 'rounded-2xl p-4 bg-white/70 backdrop-blur-md ring-1 ring-white/30')
+        : (isDarkMode
+            ? 'rounded-2xl p-4 bg-[#1b1b1b]'
+            : 'rounded-2xl p-4 bg-white')
+  }`;
+  const modeLabel = liquidGlassEnabled ? 'Liquid' : (glassmorphismEnabled ? 'Glass' : 'Normal');
+  const modeBadgeClass = `${
+    isLiquid
+      ? 'bg-white/15 text-white ring-1 ring-white/20'
+      : isGlass
+        ? (isDarkMode ? 'bg-white/10 text-white ring-1 ring-white/15' : 'bg-white text-gray-800 ring-1 ring-white/40')
+        : (isDarkMode ? 'bg-[#1e1e1e] text-white ring-1 ring-white/10' : 'bg-gray-100 text-gray-800 ring-1 ring-gray-200')
+  } px-2 py-1 rounded-full text-xs font-medium`;
+
   return (
     <>
       {/* Left Sidebar */}
@@ -233,6 +302,7 @@ export default function LeftSidebar({
               Dashboard Settings
             </h2>
             <div className="flex items-center gap-3">
+              <span className={modeBadgeClass} title={`Active mode: ${modeLabel}`}>{modeLabel}</span>
               {/* Theme Toggle */}
               <button
                 onClick={onToggleTheme}
@@ -269,13 +339,42 @@ export default function LeftSidebar({
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+            {/* Sticky Tabs */}
+            <div className="sticky top-0 z-10 -mt-2 pt-2">
+              <div className={`flex gap-1 p-1 rounded-xl ${
+                isLiquid
+                  ? 'bg-white/10 ring-1 ring-white/10 backdrop-blur-xl'
+                  : isGlass
+                    ? (isDarkMode ? 'bg-[#121212]/80 ring-1 ring-white/10 backdrop-blur-md' : 'bg-white/80 ring-1 ring-gray-200 backdrop-blur-md')
+                    : (isDarkMode ? 'bg-[#1b1b1b]' : 'bg-gray-100')
+              }`}>
+                {([
+                  ['general','General'],
+                  ['appearance','Appearance'],
+                  ['widgets','Widgets'],
+                  ['apps','Apps'],
+                  ['advanced','Advanced'],
+                ] as const).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => goToTab(key)}
+                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeTab === key
+                        ? (isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+                        : (isDarkMode ? 'text-gray-300 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-200')
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             
             {/* Widgets Section */}
+            <div ref={widgetsRef} />
             <button
               onClick={() => setIsWidgetsOpen(!isWidgetsOpen)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${
-                isDarkMode ? 'bg-[#121212] text-white hover:bg-[#191919]' : 'bg-white text-gray-800 hover:bg-gray-50'
-              }`}
+              className={sectionHeaderClass}
               title="Widgets"
             >
               <span className="text-sm font-semibold">Widgets</span>
@@ -284,7 +383,7 @@ export default function LeftSidebar({
               </svg>
             </button>
             {isWidgetsOpen && (
-            <div className={`mb-6 mt-3 rounded-2xl p-4 shadow-inner ${isDarkMode ? 'bg-[#1b1b1b]' : 'bg-white'}` }>
+            <div className={panelClass} >
               <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${
                 isDarkMode ? 'text-white' : 'text-gray-800'
               }`}>
@@ -421,6 +520,23 @@ export default function LeftSidebar({
                     </div>
                   </button>
 
+                  {/* Spacer Widget Preview */}
+                  <button
+                    onClick={() => addWidget('spacer')}
+                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
+                        isDarkMode ? 'bg-transparent border-dashed border-gray-600' : 'bg-transparent border-dashed border-gray-300'
+                      }`}>
+                        <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Spacer</div>
+                      </div>
+                      <p className="text-xs font-medium">Spacer</p>
+                    </div>
+                  </button>
+
 
                 </div>
               </div>
@@ -428,11 +544,10 @@ export default function LeftSidebar({
             )}
 
             {/* Preferences */}
+            <div ref={generalRef} />
             <button
               onClick={() => setIsPreferencesOpen(!isPreferencesOpen)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${
-                isDarkMode ? 'bg-[#121212] text-white hover:bg-[#191919]' : 'bg-white text-gray-800 hover:bg-gray-50'
-              }`}
+              className={sectionHeaderClass}
               title="Preferences"
             >
               <span className="text-sm font-semibold">Preferences</span>
@@ -441,7 +556,7 @@ export default function LeftSidebar({
               </svg>
             </button>
             {isPreferencesOpen && (
-            <div className={`mb-6 mt-3 rounded-2xl p-4 shadow-inner ${isDarkMode ? 'bg-[#1b1b1b]' : 'bg-white'}` }>
+            <div className={panelClass} >
               <h3 className="sr-only">Preferences</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -629,6 +744,54 @@ export default function LeftSidebar({
                     isDarkMode ? 'text-gray-300' : 'text-gray-700'
                   }`}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                    </svg>
+                    Center App Cards Group
+                  </label>
+                  <button
+                    onClick={() => onToggleCenterAppsGroup && onToggleCenterAppsGroup()}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      centerAppsGroup 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        centerAppsGroup ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                    </svg>
+                    Center Widget Cards Group
+                  </label>
+                  <button
+                    onClick={() => onToggleCenterWidgetsGroup && onToggleCenterWidgetsGroup()}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      centerWidgetsGroup 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        centerWidgetsGroup ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                     </svg>
                     App Card Text Color
@@ -746,17 +909,18 @@ export default function LeftSidebar({
                     </div>
                     <span className={`pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-white/20 blur-2xl ${liquidGlassEnabled ? 'opacity-60' : 'opacity-0 group-hover:opacity-40'} transition-opacity`} />
                   </button>
+
+                  
                 </div>
               </div>
             </div>
             )}
 
             {/* Background */}
+            <div ref={appearanceRef} />
             <button
               onClick={() => setIsBackgroundOpen(!isBackgroundOpen)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${
-                isDarkMode ? 'bg-[#121212] text-white hover:bg-[#191919]' : 'bg-white text-gray-800 hover:bg-gray-50'
-              }`}
+              className={sectionHeaderClass}
               title="Background"
             >
               <span className="text-sm font-semibold">Background</span>
@@ -765,7 +929,7 @@ export default function LeftSidebar({
               </svg>
             </button>
             {isBackgroundOpen && (
-            <div className={`mb-6 mt-3 rounded-2xl p-4 shadow-inner ${isDarkMode ? 'bg-[#1b1b1b]' : 'bg-white'}` }>
+            <div className={panelClass} >
               <h3 className="sr-only">Background</h3>
               <div className="space-y-4">
                 <div>
@@ -851,11 +1015,10 @@ export default function LeftSidebar({
             )}
 
             {/* Add App */}
+            <div ref={appsRef} />
             <button
               onClick={() => setIsAddAppOpen(!isAddAppOpen)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${
-                isDarkMode ? 'bg-[#121212] text-white hover:bg-[#191919]' : 'bg-white text-gray-800 hover:bg-gray-50'
-              }`}
+              className={sectionHeaderClass}
               title="Add App"
             >
               <span className="text-sm font-semibold">Add App</span>
@@ -864,7 +1027,7 @@ export default function LeftSidebar({
               </svg>
             </button>
             {isAddAppOpen && (
-            <div className={`mb-6 mt-3 rounded-2xl p-4 shadow-inner ${isDarkMode ? 'bg-[#1b1b1b]' : 'bg-white'}` }>
+            <div className={panelClass} >
               <h3 className="sr-only">Add App</h3>
               <div className="space-y-4">
                 <div>
@@ -990,11 +1153,10 @@ export default function LeftSidebar({
             </div>
 
             {/* Advanced (Debug, Reset) */}
+            <div ref={advancedRef} />
             <button
               onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${
-                isDarkMode ? 'bg-[#121212] text-white hover:bg-[#191919]' : 'bg-white text-gray-800 hover:bg-gray-50'
-              }`}
+              className={sectionHeaderClass}
               title="Advanced"
             >
               <span className="text-sm font-semibold">Advanced</span>
@@ -1003,7 +1165,7 @@ export default function LeftSidebar({
               </svg>
             </button>
             {isAdvancedOpen && (
-            <div className={`mt-4 rounded-2xl p-4 shadow-inner ${isDarkMode ? 'bg-[#1b1b1b]' : 'bg-white'}` }>
+            <div className={panelClass} >
               <div className="flex items-center justify-between">
                 <h3 className={`text-lg font-medium flex items-center gap-2 ${
                   isDarkMode ? 'text-white' : 'text-gray-800'
@@ -1049,7 +1211,7 @@ export default function LeftSidebar({
             </div>
             )}
             {isAdvancedOpen && (
-            <div className={`mt-4 rounded-2xl p-4 shadow-inner ${isDarkMode ? 'bg-[#1b1b1b]' : 'bg-white'}` }>
+            <div className={panelClass} >
               <div className="flex items-center justify-between">
                 <h3 className={`text-lg font-medium flex items-center gap-2 ${
                   isDarkMode ? 'text-white' : 'text-gray-800'
