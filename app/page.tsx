@@ -2165,16 +2165,16 @@ export default function Home() {
 
       {/* Floating Action Dock */}
       <div
-        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border px-1.5 py-1.5 sm:px-2 sm:py-2 flex items-center gap-1 sm:gap-2 backdrop-blur-xl z-30 ${
+        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border px-1.5 py-1.5 sm:px-2 sm:py-2 flex items-center gap-1 sm:gap-2 z-30 ${
           liquidGlassEnabled
-            ? 'bg-white/10 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.3)]'
+            ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
             : glassmorphismEnabled
               ? (isDarkMode
-                  ? 'bg-black/30 border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.4)]'
-                  : 'bg-white/40 border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.12)]')
+                  ? 'bg-black/25 border-white/10 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.35)]'
+                  : 'bg-white/60 border-white/30 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.12)]')
               : (isDarkMode
-                  ? 'bg-[#0f1115]/80 border-white/10 shadow-[0_10px_25px_rgba(0,0,0,0.45)]'
-                  : 'bg-white/80 border-gray-200/60 shadow-[0_10px_25px_rgba(0,0,0,0.08)]')
+                  ? 'bg-[#0f1115] border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.45)]'
+                  : 'bg-white border-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.10)]')
         }`}
       >
         {/* Edit Mode Button */}
@@ -2182,7 +2182,13 @@ export default function Home() {
           onClick={() => {
             setIsEditModalOpen(!isEditModalOpen);
           }}
-          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 text-white ring-1 ring-white/10 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center`}
+          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
+            liquidGlassEnabled
+              ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
+              : glassmorphismEnabled
+                ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+                : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+          } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
           title={isEditModalOpen ? "Exit Edit Mode" : "Enter Edit Mode"}
           aria-label={isEditModalOpen ? 'Exit Edit Mode' : 'Enter Edit Mode'}
         >
@@ -2200,7 +2206,13 @@ export default function Home() {
         {/* Quick Add Favorite App Button (left of Settings) */}
         <button
           onClick={quickAddFavoriteApp}
-          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 text-white ring-1 ring-white/10 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center"
+          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
+            liquidGlassEnabled
+              ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
+              : glassmorphismEnabled
+                ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+                : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+          } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
           title="Add Favorite App"
           aria-label="Add Favorite App"
         >
@@ -2214,7 +2226,13 @@ export default function Home() {
           onClick={() => {
             setIsSidebarOpen(prev => !prev);
           }}
-          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 text-white ring-1 ring-white/10 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center`}
+          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
+            liquidGlassEnabled
+              ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
+              : glassmorphismEnabled
+                ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+                : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+          } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
           title="Dashboard Settings"
           aria-label="Dashboard Settings"
         >
