@@ -42,7 +42,7 @@ interface LeftSidebarProps {
   onSetAppTitleColor: (color: 'auto' | 'black' | 'white') => void;
   widgetTextColor: 'auto' | 'black' | 'white';
   onSetWidgetTextColor: (color: 'auto' | 'black' | 'white') => void;
-  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer') => void;
+  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo') => void;
   onResetSettings: () => void;
   autofulIconsEnabled: boolean;
   onToggleAutofulIcons: () => void;
@@ -534,6 +534,26 @@ export default function LeftSidebar({
                         <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Spacer</div>
                       </div>
                       <p className="text-xs font-medium">Spacer</p>
+                    </div>
+                  </button>
+
+                  {/* Photo Widget Preview */}
+                  <button
+                    onClick={() => addWidget('photo')}
+                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
+                        isDarkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                      }`}>
+                        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 7h2l2-3h10l2 3h2v12H3V7z" />
+                          <circle cx="12" cy="13" r="3" />
+                        </svg>
+                      </div>
+                      <p className="text-xs font-medium">Photo</p>
                     </div>
                   </button>
 

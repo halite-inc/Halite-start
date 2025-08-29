@@ -22,7 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import LeftSidebar from './components/LeftSidebar';
-import { getImageObjectUrl, deleteImageBlob } from './lib/idb';
+import { getImageObjectUrl, deleteImageBlob, saveImageBlob } from './lib/idb';
 import React from 'react';
 
 interface App {
@@ -34,7 +34,7 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo';
   title: string;
 }
 
@@ -60,6 +60,7 @@ const defaultWidgets: Widget[] = [
   { id: 'analog-clock-1', type: 'analog-clock', title: 'Analog Clock Widget' },
   { id: 'water-tracker-1', type: 'water-tracker', title: 'Water Tracker Widget' },
   { id: 'quick-notes-1', type: 'quick-notes', title: 'Quick Notes Widget' },
+  { id: 'photo-1', type: 'photo', title: 'Photo Widget' },
   // Sticky note is optional by default
 ];
 
@@ -978,6 +979,109 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
 
 
 
+function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  useEffect(() => {
+    let revokedUrl: string | null = null;
+    (async () => {
+      try {
+        const url = await getImageObjectUrl(`photo_${widget.id}`);
+        if (url) {
+          setPhotoUrl(url);
+          revokedUrl = url;
+        }
+      } catch {}
+    })();
+    return () => {
+      if (revokedUrl) URL.revokeObjectURL(revokedUrl);
+    };
+  }, [widget.id]);
+
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
+    ? hoverAnimationStyle === 'tilt'
+      ? 'hover:-rotate-3 hover:translate-y-[-2px]'
+      : hoverAnimationStyle === 'skew'
+        ? 'hover:skew-x-3 hover:skew-y-1'
+        : hoverAnimationStyle === 'spin'
+          ? 'hover:rotate-6'
+          : hoverAnimationStyle === 'bounce'
+            ? 'hover:-translate-y-1'
+            : hoverAnimationStyle === 'pulse'
+              ? 'hover:scale-[1.06]'
+              : hoverAnimationStyle === 'float'
+                ? 'hover:-translate-y-1.5'
+                : hoverAnimationStyle === 'slide'
+                  ? 'hover:translate-x-1'
+                  : hoverAnimationStyle === 'glow'
+                    ? 'hover:shadow-[0_0_24px_rgba(59,130,246,0.6)]'
+                    : 'hover:scale-110 hover:-translate-y-0.5'
+    : '';
+
+  return (
+    <div ref={setNodeRef} style={style} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+      <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center overflow-hidden transition-all duration-300 ${widgetHoverClass} ${
+          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        } ${
+          liquidGlassEnabled
+            ? 'bg-white/10 backdrop-blur-xl ring-1 ring-white/20'
+            : glassmorphismEnabled
+              ? (isDark ? 'bg-white/10 ring-1 ring-white/15' : 'bg-white/70 ring-1 ring-white/40')
+              : (isDark ? 'bg-[#111] ring-1 ring-white/10' : 'bg-white ring-1 ring-gray-200')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+      >
+        {photoUrl ? (
+          <img src={photoUrl} alt="Photo" className="w-full h-full object-cover" />
+        ) : (
+          <div className={`text-center px-2 ${isDark ? 'text-white/80' : 'text-gray-700'}`}>
+            <div className="text-[10px] mb-1">No photo</div>
+            {isEditModalOpen && (
+              <label className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-md cursor-pointer ${isDark ? 'bg-white/10 hover:bg-white/15' : 'bg-gray-100 hover:bg-gray-200'}`}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      await saveImageBlob(`photo_${widget.id}`, file);
+                      const url = await getImageObjectUrl(`photo_${widget.id}`);
+                      if (url) setPhotoUrl(url);
+                    } catch {}
+                  }}
+                />
+                Upload
+              </label>
+            )}
+          </div>
+        )}
+      </div>
+
+      {isEditModalOpen && (
+        <button
+          onClick={onRemove}
+          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
+          title="Remove widget"
+        >
+          ×
+        </button>
+      )}
+    </div>
+  );
+}
 function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle, isDark }: { widget: Widget; onRemove: () => void; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; isDark: boolean }) {
   const {
     attributes,
@@ -1743,11 +1847,11 @@ export default function Home() {
     setApps([...apps, appWithIcon]);
   };
 
-  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer') => {
+  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo') => {
     const widget: Widget = {
       id: Date.now().toString(),
       type,
-      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : 'Spacer'
+      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : 'Spacer'
     };
     setWidgets([...widgets, widget]);
   };
@@ -2025,6 +2129,24 @@ export default function Home() {
                                 setWidgets(widgets.filter(w => w.id !== widget.id));
                               }}
                               isEditModalOpen={isEditModalOpen}
+                              jiggleIndex={index}
+                              animateIconsEnabled={animateIconsEnabled}
+                              animateWidgetsEnabled={animateWidgetsEnabled}
+                              hoverAnimationStyle={hoverAnimationStyle}
+                            />
+                          ) : widget.type === 'photo' ? (
+                            <PhotoWidget
+                              key={widget.id}
+                              widget={widget}
+                              isDark={isDarkMode}
+                              onRemove={() => {
+                                setWidgets(widgets.filter(w => w.id !== widget.id));
+                              }}
+                              isEditModalOpen={isEditModalOpen}
+                              backgroundImage={backgroundImage}
+                              glassmorphismEnabled={glassmorphismEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
+                              widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
                               animateWidgetsEnabled={animateWidgetsEnabled}
