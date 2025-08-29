@@ -1827,7 +1827,7 @@ export default function Home() {
   return (
     <main suppressHydrationWarning
       className={`min-h-screen px-4 py-8 transition-all duration-300 ${
-        backgroundImage ? 'bg-cover bg-center bg-no-repeat' : ''
+        backgroundImage || (!isDarkMode && !backgroundImage) ? 'bg-cover bg-center bg-no-repeat' : ''
       } ${isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white'}`}
       style={{
         backgroundImage: backgroundImage
@@ -1835,7 +1835,7 @@ export default function Home() {
           : (
               isDarkMode
                 ? 'radial-gradient(600px circle at 100% 0, rgba(59,130,246,0.12), transparent 40%), radial-gradient(800px circle at 0 100%, rgba(236,72,153,0.10), transparent 40%), linear-gradient(180deg, #0a0a0a 0%, #0f1115 100%)'
-                : 'radial-gradient(600px circle at 100% 0, rgba(59,130,246,0.06), transparent 40%), radial-gradient(800px circle at 0 100%, rgba(236,72,153,0.05), transparent 40%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)'
+                : 'url(/walp.png)'
             ),
         backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff',
         backgroundRepeat: 'no-repeat'
