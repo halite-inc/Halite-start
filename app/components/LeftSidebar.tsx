@@ -105,12 +105,8 @@ export default function LeftSidebar({
   const [newBackgroundImage, setNewBackgroundImage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Simple collapsible sections to make the sidebar cleaner
-  const [isPreferencesOpen, setIsPreferencesOpen] = useState(true);
-  const [isBackgroundOpen, setIsBackgroundOpen] = useState(false);
-  const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
-  const [isAddAppOpen, setIsAddAppOpen] = useState(false);
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  // Single-open accordion for sections
+  const [openSection, setOpenSection] = useState<'widgets' | 'preferences' | 'background' | 'addApp' | 'advanced' | null>('preferences');
   const [isHoverDropdownOpen, setIsHoverDropdownOpen] = useState(false);
 
   // Removed top tabs; sections are independent toggles now
@@ -376,16 +372,17 @@ export default function LeftSidebar({
             
             {/* Widgets Section */}
             <button
-              onClick={() => setIsWidgetsOpen(!isWidgetsOpen)}
+              onClick={() => setOpenSection(openSection === 'widgets' ? null : 'widgets')}
               className={sectionHeaderClass}
               title="Widgets"
+              aria-expanded={openSection === 'widgets'}
             >
               <span className="text-sm font-semibold">Widgets</span>
-              <svg className={`w-4 h-4 transition-transform ${isWidgetsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 transition-transform ${openSection === 'widgets' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            {isWidgetsOpen && (
+            {openSection === 'widgets' && (
             <div className={panelClass} >
               <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${
                 isDarkMode ? 'text-white' : 'text-gray-800'
@@ -550,16 +547,17 @@ export default function LeftSidebar({
 
             {/* Preferences */}
             <button
-              onClick={() => setIsPreferencesOpen(!isPreferencesOpen)}
+              onClick={() => setOpenSection(openSection === 'preferences' ? null : 'preferences')}
               className={sectionHeaderClass}
               title="Preferences"
+              aria-expanded={openSection === 'preferences'}
             >
               <span className="text-sm font-semibold">Preferences</span>
-              <svg className={`w-4 h-4 transition-transform ${isPreferencesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 transition-transform ${openSection === 'preferences' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            {isPreferencesOpen && (
+            {openSection === 'preferences' && (
             <div className={panelClass} >
               <h3 className="sr-only">Preferences</h3>
               <div className="space-y-3">
@@ -946,16 +944,17 @@ export default function LeftSidebar({
 
             {/* Background */}
             <button
-              onClick={() => setIsBackgroundOpen(!isBackgroundOpen)}
+              onClick={() => setOpenSection(openSection === 'background' ? null : 'background')}
               className={sectionHeaderClass}
               title="Background"
+              aria-expanded={openSection === 'background'}
             >
               <span className="text-sm font-semibold">Background</span>
-              <svg className={`w-4 h-4 transition-transform ${isBackgroundOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 transition-transform ${openSection === 'background' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            {isBackgroundOpen && (
+            {openSection === 'background' && (
             <div className={panelClass} >
               <h3 className="sr-only">Background</h3>
               <div className="space-y-4">
@@ -1043,16 +1042,17 @@ export default function LeftSidebar({
 
             {/* Add App */}
             <button
-              onClick={() => setIsAddAppOpen(!isAddAppOpen)}
+              onClick={() => setOpenSection(openSection === 'addApp' ? null : 'addApp')}
               className={sectionHeaderClass}
               title="Add App"
+              aria-expanded={openSection === 'addApp'}
             >
               <span className="text-sm font-semibold">Add App</span>
-              <svg className={`w-4 h-4 transition-transform ${isAddAppOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 transition-transform ${openSection === 'addApp' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            {isAddAppOpen && (
+            {openSection === 'addApp' && (
             <div className={panelClass} >
               <h3 className="sr-only">Add App</h3>
               <div className="space-y-4">
@@ -1180,16 +1180,17 @@ export default function LeftSidebar({
 
             {/* Advanced (Debug, Reset) */}
             <button
-              onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+              onClick={() => setOpenSection(openSection === 'advanced' ? null : 'advanced')}
               className={sectionHeaderClass}
               title="Advanced"
+              aria-expanded={openSection === 'advanced'}
             >
               <span className="text-sm font-semibold">Advanced</span>
-              <svg className={`w-4 h-4 transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 transition-transform ${openSection === 'advanced' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            {isAdvancedOpen && (
+            {openSection === 'advanced' && (
             <div className={panelClass} >
               <div className="flex items-center justify-between">
                 <h3 className={`text-lg font-medium flex items-center gap-2 ${
@@ -1235,7 +1236,7 @@ export default function LeftSidebar({
               </p>
             </div>
             )}
-            {isAdvancedOpen && (
+            {openSection === 'advanced' && (
             <div className={panelClass} >
               <div className="flex items-center justify-between">
                 <h3 className={`text-lg font-medium flex items-center gap-2 ${
