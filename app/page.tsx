@@ -1194,7 +1194,7 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [showAppTitles, setShowAppTitles] = useState(true);
-  const [showSearchBar, setShowSearchBar] = useState<boolean>(true);
+  const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [isSuggestOpen, setIsSuggestOpen] = useState<boolean>(false);
@@ -1647,6 +1647,7 @@ export default function Home() {
     // Reset visual settings to defaults
     setIsDarkMode(false);
     setShowAppTitles(true);
+    setShowSearchBar(false);
     setBackgroundImage('');
     setGlassmorphismEnabled(false);
     setLiquidGlassEnabled(false);
