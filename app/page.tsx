@@ -73,7 +73,7 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean }) {
   const {
     attributes,
     listeners,
@@ -127,7 +127,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
       {/* App Card */}
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} rounded-2xl transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
+        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${fullRoundedIconsEnabled ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
@@ -1215,6 +1215,7 @@ export default function Home() {
   const [animateWidgetsEnabled, setAnimateWidgetsEnabled] = useState<boolean>(false);
   const [centerAppsGroup, setCenterAppsGroup] = useState<boolean>(false);
   const [centerWidgetsGroup, setCenterWidgetsGroup] = useState<boolean>(false);
+  const [fullRoundedIconsEnabled, setFullRoundedIconsEnabled] = useState<boolean>(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1301,6 +1302,11 @@ export default function Home() {
       if (savedShowSearchBar !== null) {
         setShowSearchBar(savedShowSearchBar === 'true');
         console.log('✅ Show search bar loaded:', savedShowSearchBar === 'true');
+      }
+      const savedFullRounded = localStorage.getItem('fullRoundedIconsEnabled');
+      if (savedFullRounded !== null) {
+        setFullRoundedIconsEnabled(savedFullRounded === 'true');
+        console.log('✅ Full rounded icons loaded:', savedFullRounded === 'true');
       }
       const savedCenterAppsGroup = localStorage.getItem('centerAppsGroup');
       if (savedCenterAppsGroup !== null) {
@@ -1494,7 +1500,8 @@ export default function Home() {
         autofulIconsEnabled,
         animateIconsEnabled,
         animateWidgetsEnabled,
-        hoverAnimationStyle
+        hoverAnimationStyle,
+        fullRoundedIconsEnabled
       });
 
       // Save theme
@@ -1525,6 +1532,7 @@ export default function Home() {
       localStorage.setItem('animateIconsEnabled', animateIconsEnabled.toString());
       localStorage.setItem('animateWidgetsEnabled', animateWidgetsEnabled.toString());
       localStorage.setItem('hoverAnimationStyle', hoverAnimationStyle);
+      localStorage.setItem('fullRoundedIconsEnabled', fullRoundedIconsEnabled.toString());
 
       // Apply theme to document
       if (isDarkMode) {
@@ -1559,6 +1567,7 @@ export default function Home() {
     animateIconsEnabled,
     animateWidgetsEnabled,
     hoverAnimationStyle,
+    fullRoundedIconsEnabled,
     centerAppsGroup,
     centerWidgetsGroup,
     isLoading,
@@ -1891,6 +1900,7 @@ export default function Home() {
                     autofulIconsEnabled={autofulIconsEnabled}
                     animateIconsEnabled={animateIconsEnabled}
                     hoverAnimationStyle={hoverAnimationStyle}
+                    fullRoundedIconsEnabled={fullRoundedIconsEnabled}
                   />
                 ))}
               </div>
@@ -2293,6 +2303,8 @@ export default function Home() {
             return next;
           });
         }}
+        fullRoundedIconsEnabled={fullRoundedIconsEnabled}
+        onToggleFullRoundedIcons={() => setFullRoundedIconsEnabled(prev => !prev)}
         appTitleColor={appTitleColor}
         onSetAppTitleColor={(color) => {
           console.log('🎨 App title color changed to:', color);

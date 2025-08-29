@@ -36,6 +36,8 @@ interface LeftSidebarProps {
   
   normalModeEnabled: boolean;
   onToggleNormalMode: () => void;
+  fullRoundedIconsEnabled?: boolean;
+  onToggleFullRoundedIcons?: () => void;
   appTitleColor: 'auto' | 'black' | 'white';
   onSetAppTitleColor: (color: 'auto' | 'black' | 'white') => void;
   widgetTextColor: 'auto' | 'black' | 'white';
@@ -76,6 +78,8 @@ export default function LeftSidebar({
   
   normalModeEnabled,
   onToggleNormalMode,
+  fullRoundedIconsEnabled,
+  onToggleFullRoundedIcons,
   appTitleColor, 
   onSetAppTitleColor, 
   widgetTextColor, 
@@ -579,6 +583,30 @@ export default function LeftSidebar({
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                         showAppTitles ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4a8 8 0 110 16 8 8 0 010-16z" />
+                    </svg>
+                    Full Rounded Icons
+                  </label>
+                  <button
+                    onClick={() => onToggleFullRoundedIcons && onToggleFullRoundedIcons()}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      fullRoundedIconsEnabled 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        fullRoundedIconsEnabled ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
