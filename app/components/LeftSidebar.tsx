@@ -44,8 +44,8 @@ interface LeftSidebarProps {
   onResetSettings: () => void;
   autofulIconsEnabled: boolean;
   onToggleAutofulIcons: () => void;
-  hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce';
-  onSetHoverAnimationStyle: (style: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce') => void;
+  hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow';
+  onSetHoverAnimationStyle: (style: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow') => void;
   animateIconsEnabled: boolean;
   onToggleAnimateIcons: () => void;
   animateWidgetsEnabled: boolean;
@@ -108,33 +108,10 @@ export default function LeftSidebar({
   const [isAddAppOpen, setIsAddAppOpen] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [isHoverDropdownOpen, setIsHoverDropdownOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'widgets' | 'apps' | 'advanced'>('general');
-  const generalRef = useRef<HTMLDivElement | null>(null);
-  const appearanceRef = useRef<HTMLDivElement | null>(null);
-  const widgetsRef = useRef<HTMLDivElement | null>(null);
-  const appsRef = useRef<HTMLDivElement | null>(null);
-  const advancedRef = useRef<HTMLDivElement | null>(null);
 
-  const goToTab = (tab: 'general' | 'appearance' | 'widgets' | 'apps' | 'advanced') => {
-    setActiveTab(tab);
-    // Open relevant sections and close others
-    setIsPreferencesOpen(tab === 'general');
-    setIsBackgroundOpen(tab === 'appearance');
-    setIsWidgetsOpen(tab === 'widgets');
-    setIsAddAppOpen(tab === 'apps');
-    setIsAdvancedOpen(tab === 'advanced');
-    // Smooth scroll to section
-    const ref = tab === 'general' ? generalRef
-      : tab === 'appearance' ? appearanceRef
-      : tab === 'widgets' ? widgetsRef
-      : tab === 'apps' ? appsRef
-      : advancedRef;
-    setTimeout(() => {
-      ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 0);
-  };
+  // Removed top tabs; sections are independent toggles now
 
-  const renderHoverIcon = (style: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce') => {
+  const renderHoverIcon = (style: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow') => {
     const common = 'w-3.5 h-3.5';
     switch (style) {
       case 'scale':
@@ -180,6 +157,34 @@ export default function LeftSidebar({
             <path d="M9 15l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         );
+      case 'pulse':
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="12" cy="12" r="6" opacity="0.5" />
+          </svg>
+        );
+      case 'float':
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 17V7" strokeLinecap="round" />
+            <path d="M8 11l4-4 4 4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      case 'slide':
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M7 12h10" strokeLinecap="round" />
+            <path d="M13 8l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      case 'glow':
+        return (
+          <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 3v2M12 19v2M3 12h2M19 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M17.7 6.3l1.4-1.4M4.9 19.1l1.4-1.4" />
+          </svg>
+        );
       default:
         return null;
     }
@@ -190,6 +195,21 @@ export default function LeftSidebar({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Close on Escape when open
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', onKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   const handleAddApp = () => {
     if (newApp.title && newApp.href) {
@@ -275,8 +295,18 @@ export default function LeftSidebar({
 
   return (
     <>
+      {isOpen && (
+        <div
+          className={`fixed inset-0 z-40 transition-opacity duration-300 ${isDarkMode ? 'bg-black/50' : 'bg-black/30'}`}
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
       {/* Left Sidebar */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
         className={`fixed left-4 top-4 bottom-4 w-96 sm:w-[420px] rounded-2xl overflow-hidden transform transition-all duration-300 ease-in-out z-50 ${
           glassmorphismEnabled
             ? isDarkMode 
@@ -296,7 +326,7 @@ export default function LeftSidebar({
               ? 'shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]' 
               : 'shadow-[inset_0_-1px_0_rgba(0,0,0,0.06)]'
           }`}>
-            <h2 className={`text-xl font-semibold ${
+            <h2 id="settings-title" className={`text-xl font-semibold ${
               isDarkMode ? 'text-white' : 'text-gray-800'
             }`}>
               Dashboard Settings
@@ -339,39 +369,8 @@ export default function LeftSidebar({
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
-            {/* Sticky Tabs */}
-            <div className="sticky top-0 z-10 -mt-2 pt-2">
-              <div className={`flex gap-1 p-1 rounded-xl ${
-                isLiquid
-                  ? 'bg-white/10 ring-1 ring-white/10 backdrop-blur-xl'
-                  : isGlass
-                    ? (isDarkMode ? 'bg-[#121212]/80 ring-1 ring-white/10 backdrop-blur-md' : 'bg-white/80 ring-1 ring-gray-200 backdrop-blur-md')
-                    : (isDarkMode ? 'bg-[#1b1b1b]' : 'bg-gray-100')
-              }`}>
-                {([
-                  ['general','General'],
-                  ['appearance','Appearance'],
-                  ['widgets','Widgets'],
-                  ['apps','Apps'],
-                  ['advanced','Advanced'],
-                ] as const).map(([key, label]) => (
-                  <button
-                    key={key}
-                    onClick={() => goToTab(key)}
-                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                      activeTab === key
-                        ? (isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                        : (isDarkMode ? 'text-gray-300 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-200')
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
             
             {/* Widgets Section */}
-            <div ref={widgetsRef} />
             <button
               onClick={() => setIsWidgetsOpen(!isWidgetsOpen)}
               className={sectionHeaderClass}
@@ -538,13 +537,14 @@ export default function LeftSidebar({
                   </button>
 
 
+                {/* Sticky Note Widget Preview removed */}
+
                 </div>
               </div>
             </div>
             )}
 
             {/* Preferences */}
-            <div ref={generalRef} />
             <button
               onClick={() => setIsPreferencesOpen(!isPreferencesOpen)}
               className={sectionHeaderClass}
@@ -643,7 +643,7 @@ export default function LeftSidebar({
                           }`}
                             role="listbox"
                           >
-                            {(['scale','tilt','skew','spin','bounce'] as const).map(opt => (
+                            {(['scale','tilt','skew','spin','bounce','pulse','float','slide','glow'] as const).map(opt => (
                               <button
                                 key={opt}
                                 type="button"
@@ -725,7 +725,7 @@ export default function LeftSidebar({
                     Show Search Bar
                   </label>
                   <button
-                    onClick={onToggleSearchBar}
+                    onClick={() => onToggleSearchBar && onToggleSearchBar()}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       showSearchBar 
                         ? 'bg-blue-500' 
@@ -917,7 +917,6 @@ export default function LeftSidebar({
             )}
 
             {/* Background */}
-            <div ref={appearanceRef} />
             <button
               onClick={() => setIsBackgroundOpen(!isBackgroundOpen)}
               className={sectionHeaderClass}
@@ -1015,7 +1014,6 @@ export default function LeftSidebar({
             )}
 
             {/* Add App */}
-            <div ref={appsRef} />
             <button
               onClick={() => setIsAddAppOpen(!isAddAppOpen)}
               className={sectionHeaderClass}
@@ -1153,7 +1151,6 @@ export default function LeftSidebar({
             </div>
 
             {/* Advanced (Debug, Reset) */}
-            <div ref={advancedRef} />
             <button
               onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
               className={sectionHeaderClass}

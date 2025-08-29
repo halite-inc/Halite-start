@@ -23,6 +23,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import LeftSidebar from './components/LeftSidebar';
 import { getImageObjectUrl, deleteImageBlob } from './lib/idb';
+import React from 'react';
 
 interface App {
   id: string;
@@ -59,6 +60,7 @@ const defaultWidgets: Widget[] = [
   { id: 'analog-clock-1', type: 'analog-clock', title: 'Analog Clock Widget' },
   { id: 'water-tracker-1', type: 'water-tracker', title: 'Water Tracker Widget' },
   { id: 'quick-notes-1', type: 'quick-notes', title: 'Quick Notes Widget' },
+  // Sticky note is optional by default
 ];
 
 // Function to get favicon URL
@@ -71,7 +73,7 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const {
     attributes,
     listeners,
@@ -105,7 +107,15 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
           ? 'hover:rotate-6'
           : hoverAnimationStyle === 'bounce'
             ? 'hover:-translate-y-1'
-            : 'hover:scale-110 hover:-translate-y-0.5'
+            : hoverAnimationStyle === 'pulse'
+              ? 'hover:scale-[1.06]'
+              : hoverAnimationStyle === 'float'
+                ? 'hover:-translate-y-1.5'
+                : hoverAnimationStyle === 'slide'
+                  ? 'hover:translate-x-1'
+                  : hoverAnimationStyle === 'glow'
+                    ? 'hover:shadow-[0_0_24px_rgba(59,130,246,0.6)]'
+                    : 'hover:scale-110 hover:-translate-y-0.5'
     : '';
 
   return (
@@ -192,7 +202,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
   );
 }
 
-function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' }) {
+function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Add loading flag
@@ -231,7 +241,15 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
           ? 'hover:rotate-6'
           : hoverAnimationStyle === 'bounce'
             ? 'hover:-translate-y-1'
-            : 'hover:scale-110 hover:-translate-y-0.5'
+            : hoverAnimationStyle === 'pulse'
+              ? 'hover:scale-[1.06]'
+              : hoverAnimationStyle === 'float'
+                ? 'hover:-translate-y-1.5'
+                : hoverAnimationStyle === 'slide'
+                  ? 'hover:translate-x-1'
+                  : hoverAnimationStyle === 'glow'
+                    ? 'hover:shadow-[0_0_24px_rgba(59,130,246,0.6)]'
+                    : 'hover:scale-110 hover:-translate-y-0.5'
     : '';
 
   return (
@@ -305,7 +323,7 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
   );
 }
 
-function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' }) {
+function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [weather, setWeather] = useState({ temp: '22°', condition: 'Sunny', location: 'Loading...' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -400,7 +418,15 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
           ? 'hover:rotate-6'
           : hoverAnimationStyle === 'bounce'
             ? 'hover:-translate-y-1'
-            : 'hover:scale-110 hover:-translate-y-0.5'
+            : hoverAnimationStyle === 'pulse'
+              ? 'hover:scale-[1.06]'
+              : hoverAnimationStyle === 'float'
+                ? 'hover:-translate-y-1.5'
+                : hoverAnimationStyle === 'slide'
+                  ? 'hover:translate-x-1'
+                  : hoverAnimationStyle === 'glow'
+                    ? 'hover:shadow-[0_0_24px_rgba(59,130,246,0.6)]'
+                    : 'hover:scale-110 hover:-translate-y-0.5'
     : '';
 
   return (
@@ -501,7 +527,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
   );
 }
 
-function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' }) {
+function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [date, setDate] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const {
@@ -555,7 +581,15 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
           ? 'hover:rotate-6'
           : hoverAnimationStyle === 'bounce'
             ? 'hover:-translate-y-1'
-            : 'hover:scale-110 hover:-translate-y-0.5'
+            : hoverAnimationStyle === 'pulse'
+              ? 'hover:scale-[1.06]'
+              : hoverAnimationStyle === 'float'
+                ? 'hover:-translate-y-1.5'
+                : hoverAnimationStyle === 'slide'
+                  ? 'hover:translate-x-1'
+                  : hoverAnimationStyle === 'glow'
+                    ? 'hover:shadow-[0_0_24px_rgba(59,130,246,0.6)]'
+                    : 'hover:scale-110 hover:-translate-y-0.5'
     : '';
 
   return (
@@ -635,7 +669,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   );
 }
 
-function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' }) {
+function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [waterIntake, setWaterIntake] = useState(() => {
     // Initialize with saved value or 0
     if (typeof window !== 'undefined') {
@@ -720,7 +754,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden WIDGET_HOVER_CLASS ${
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
@@ -831,7 +865,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
   );
 }
 
-function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' }) {
+function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [notes, setNotes] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`notes_${widget.id}`);
@@ -944,7 +978,7 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
 
 
 
-function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle, isDark }: { widget: Widget; onRemove: () => void; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce'; isDark: boolean }) {
+function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle, isDark }: { widget: Widget; onRemove: () => void; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; isDark: boolean }) {
   const {
     attributes,
     listeners,
@@ -1007,6 +1041,8 @@ function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateI
     </div>
   );
 }
+
+// StickyNoteWidget removed
 
 function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [time, setTime] = useState(new Date());
@@ -1175,7 +1211,7 @@ export default function Home() {
   const [isResetting, setIsResetting] = useState(false); // Add reset flag
   const [autofulIconsEnabled, setAutofulIconsEnabled] = useState<boolean>(false);
   const [animateIconsEnabled, setAnimateIconsEnabled] = useState<boolean>(false);
-  const [hoverAnimationStyle, setHoverAnimationStyle] = useState<'scale' | 'tilt' | 'skew' | 'spin' | 'bounce'>('scale');
+  const [hoverAnimationStyle, setHoverAnimationStyle] = useState<'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'>('scale');
   const [animateWidgetsEnabled, setAnimateWidgetsEnabled] = useState<boolean>(false);
   const [centerAppsGroup, setCenterAppsGroup] = useState<boolean>(false);
   const [centerWidgetsGroup, setCenterWidgetsGroup] = useState<boolean>(false);
@@ -1336,7 +1372,11 @@ export default function Home() {
 
       // Load hover animation style
       const savedHover = localStorage.getItem('hoverAnimationStyle');
-      if (savedHover === 'scale' || savedHover === 'tilt' || savedHover === 'skew' || savedHover === 'spin' || savedHover === 'bounce') {
+      if (
+        savedHover === 'scale' || savedHover === 'tilt' || savedHover === 'skew' ||
+        savedHover === 'spin' || savedHover === 'bounce' || savedHover === 'pulse' ||
+        savedHover === 'float' || savedHover === 'slide' || savedHover === 'glow'
+      ) {
         setHoverAnimationStyle(savedHover);
         console.log('✅ Hover animation style loaded:', savedHover);
       }
@@ -1771,6 +1811,8 @@ export default function Home() {
     }
   };
 
+  // StickyNoteLayer removed
+
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
@@ -1799,6 +1841,7 @@ export default function Home() {
         backgroundRepeat: 'no-repeat'
       }}
     >
+      {/* StickyNoteLayer removed */}
       {/* Global keyframes for iOS-style jiggle */}
       <style>{`
         @keyframes iosJiggle {
