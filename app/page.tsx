@@ -34,8 +34,23 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner';
   title: string;
+}
+
+interface Bookmark {
+  id: string;
+  title: string;
+  href: string;
+  icon?: string;
+}
+
+interface FloatingNote {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  rotation: number; // degrees
 }
 
 const defaultApps: App[] = [
@@ -61,8 +76,11 @@ const defaultWidgets: Widget[] = [
   { id: 'water-tracker-1', type: 'water-tracker', title: 'Water Tracker Widget' },
   { id: 'quick-notes-1', type: 'quick-notes', title: 'Quick Notes Widget' },
   { id: 'photo-1', type: 'photo', title: 'Photo Widget' },
+  { id: 'fidget-spinner-1', type: 'fidget-spinner', title: 'Fidget Spinner Widget' },
   // Sticky note is optional by default
 ];
+
+const defaultBookmarks: Bookmark[] = [];
 
 // Function to get favicon URL
 const getFaviconUrl = (url: string): string => {
@@ -134,7 +152,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${
           liquidGlassEnabled
-            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:bg-white/15'
+            ? 'liquid-surface liquid-pressable'
             : glassmorphismEnabled
               ? (isDark 
                   ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
@@ -151,7 +169,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
         }}
       >
         {liquidGlassEnabled && (
-          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/40 to-transparent opacity-30" />
+          <div className="pointer-events-none absolute inset-0 rounded-2xl" />
         )}
         {/* App Icon */}
         <div>
@@ -267,7 +285,7 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
           liquidGlassEnabled
-            ? 'bg-white/12 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.28)] shadow-white/5'
+            ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
                   ? 'bg-white/10 backdrop-blur-xl backdrop-saturate-150 text-white ring-1 ring-white/15 shadow-[0_10px_28px_rgba(0,0,0,0.30)]'
@@ -444,7 +462,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
           liquidGlassEnabled
-            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
                   ? 'bg-blue-400/20 backdrop-blur-md text-black border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
@@ -456,7 +474,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
         {liquidGlassEnabled && (
-          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+          <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         {/* Rain droplet effect */}
         <div className="absolute inset-0 opacity-20">
@@ -607,7 +625,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
           liquidGlassEnabled
-            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
                   ? 'bg-gray-800/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
@@ -619,7 +637,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
         {liquidGlassEnabled && (
-          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+          <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         {/* Subtle accent */}
         <div className="pointer-events-none absolute -top-6 -right-8 w-20 h-20 bg-gradient-to-br from-indigo-500/15 via-violet-500/15 to-fuchsia-500/15 blur-2xl" />
@@ -761,7 +779,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
           liquidGlassEnabled
-            ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+            ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
                   ? 'bg-blue-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
@@ -773,7 +791,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
         {liquidGlassEnabled && (
-          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
+          <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         <div className="text-center flex flex-col justify-center items-center h-full relative px-2 py-3">
           {/* Animated water droplets background */}
@@ -1082,6 +1100,202 @@ function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImag
     </div>
   );
 }
+function FidgetSpinnerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  const style = { transform: CSS.Transform.toString(transform), transition };
+
+  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
+    ? hoverAnimationStyle === 'tilt'
+      ? 'hover:-rotate-3 hover:translate-y-[-2px]'
+      : hoverAnimationStyle === 'skew'
+        ? 'hover:skew-x-3 hover:skew-y-1'
+        : hoverAnimationStyle === 'spin'
+          ? 'hover:rotate-6'
+          : hoverAnimationStyle === 'bounce'
+            ? 'hover:-translate-y-1'
+            : hoverAnimationStyle === 'pulse'
+              ? 'hover:scale-[1.06]'
+              : hoverAnimationStyle === 'float'
+                ? 'hover:-translate-y-1.5'
+                : hoverAnimationStyle === 'slide'
+                  ? 'hover:translate-x-1'
+                  : hoverAnimationStyle === 'glow'
+                    ? 'hover:shadow-[0_0_24px_rgba(59,130,246,0.6)]'
+                    : 'hover:scale-110 hover:-translate-y-0.5'
+    : '';
+
+  const [angle, setAngle] = useState(0);
+  const [isPopping, setIsPopping] = useState(false);
+  const velocityRef = useRef(0);
+  const lastTimeRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const draggingRef = useRef(false);
+  const lastPointerAngleRef = useRef<number | null>(null);
+  const armColors = isDark ? ['#f472b6', '#22d3ee', '#fbbf24'] : ['#d946ef', '#06b6d4', '#f59e0b'];
+
+  const animate = (time: number) => {
+    if (lastTimeRef.current == null) lastTimeRef.current = time;
+    const dt = time - lastTimeRef.current;
+    lastTimeRef.current = time;
+    const v = velocityRef.current;
+    if (Math.abs(v) > 0.1) {
+      setAngle((prev) => (prev + (v * dt) / 1000) % 360);
+      velocityRef.current = v * 0.985;
+      rafRef.current = requestAnimationFrame(animate);
+    } else {
+      velocityRef.current = 0;
+      lastTimeRef.current = null;
+      rafRef.current = null;
+    }
+  };
+
+  const kick = (power = 720) => {
+    velocityRef.current += power;
+    if (rafRef.current == null) {
+      rafRef.current = requestAnimationFrame(animate);
+    }
+  };
+
+  useEffect(() => {
+    return () => { if (rafRef.current != null) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (isEditModalOpen) return;
+    draggingRef.current = true;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    lastPointerAngleRef.current = Math.atan2(dy, dx) * (180 / Math.PI);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current || isEditModalOpen) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const current = Math.atan2(dy, dx) * (180 / Math.PI);
+    const prev = lastPointerAngleRef.current;
+    if (prev != null) {
+      let delta = current - prev;
+      // Normalize to [-180, 180]
+      if (delta > 180) delta -= 360;
+      if (delta < -180) delta += 360;
+      setAngle((a) => (a + delta) % 360);
+      // Update velocity based on pointer delta
+      velocityRef.current = delta * 40; // scale factor for inertia feel
+    }
+    lastPointerAngleRef.current = current;
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    lastPointerAngleRef.current = null;
+    if (rafRef.current == null && Math.abs(velocityRef.current) > 0.1) {
+      rafRef.current = requestAnimationFrame(animate);
+    }
+  };
+
+  const dragProps = isEditModalOpen ? { ...attributes, ...listeners } : {};
+  const pointerProps = !isEditModalOpen ? { onPointerDown, onPointerMove, onPointerUp } : {};
+
+  return (
+    <div ref={setNodeRef} style={style} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+      <div
+        {...dragProps}
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
+          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        } ${
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${
+          liquidGlassEnabled
+            ? 'liquid-surface'
+            : glassmorphismEnabled
+              ? (isDark ? 'bg-white/10 ring-1 ring-white/15' : 'bg-white/60 ring-1 ring-white/40')
+              : (isDark ? 'bg-[#111] ring-1 ring-white/10' : 'bg-white ring-1 ring-gray-200')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+        onClick={() => {
+          if (!isEditModalOpen) {
+            kick(960);
+            setIsPopping(true);
+            setTimeout(() => setIsPopping(false), 160);
+          }
+        }}
+        {...pointerProps}
+      >
+        <div className={`relative transition-transform ${isPopping ? 'scale-105' : 'scale-100'}`} style={{ width: '68%', height: '68%' }}>
+          <div
+            className="absolute inset-0"
+            style={{ transform: `rotate(${angle}deg)`, transformOrigin: '50% 50%' }}
+          >
+            {[0, 120, 240].map((deg, idx) => (
+              <div key={`line-${deg}`} className="absolute top-1/2 left-1/2" style={{ transform: `rotate(${deg}deg)` }}>
+                <div
+                  style={{
+                    width: '2.5px',
+                    height: 'calc(50% - 14px)',
+                    transform: 'translate(-50%, -98%)',
+                    borderRadius: '9999px',
+                    background: `linear-gradient(180deg, rgba(255,255,255,${isDark ? 0.12 : 0.18}) 0%, ${armColors[idx]} 65%, ${armColors[idx]} 100%)`,
+                    boxShadow: `0 0 8px ${armColors[idx]}33`,
+                    opacity: 0.95,
+                    pointerEvents: 'none'
+                  }}
+                />
+              </div>
+            ))}
+            {[0, 120, 240].map((deg, idx) => (
+              <div key={deg} className="absolute top-1/2 left-1/2" style={{ transform: `rotate(${deg}deg) translateY(-112%)` }}>
+                <div className={`relative w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-[0_6px_14px_rgba(0,0,0,0.25)] ${
+                  idx === 0 ? (isDark ? 'bg-fuchsia-400' : 'bg-fuchsia-500') : idx === 1 ? (isDark ? 'bg-cyan-300' : 'bg-cyan-400') : (isDark ? 'bg-amber-300' : 'bg-amber-400')
+                }`}>
+                  <div className={`absolute inset-0 rounded-full blur-md opacity-60 ${
+                    idx === 0 ? 'bg-fuchsia-500' : idx === 1 ? 'bg-cyan-400' : 'bg-amber-400'
+                  }`} />
+                  <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${isDark ? 'bg-gray-900' : 'bg-white'}`} />
+                </div>
+              </div>
+            ))}
+            {/* trailing glow ring */}
+            <div className={`pointer-events-none absolute inset-0 rounded-full ${isDark ? 'ring-white/10' : 'ring-black/10'}`} style={{ boxShadow: `inset 0 0 0 2px ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-full ${isDark ? 'bg-white' : 'bg-gray-900'} shadow-inner flex items-center justify-center`}>
+                <div className={`w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full ${isDark ? 'bg-gray-900' : 'bg-white'}`} />
+                <div className={`pointer-events-none absolute inset-0 rounded-full blur-md opacity-40 ${isDark ? 'bg-white' : 'bg-black'}`} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {isEditModalOpen && (
+        <button
+          onClick={onRemove}
+          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
+          title="Remove widget"
+        >
+          ×
+        </button>
+      )}
+    </div>
+  );
+}
+
 function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle, isDark }: { widget: Widget; onRemove: () => void; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; isDark: boolean }) {
   const {
     attributes,
@@ -1295,6 +1509,7 @@ export default function Home() {
   const [mounted, setMounted] = useState<boolean>(false);
   const [apps, setApps] = useState<App[]>([]);
   const [widgets, setWidgets] = useState<Widget[]>([]);
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [showAppTitles, setShowAppTitles] = useState(true);
@@ -1320,6 +1535,17 @@ export default function Home() {
   const [centerAppsGroup, setCenterAppsGroup] = useState<boolean>(false);
   const [centerWidgetsGroup, setCenterWidgetsGroup] = useState<boolean>(false);
   const [fullRoundedIconsEnabled, setFullRoundedIconsEnabled] = useState<boolean>(false);
+  const [showBookmarks, setShowBookmarks] = useState<boolean>(true);
+  const [bookmarkStyle, setBookmarkStyle] = useState<'cards' | 'chips'>('cards');
+  const [showResetModal, setShowResetModal] = useState<boolean>(false);
+  const [floatingNotes, setFloatingNotes] = useState<FloatingNote[]>([]);
+  const [floatingModeEnabled, setFloatingModeEnabled] = useState<boolean>(false);
+  const [isAddBookmarkOpen, setIsAddBookmarkOpen] = useState<boolean>(false);
+  const [bookmarkTitleInput, setBookmarkTitleInput] = useState<string>('');
+  const [bookmarkUrlInput, setBookmarkUrlInput] = useState<string>('');
+  const [isQuickAppOpen, setIsQuickAppOpen] = useState<boolean>(false);
+  const [quickAppTitleInput, setQuickAppTitleInput] = useState<string>('');
+  const [quickAppUrlInput, setQuickAppUrlInput] = useState<string>('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1368,6 +1594,30 @@ export default function Home() {
         setWidgets(defaultWidgets);
         console.log('🔄 No widgets saved, using defaults');
       }
+
+      // Load bookmarks
+      try {
+        const savedBookmarks = localStorage.getItem('bookmarks');
+        if (savedBookmarks) {
+          const parsed = JSON.parse(savedBookmarks);
+          setBookmarks(parsed);
+          console.log('✅ Bookmarks loaded:', parsed.length);
+        } else {
+          setBookmarks(defaultBookmarks);
+        }
+      } catch {}
+
+      // Load bookmarks toggle
+      try {
+        const savedShowBm = localStorage.getItem('showBookmarks');
+        if (savedShowBm != null) setShowBookmarks(savedShowBm === 'true');
+        const savedBmStyle = localStorage.getItem('bookmarkStyle');
+        if (savedBmStyle === 'chips' || savedBmStyle === 'cards') setBookmarkStyle(savedBmStyle);
+        const savedFloat = localStorage.getItem('floatingNotes');
+        if (savedFloat) setFloatingNotes(JSON.parse(savedFloat));
+        const savedFloatMode = localStorage.getItem('floatingModeEnabled');
+        if (savedFloatMode != null) setFloatingModeEnabled(savedFloatMode === 'true');
+      } catch {}
 
       // Load theme
       const savedTheme = localStorage.getItem('theme');
@@ -1573,6 +1823,21 @@ export default function Home() {
     }
   }, [widgets, isResetting, isLoading]);
 
+  // Save bookmarks to localStorage only when explicitly changed by user (not during load/reset)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isResetting && !isLoading) {
+      localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    }
+  }, [bookmarks, isResetting, isLoading]);
+
+  // Save floating notes & mode
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isResetting && !isLoading) {
+      localStorage.setItem('floatingNotes', JSON.stringify(floatingNotes));
+      localStorage.setItem('floatingModeEnabled', floatingModeEnabled.toString());
+    }
+  }, [floatingNotes, floatingModeEnabled, isResetting, isLoading]);
+
   // Reset completion - localStorage saving is now passive and only happens on user changes
   useEffect(() => {
     if (isResetting && apps.length > 0 && widgets.length > 0) {
@@ -1616,6 +1881,7 @@ export default function Home() {
       localStorage.setItem('showSearchBar', showSearchBar.toString());
       localStorage.setItem('centerAppsGroup', centerAppsGroup.toString());
       localStorage.setItem('centerWidgetsGroup', centerWidgetsGroup.toString());
+      localStorage.setItem('showBookmarks', showBookmarks.toString());
       // searchTerm not saved by design
       
       // Save background image only if it's a data URL or remote URL.
@@ -1637,6 +1903,7 @@ export default function Home() {
       localStorage.setItem('animateWidgetsEnabled', animateWidgetsEnabled.toString());
       localStorage.setItem('hoverAnimationStyle', hoverAnimationStyle);
       localStorage.setItem('fullRoundedIconsEnabled', fullRoundedIconsEnabled.toString());
+      localStorage.setItem('bookmarkStyle', bookmarkStyle);
 
       // Apply theme to document
       if (isDarkMode) {
@@ -1672,8 +1939,10 @@ export default function Home() {
     animateWidgetsEnabled,
     hoverAnimationStyle,
     fullRoundedIconsEnabled,
+    bookmarkStyle,
     centerAppsGroup,
     centerWidgetsGroup,
+    showBookmarks,
     isLoading,
     isResetting
   ]);
@@ -1717,24 +1986,8 @@ export default function Home() {
   };
 
   const resetSettings = () => {
-    // Show confirmation dialog
-    if (typeof window !== 'undefined') {
-      const confirmed = window.confirm(
-        '⚠️ Are you sure you want to reset all settings?\n\n' +
-        'This will:\n' +
-        '• Reset all visual settings to defaults\n' +
-        '• Restore default app cards (YouTube, GitHub, etc.)\n' +
-        '• Restore default widgets (Clock, Weather, etc.)\n' +
-        '• Clear all custom apps and widgets\n' +
-        '• Clear all saved preferences\n\n' +
-        'This action cannot be undone!'
-      );
-      
-      if (!confirmed) {
-        console.log('❌ Reset cancelled by user');
-        return;
-      }
-    }
+    setShowResetModal(true);
+    return;
     
     console.log('🔄 Resetting all settings to defaults...');
     
@@ -1812,10 +2065,10 @@ export default function Home() {
         }
         
         // Verify the save was successful
-        const savedApps = localStorage.getItem('favoriteApps');
-        const savedWidgets = localStorage.getItem('widgets');
-        console.log('🔍 Verification - saved apps:', savedApps ? JSON.parse(savedApps).length : 'none');
-        console.log('🔍 Verification - saved widgets:', savedWidgets ? JSON.parse(savedWidgets).length : 'none');
+        const savedApps = localStorage.getItem('favoriteApps') || '[]';
+        const savedWidgets = localStorage.getItem('widgets') || '[]';
+        console.log('🔍 Verification - saved apps:', JSON.parse(savedApps).length);
+        console.log('🔍 Verification - saved widgets:', JSON.parse(savedWidgets).length);
         
         // Simple verification that save was successful
         if (savedApps === appsJson && savedWidgets === widgetsJson) {
@@ -1838,6 +2091,61 @@ export default function Home() {
     // Note: isResetting will be set to false by a useEffect when the state updates complete
   };
 
+  // Silent reset without confirmation, triggered programmatically (e.g., via query param)
+  const resetSettingsSilently = () => {
+    console.log('🔄 Resetting all settings to defaults (silent)...');
+    setIsResetting(true);
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+      if (localStorage.length > 0) {
+        Object.keys(localStorage).forEach(key => {
+          localStorage.removeItem(key);
+        });
+      }
+    }
+    setIsDarkMode(false);
+    setShowAppTitles(true);
+    setShowSearchBar(false);
+    setBackgroundImage('');
+    setGlassmorphismEnabled(false);
+    setLiquidGlassEnabled(false);
+    setNormalModeEnabled(true);
+    setAppTitleColor('auto');
+    setWidgetTextColor('auto');
+    setAutofulIconsEnabled(false);
+    setAnimateIconsEnabled(false);
+    setAnimateWidgetsEnabled(false);
+    setHoverAnimationStyle('scale');
+    setApps(defaultApps);
+    setWidgets(defaultWidgets);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('theme', 'light');
+        localStorage.setItem('showAppTitles', 'true');
+        localStorage.setItem('backgroundImage', '');
+        localStorage.setItem('normalModeEnabled', 'true');
+        localStorage.setItem('glassmorphismEnabled', 'false');
+        localStorage.setItem('liquidGlassEnabled', 'false');
+        localStorage.setItem('appTitleColor', 'auto');
+        localStorage.setItem('widgetTextColor', 'auto');
+        localStorage.setItem('autofulIconsEnabled', 'false');
+        localStorage.setItem('animateIconsEnabled', 'false');
+        localStorage.setItem('animateWidgetsEnabled', 'false');
+        localStorage.setItem('hoverAnimationStyle', 'scale');
+        const appsJson = JSON.stringify(defaultApps);
+        const widgetsJson = JSON.stringify(defaultWidgets);
+        localStorage.setItem('favoriteApps', appsJson);
+        localStorage.setItem('widgets', widgetsJson);
+        localStorage.setItem('lastResetDate', new Date().toDateString());
+      } catch {}
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.style.setProperty('--app-bg-image', 'none');
+      document.documentElement.classList.remove('has-app-bg');
+    }
+  };
+
   const addApp = (app: App) => {
     // Add favicon URL to the app
     const appWithIcon = {
@@ -1847,29 +2155,19 @@ export default function Home() {
     setApps([...apps, appWithIcon]);
   };
 
-  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo') => {
+  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner') => {
     const widget: Widget = {
       id: Date.now().toString(),
       type,
-      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : 'Spacer'
+      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : type === 'fidget-spinner' ? 'Fidget Spinner' : 'Spacer'
     };
     setWidgets([...widgets, widget]);
   };
 
   const quickAddFavoriteApp = () => {
-    if (typeof window === 'undefined') return;
-    const title = window.prompt('Enter app name (e.g., Twitter, GitHub)');
-    if (!title || !title.trim()) return;
-    const rawUrl = window.prompt('Enter URL (e.g., twitter.com or https://twitter.com)');
-    if (!rawUrl || !rawUrl.trim()) return;
-    const url = rawUrl.trim();
-    const normalizedHref = url.startsWith('http') ? url : `https://${url}`;
-    const app: App = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      href: normalizedHref,
-    };
-    addApp(app);
+    setQuickAppTitleInput('');
+    setQuickAppUrlInput('');
+    setIsQuickAppOpen(true);
   };
 
   const removeApp = (id: string) => {
@@ -1926,6 +2224,21 @@ export default function Home() {
   };
 
   // StickyNoteLayer removed
+
+  // Query param trigger: /?reset=1 performs a silent reset and cleans the URL
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('reset') === '1') {
+        resetSettingsSilently();
+        params.delete('reset');
+        const newSearch = params.toString();
+        const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
+        window.history.replaceState(null, '', newUrl);
+      }
+    } catch {}
+  }, [mounted]);
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
@@ -2152,6 +2465,24 @@ export default function Home() {
                               animateWidgetsEnabled={animateWidgetsEnabled}
                               hoverAnimationStyle={hoverAnimationStyle}
                             />
+                          ) : widget.type === 'fidget-spinner' ? (
+                            <FidgetSpinnerWidget
+                              key={widget.id}
+                              widget={widget}
+                              isDark={isDarkMode}
+                              onRemove={() => {
+                                setWidgets(widgets.filter(w => w.id !== widget.id));
+                              }}
+                              isEditModalOpen={isEditModalOpen}
+                              backgroundImage={backgroundImage}
+                              glassmorphismEnabled={glassmorphismEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
+                              widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
+                              animateIconsEnabled={animateIconsEnabled}
+                              animateWidgetsEnabled={animateWidgetsEnabled}
+                              hoverAnimationStyle={hoverAnimationStyle}
+                            />
                           ) : (
                             <AnalogClockWidget
                               key={widget.id}
@@ -2178,11 +2509,211 @@ export default function Home() {
           </div>
         )}
 
+        {/* Bookmarks Section */}
+        {showBookmarks && (
+        <div className="mt-10">
+          <div className={`mb-3 flex items-center justify-between`}>
+            <h3 className={`${isDarkMode ? 'text-white' : 'text-gray-900'} text-sm font-semibold tracking-wide`}>Bookmarks</h3>
+            <button
+              type="button"
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ring-1 ${isDarkMode ? 'bg-white/10 text-white ring-white/15 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'}`}
+              onClick={() => {
+                setBookmarkTitleInput('');
+                setBookmarkUrlInput('');
+                setIsAddBookmarkOpen(true);
+              }}
+            >
+              + Add
+            </button>
+          </div>
+
+          {bookmarks.length === 0 ? (
+            <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>No bookmarks yet. Click + Add to create one.</div>
+          ) : (
+            <div className={`${bookmarkStyle === 'chips' ? 'flex flex-wrap gap-2' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3'}`}>
+              {bookmarks.map((bm) => (
+                bookmarkStyle === 'chips' ? (
+                  <a
+                    key={bm.id}
+                    href={bm.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      isDarkMode ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                  >
+                    {bm.icon ? (
+                      <img src={bm.icon} alt="icon" className="w-3.5 h-3.5 rounded" />
+                    ) : (
+                      <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-3.5 h-3.5 rounded`} />
+                    )}
+                    <span className="truncate max-w-[160px]">{bm.title}</span>
+                    {isEditModalOpen && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                      className={`ml-1 w-4 h-4 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'}`}
+                      title="Remove"
+                    >
+                      ×
+                    </button>
+                    )}
+                  </a>
+                ) : (
+                  <a
+                    key={bm.id}
+                    href={bm.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`group relative overflow-hidden rounded-2xl p-3 transition-all ${
+                      liquidGlassEnabled
+                        ? 'bg-white/10 backdrop-blur-xl ring-1 ring-white/15 hover:bg-white/15'
+                        : glassmorphismEnabled
+                          ? (isDarkMode ? 'bg-white/10 ring-1 ring-white/15 hover:bg-white/15' : 'bg-white/70 ring-1 ring-white/40 hover:bg-white')
+                          : (isDarkMode ? 'bg-[#111] ring-1 ring-white/10 hover:bg-[#151515]' : 'bg-white ring-1 ring-gray-200 hover:bg-gray-50')
+                    } shadow-sm hover:shadow-md ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {bm.icon ? (
+                        <img src={bm.icon} alt="icon" className="w-4 h-4 rounded" />
+                      ) : (
+                        <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-100'} w-4 h-4 rounded`} />
+                      )}
+                      <div className={`truncate text-xs font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
+                    </div>
+                    <div className={`mt-2 truncate text-[10px] ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
+                    <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: isDarkMode ? 'inset 0 0 0 1px rgba(255,255,255,0.08)' : 'inset 0 0 0 1px rgba(0,0,0,0.06)' }} />
+                    {isEditModalOpen && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setBookmarks((prev) => prev.filter((x) => x.id !== bm.id));
+                      }}
+                      className={`absolute top-2 right-2 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                      title="Remove bookmark"
+                    >
+                      ×
+                    </button>
+                    )}
+                  </a>
+                )
+              ))}
+            </div>
+          )}
+        </div>
+        )}
+
+        {/* Add Bookmark Modal */}
+        {isAddBookmarkOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40" onClick={() => setIsAddBookmarkOpen(false)} />
+            <div className={`relative z-10 w-[92%] max-w-sm rounded-2xl p-4 ${isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+              <h4 className="text-sm font-semibold mb-3">Add Bookmark</h4>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Title"
+                  value={bookmarkTitleInput}
+                  onChange={(e) => setBookmarkTitleInput(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                />
+                <input
+                  type="text"
+                  placeholder="URL (e.g., twitter.com or https://twitter.com)"
+                  value={bookmarkUrlInput}
+                  onChange={(e) => setBookmarkUrlInput(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                />
+              </div>
+              <div className="mt-3 flex justify-end gap-2">
+                <button onClick={() => setIsAddBookmarkOpen(false)} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
+                <button
+                  onClick={() => {
+                    const t = bookmarkTitleInput.trim();
+                    const raw = bookmarkUrlInput.trim();
+                    if (!t || !raw) return;
+                    const href = raw.startsWith('http') ? raw : `https://${raw}`;
+                    const icon = getFaviconUrl(href);
+                    setBookmarks((prev) => [...prev, { id: Date.now().toString(), title: t, href, icon }]);
+                    setIsAddBookmarkOpen(false);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-500'} text-white`}
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Add App Modal */}
+        {isQuickAppOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40" onClick={() => setIsQuickAppOpen(false)} />
+            <div className={`relative z-10 w-[92%] max-w-sm rounded-2xl p-4 ${isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+              <h4 className="text-sm font-semibold mb-3">Add Favorite App</h4>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="App name"
+                  value={quickAppTitleInput}
+                  onChange={(e) => setQuickAppTitleInput(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                />
+                <input
+                  type="text"
+                  placeholder="URL (e.g., twitter.com or https://twitter.com)"
+                  value={quickAppUrlInput}
+                  onChange={(e) => setQuickAppUrlInput(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                />
+              </div>
+              <div className="mt-3 flex justify-end gap-2">
+                <button onClick={() => setIsQuickAppOpen(false)} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
+                <button
+                  onClick={() => {
+                    const t = quickAppTitleInput.trim();
+                    const raw = quickAppUrlInput.trim();
+                    if (!t || !raw) return;
+                    const normalizedHref = raw.startsWith('http') ? raw : `https://${raw}`;
+                    addApp({ id: Date.now().toString(), title: t, href: normalizedHref });
+                    setIsQuickAppOpen(false);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-500'} text-white`}
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reset Confirmation Modal */}
+        {showResetModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40" onClick={() => setShowResetModal(false)} />
+            <div className={`relative z-10 w-[92%] max-w-sm rounded-2xl p-4 ${isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+              <h4 className="text-sm font-semibold mb-2">Reset all settings?</h4>
+              <p className={`text-xs ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>This will restore default apps, widgets, and preferences.</p>
+              <div className="mt-3 flex justify-end gap-2">
+                <button onClick={() => setShowResetModal(false)} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
+                <button
+                  onClick={() => { setShowResetModal(false); /* proceed */ resetSettingsSilently(); }}
+                  className={`px-3 py-1.5 rounded-lg text-sm bg-red-600 hover:bg-red-500 text-white`}
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar under widget cards group */}
         {showSearchBar && (
           <div className={`mt-6 mb-6 relative rounded-2xl p-2 sm:p-2.5 shadow-lg ${
             liquidGlassEnabled
-              ? 'bg-white/10 backdrop-blur-2xl ring-1 ring-white/20'
+              ? 'liquid-surface'
               : glassmorphismEnabled
                 ? (isDarkMode ? 'bg-black/20 backdrop-blur-md ring-1 ring-white/10' : 'bg-white/40 backdrop-blur-md ring-1 ring-white/30')
                 : (isDarkMode ? 'bg-[#0f1115] ring-1 ring-white/10' : 'bg-white ring-1 ring-gray-200')
@@ -2365,6 +2896,74 @@ export default function Home() {
         </button>
       </div>
 
+      {/* Floating Notes Layer */}
+      {floatingNotes.map((n) => (
+        <div
+          key={n.id}
+          className={`fixed z-40 ${isEditModalOpen || floatingModeEnabled ? 'cursor-move' : 'cursor-default'}`}
+          style={{ left: n.x, top: n.y, transform: `rotate(${n.rotation}deg)` }}
+          onPointerDown={(e) => {
+            if (!floatingModeEnabled) return;
+            const target = e.currentTarget as HTMLElement;
+            (target as any)._dragging = true;
+            (target as any)._offsetX = e.clientX - n.x;
+            (target as any)._offsetY = e.clientY - n.y;
+            target.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            const target = e.currentTarget as any;
+            if (!floatingModeEnabled || !target._dragging) return;
+            const nx = e.clientX - target._offsetX;
+            const ny = e.clientY - target._offsetY;
+            setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, x: nx, y: ny } : x));
+          }}
+          onPointerUp={(e) => {
+            const target = e.currentTarget as any;
+            if (target._dragging) {
+              target._dragging = false;
+              target.releasePointerCapture(e.pointerId);
+            }
+          }}
+        >
+          <div className={`w-48 rounded-2xl p-3 shadow-lg ring-1 ${isDarkMode ? 'bg-amber-900/90 text-amber-50 ring-amber-700/50' : 'bg-amber-100 text-amber-900 ring-amber-200'}`}>
+            <textarea
+              value={n.text}
+              onChange={(e) => setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, text: e.target.value } : x))}
+              className={`w-full h-24 bg-transparent outline-none text-sm resize-none`}
+              placeholder="Type note..."
+            />
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className={`w-7 h-7 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'}`}
+                  title="Rotate left"
+                  onClick={() => setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, rotation: x.rotation - 10 } : x))}
+                >
+                  ↺
+                </button>
+                <button
+                  type="button"
+                  className={`w-7 h-7 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'}`}
+                  title="Rotate right"
+                  onClick={() => setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, rotation: x.rotation + 10 } : x))}
+                >
+                  ↻
+                </button>
+              </div>
+              <button
+                type="button"
+                className={`px-2 py-1 rounded-lg text-xs ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'}`}
+                onClick={() => setFloatingNotes(prev => prev.filter(x => x.id !== n.id))}
+                title="Remove note"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+
       {/* Left Sidebar */}
       <LeftSidebar
         isOpen={isSidebarOpen}
@@ -2469,6 +3068,17 @@ export default function Home() {
         onToggleCenterAppsGroup={() => setCenterAppsGroup(prev => !prev)}
         centerWidgetsGroup={centerWidgetsGroup}
         onToggleCenterWidgetsGroup={() => setCenterWidgetsGroup(prev => !prev)}
+        showBookmarks={showBookmarks}
+        onToggleBookmarks={() => setShowBookmarks(prev => !prev)}
+        bookmarkStyle={bookmarkStyle}
+        onSetBookmarkStyle={setBookmarkStyle}
+        floatingModeEnabled={floatingModeEnabled}
+        onToggleFloatingMode={() => setFloatingModeEnabled(prev => !prev)}
+        onAddFloatingNote={() => {
+          const id = Date.now().toString();
+          setFloatingNotes(prev => [...prev, { id, text: 'New note', x: window.innerWidth / 2 - 80, y: 160, rotation: 0 }]);
+          setIsSidebarOpen(false);
+        }}
       />
 
 

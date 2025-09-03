@@ -12,7 +12,7 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner';
   title: string;
 }
 
@@ -42,7 +42,7 @@ interface LeftSidebarProps {
   onSetAppTitleColor: (color: 'auto' | 'black' | 'white') => void;
   widgetTextColor: 'auto' | 'black' | 'white';
   onSetWidgetTextColor: (color: 'auto' | 'black' | 'white') => void;
-  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo') => void;
+  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner') => void;
   onResetSettings: () => void;
   autofulIconsEnabled: boolean;
   onToggleAutofulIcons: () => void;
@@ -56,6 +56,13 @@ interface LeftSidebarProps {
   onToggleCenterAppsGroup?: () => void;
   centerWidgetsGroup?: boolean;
   onToggleCenterWidgetsGroup?: () => void;
+  showBookmarks?: boolean;
+  onToggleBookmarks?: () => void;
+  bookmarkStyle?: 'cards' | 'chips';
+  onSetBookmarkStyle?: (style: 'cards' | 'chips') => void;
+  floatingModeEnabled?: boolean;
+  onToggleFloatingMode?: () => void;
+  onAddFloatingNote?: () => void;
 }
 
 export default function LeftSidebar({ 
@@ -98,12 +105,20 @@ export default function LeftSidebar({
   onToggleCenterAppsGroup,
   centerWidgetsGroup,
   onToggleCenterWidgetsGroup,
+  showBookmarks,
+  onToggleBookmarks,
+  bookmarkStyle,
+  onSetBookmarkStyle,
+  floatingModeEnabled,
+  onToggleFloatingMode,
+  onAddFloatingNote,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
   const [isAppsExpanded, setIsAppsExpanded] = useState(false);
   const [newBackgroundImage, setNewBackgroundImage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [bgError, setBgError] = useState<string | null>(null);
 
   // Single-open accordion for sections
   const [openSection, setOpenSection] = useState<'widgets' | 'preferences' | 'background' | 'addApp' | 'advanced' | null>('preferences');
@@ -229,16 +244,67 @@ export default function LeftSidebar({
     }
   };
 
+  const getImageDimensionsFromFile = (file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const dims = { width: img.naturalWidth || img.width, height: img.naturalHeight || img.height };
+        URL.revokeObjectURL(url);
+        resolve(dims);
+      };
+      img.onerror = (err) => {
+        URL.revokeObjectURL(url);
+        reject(err);
+      };
+      img.src = url;
+    });
+  };
+
+  const getImageDimensionsFromUrl = (url: string): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        resolve({ width: img.naturalWidth || img.width, height: img.naturalHeight || img.height });
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (!file) return;
+    setBgError(null);
+
+    if (!file.type.startsWith('image/')) {
+      setBgError('Please upload a valid image file.');
+      return;
+    }
+    const maxBytes = 15 * 1024 * 1024; // 15MB
+    if (file.size > maxBytes) {
+      setBgError('Image is too large. Please choose a file under 15MB.');
+      return;
+    }
+
+    try {
+      const { width, height } = await getImageDimensionsFromFile(file);
+      if (width <= 0 || height <= 0) {
+        setBgError('Could not read image dimensions. Please try a different file.');
+        return;
+      }
+      if (width < height) {
+        setBgError('Portrait images are not recommended for wallpapers. Please choose a landscape image.');
+        return;
+      }
+
+      setSelectedFile(file);
       try {
-        setSelectedFile(file);
         await saveImageBlob('backgroundImage', file);
         onSetBackgroundImage('idb:backgroundImage');
         setSelectedFile(null);
       } catch (e) {
-        // Fallback to DataURL if IndexedDB fails for any reason
         const reader = new FileReader();
         reader.onload = (ev) => {
           const result = ev.target?.result as string;
@@ -249,6 +315,8 @@ export default function LeftSidebar({
         };
         reader.readAsDataURL(file);
       }
+    } catch (err) {
+      setBgError('Failed to load image. Please try a different file.');
     }
   };
 
@@ -262,27 +330,15 @@ export default function LeftSidebar({
   // Derived styles based on active visual mode
   const isGlass = glassmorphismEnabled;
   const isLiquid = liquidGlassEnabled;
-  const sectionHeaderClass = `w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${
-    isLiquid
-      ? 'bg-white/10 backdrop-blur-2xl text-white ring-1 ring-white/15 hover:bg-white/15'
-      : isGlass
-        ? (isDarkMode
-            ? 'bg-black/25 backdrop-blur-md text-white ring-1 ring-white/10 hover:bg-black/35'
-            : 'bg-white/60 backdrop-blur-md text-gray-800 ring-1 ring-white/30 hover:bg-white/70')
-        : (isDarkMode
-            ? 'bg-[#121212] text-white hover:bg-[#191919]'
-            : 'bg-white text-gray-800 hover:bg-gray-50')
+  const sectionHeaderClass = `w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+    isDarkMode
+      ? 'bg-white/5 text-white ring-1 ring-white/10 hover:bg-white/10'
+      : 'bg-white text-gray-800 ring-1 ring-gray-200 hover:bg-gray-50 shadow-sm'
   }`;
   const panelClass = `${
-    isLiquid
-      ? 'rounded-2xl p-4 ring-1 ring-white/15 bg-white/10 backdrop-blur-2xl'
-      : isGlass
-        ? (isDarkMode
-            ? 'rounded-2xl p-4 bg-[#1b1b1b]/70 backdrop-blur-md ring-1 ring-white/10'
-            : 'rounded-2xl p-4 bg-white/70 backdrop-blur-md ring-1 ring-white/30')
-        : (isDarkMode
-            ? 'rounded-2xl p-4 bg-[#1b1b1b]'
-            : 'rounded-2xl p-4 bg-white')
+    isDarkMode
+      ? 'rounded-xl p-3 bg-[#121212]/85 ring-1 ring-white/10'
+      : 'rounded-xl p-3 bg-white/90 ring-1 ring-gray-200'
   }`;
   const modeLabel = liquidGlassEnabled ? 'Liquid' : (glassmorphismEnabled ? 'Glass' : 'Normal');
   const modeBadgeClass = `${
@@ -313,7 +369,7 @@ export default function LeftSidebar({
               ? 'bg-[#2B2B2B]/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
               : 'bg-white/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
             : liquidGlassEnabled
-              ? 'bg-white/10 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+              ? 'liquid-elevated'
               : isDarkMode ? 'bg-[#2B2B2B] shadow-[0_8px_24px_rgba(0,0,0,0.35)]' : 'bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]'
         } ${
           isOpen ? 'translate-x-0' : '-translate-x-[calc(100%+1rem)]'
@@ -321,25 +377,25 @@ export default function LeftSidebar({
       >
           <div className="flex flex-col h-full">
           {/* Header */}
-            <div className={`sticky top-0 z-10 flex items-center justify-between p-6 ${
+            <div className={`sticky top-0 z-10 flex items-center justify-between p-4 ${
             isDarkMode 
-              ? 'shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]' 
-              : 'shadow-[inset_0_-1px_0_rgba(0,0,0,0.06)]'
+              ? 'border-b border-white/10' 
+              : 'border-b border-gray-200'
           }`}>
-            <h2 id="settings-title" className={`text-xl font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-800'
+            <h2 id="settings-title" className={`text-base font-semibold ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
               Dashboard Settings
             </h2>
             <div className="flex items-center gap-3">
-              <span className={modeBadgeClass} title={`Active mode: ${modeLabel}`}>{modeLabel}</span>
+              <span className={`${modeBadgeClass} hidden sm:inline`} title={`Active mode: ${modeLabel}`}>{modeLabel}</span>
               {/* Theme Toggle */}
               <button
                 onClick={onToggleTheme}
-                className={`px-3 py-2 rounded-xl transition-all duration-200 ring-1 ${
+                className={`px-2.5 py-1.5 rounded-lg transition-all duration-150 ring-1 ${
                   isDarkMode 
                     ? 'bg-white/5 ring-white/10 hover:bg-white/10 text-yellow-300' 
-                    : 'bg-white ring-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm'
+                    : 'bg-white ring-gray-200 hover:bg-gray-50 text-gray-700'
                 }`}
                 title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
@@ -356,11 +412,11 @@ export default function LeftSidebar({
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className={`rounded-xl px-3 py-2 transition-all ring-1 ${
-                  isDarkMode ? 'text-gray-300 hover:text-white ring-white/10 hover:bg-white/5' : 'text-gray-600 hover:text-gray-800 ring-gray-200 hover:bg-gray-50'
+                className={`rounded-lg px-2.5 py-1.5 transition-all ring-1 ${
+                  isDarkMode ? 'text-gray-300 hover:text-white ring-white/10 hover:bg-white/5' : 'text-gray-700 ring-gray-200 hover:bg-gray-50'
                 }`}
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -368,7 +424,7 @@ export default function LeftSidebar({
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
             
             {/* Widgets Section */}
             <button
@@ -392,7 +448,7 @@ export default function LeftSidebar({
                 </svg>
                 Add Widgets
               </h3>
-              <div className={`space-y-4 ${
+              <div className={`space-y-3 ${
                 isDarkMode ? 'text-white' : 'text-gray-800'
               }`}>
                 <p className={`text-xs ${
@@ -404,7 +460,7 @@ export default function LeftSidebar({
 
                 
                 {/* Widget Options with Previews */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5">
                   {/* Weather Widget Preview */}
                   <button
                     onClick={() => addWidget('weather')}
@@ -557,6 +613,28 @@ export default function LeftSidebar({
                     </div>
                   </button>
 
+                  {/* Fidget Spinner Widget Preview */}
+                  <button
+                    onClick={() => addWidget('fidget-spinner')}
+                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
+                        isDarkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-black border-gray-300'
+                      }`}>
+                        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="1.5" />
+                          <circle cx="12" cy="4" r="1.5" />
+                          <circle cx="20" cy="12" r="1.5" />
+                          <circle cx="4" cy="12" r="1.5" />
+                        </svg>
+                      </div>
+                      <p className="text-xs font-medium">Fidget Spinner</p>
+                    </div>
+                  </button>
+
 
                 {/* Sticky Note Widget Preview removed */}
 
@@ -581,6 +659,52 @@ export default function LeftSidebar({
             <div className={panelClass} >
               <h3 className="sr-only">Preferences</h3>
               <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h7" />
+                    </svg>
+                    Show Bookmarks
+                  </label>
+                  <button
+                    onClick={() => onToggleBookmarks && onToggleBookmarks()}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      showBookmarks 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        showBookmarks ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M4 12h12M6 17h6" />
+                    </svg>
+                    Bookmark Style
+                  </label>
+                  <select
+                    value={bookmarkStyle || 'cards'}
+                    onChange={(e) => onSetBookmarkStyle && onSetBookmarkStyle(e.target.value as 'cards' | 'chips')}
+                    className={`text-xs px-2 py-1 rounded border transition-colors ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                  >
+                    <option value="cards">Cards</option>
+                    <option value="chips">Chips</option>
+                  </select>
+                </div>
                 <div className="flex items-center justify-between">
                   <label className={`text-sm font-medium flex items-center gap-2 ${
                     isDarkMode ? 'text-gray-300' : 'text-gray-700'
@@ -962,6 +1086,42 @@ export default function LeftSidebar({
             </div>
             )}
 
+            {/* Floating Elements */}
+            <button
+              onClick={() => setOpenSection(openSection === 'advanced' ? null : 'advanced')}
+              className={sectionHeaderClass}
+              title="Floating Elements"
+              aria-expanded={openSection === 'advanced'}
+            >
+              <span className="text-sm font-semibold">Floating Elements</span>
+              <svg className={`w-4 h-4 transition-transform ${openSection === 'advanced' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {openSection === 'advanced' && (
+              <div className={panelClass}>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Enable Floating Mode</label>
+                    <button
+                      onClick={() => onToggleFloatingMode && onToggleFloatingMode()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        floatingModeEnabled ? 'bg-blue-500' : (isDarkMode ? 'bg-gray-600' : 'bg-gray-300')
+                      }`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${floatingModeEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => onAddFloatingNote && onAddFloatingNote()}
+                    className={`w-full px-3 py-2 rounded-lg text-sm font-semibold ${isDarkMode ? 'bg-white/10 hover:bg-white/15 text-white' : 'bg-white hover:bg-gray-50 text-gray-800 ring-1 ring-gray-200'}`}
+                  >
+                    + Add Floating Note
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Background */}
             <button
               onClick={() => setOpenSection(openSection === 'background' ? null : 'background')}
@@ -1002,6 +1162,9 @@ export default function LeftSidebar({
                       }`}
                     />
                   </div>
+                  {bgError && (
+                    <p className={`mt-2 text-xs ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>{bgError}</p>
+                  )}
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-1 ${
@@ -1017,13 +1180,28 @@ export default function LeftSidebar({
                       isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
                     } file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-blue-500 file:text-white hover:file:bg-blue-600`}
                   />
+                  {bgError && (
+                    <p className={`mt-2 text-xs ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>{bgError}</p>
+                  )}
                 </div>
                 <div className="flex gap-2">
                 <button
                   onClick={() => {
                     if (newBackgroundImage) {
-                      onSetBackgroundImage(newBackgroundImage);
-                      setNewBackgroundImage('');
+                      setBgError(null);
+                      // Validate URL image orientation before applying
+                      getImageDimensionsFromUrl(newBackgroundImage)
+                        .then(({ width, height }) => {
+                          if (width < height) {
+                            setBgError('Portrait images are not recommended for wallpapers. Please choose a landscape image.');
+                            return;
+                          }
+                          onSetBackgroundImage(newBackgroundImage);
+                          setNewBackgroundImage('');
+                        })
+                        .catch(() => {
+                          setBgError('Could not load image from URL. Please check the link.');
+                        });
                     }
                   }}
                   disabled={!newBackgroundImage}
