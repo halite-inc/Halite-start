@@ -1536,10 +1536,15 @@ export default function Home() {
   const [centerWidgetsGroup, setCenterWidgetsGroup] = useState<boolean>(false);
   const [fullRoundedIconsEnabled, setFullRoundedIconsEnabled] = useState<boolean>(false);
   const [showBookmarks, setShowBookmarks] = useState<boolean>(true);
-  const [bookmarkStyle, setBookmarkStyle] = useState<'cards' | 'chips'>('cards');
+  const [bookmarkStyle, setBookmarkStyle] = useState<'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern'>('cards');
+  const [showBookmarksTitle, setShowBookmarksTitle] = useState<boolean>(true);
+  const [centerBookmarksGroup, setCenterBookmarksGroup] = useState<boolean>(false);
   const [showResetModal, setShowResetModal] = useState<boolean>(false);
   const [floatingNotes, setFloatingNotes] = useState<FloatingNote[]>([]);
   const [floatingModeEnabled, setFloatingModeEnabled] = useState<boolean>(false);
+  const [draggingNote, setDraggingNote] = useState<string | null>(null);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [initialPos, setInitialPos] = useState({ x: 0, y: 0 });
   const [isAddBookmarkOpen, setIsAddBookmarkOpen] = useState<boolean>(false);
   const [bookmarkTitleInput, setBookmarkTitleInput] = useState<string>('');
   const [bookmarkUrlInput, setBookmarkUrlInput] = useState<string>('');
@@ -1611,6 +1616,10 @@ export default function Home() {
       try {
         const savedShowBm = localStorage.getItem('showBookmarks');
         if (savedShowBm != null) setShowBookmarks(savedShowBm === 'true');
+        const savedShowBmTitle = localStorage.getItem('showBookmarksTitle');
+        if (savedShowBmTitle != null) setShowBookmarksTitle(savedShowBmTitle === 'true');
+        const savedCenterBm = localStorage.getItem('centerBookmarksGroup');
+        if (savedCenterBm != null) setCenterBookmarksGroup(savedCenterBm === 'true');
         const savedBmStyle = localStorage.getItem('bookmarkStyle');
         if (savedBmStyle === 'chips' || savedBmStyle === 'cards') setBookmarkStyle(savedBmStyle);
         const savedFloat = localStorage.getItem('floatingNotes');
@@ -1882,6 +1891,8 @@ export default function Home() {
       localStorage.setItem('centerAppsGroup', centerAppsGroup.toString());
       localStorage.setItem('centerWidgetsGroup', centerWidgetsGroup.toString());
       localStorage.setItem('showBookmarks', showBookmarks.toString());
+      localStorage.setItem('showBookmarksTitle', showBookmarksTitle.toString());
+      localStorage.setItem('centerBookmarksGroup', centerBookmarksGroup.toString());
       // searchTerm not saved by design
       
       // Save background image only if it's a data URL or remote URL.
@@ -2512,25 +2523,39 @@ export default function Home() {
         {/* Bookmarks Section */}
         {showBookmarks && (
         <div className="mt-10">
-          <div className={`mb-3 flex items-center justify-between`}>
-            <h3 className={`${isDarkMode ? 'text-white' : 'text-gray-900'} text-sm font-semibold tracking-wide`}>Bookmarks</h3>
-            <button
-              type="button"
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ring-1 ${isDarkMode ? 'bg-white/10 text-white ring-white/15 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'}`}
-              onClick={() => {
-                setBookmarkTitleInput('');
-                setBookmarkUrlInput('');
-                setIsAddBookmarkOpen(true);
-              }}
-            >
-              + Add
-            </button>
+          <div className={`mb-3 flex items-center gap-3`}>
+            {(!centerBookmarksGroup || showBookmarksTitle || isEditModalOpen) && (
+              <button
+                type="button"
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ring-1 ${isDarkMode ? 'bg-white/10 text-white ring-white/15 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'}`}
+                onClick={() => {
+                  setBookmarkTitleInput('');
+                  setBookmarkUrlInput('');
+                  setIsAddBookmarkOpen(true);
+                }}
+              >
+                +
+              </button>
+            )}
+            {showBookmarksTitle && (
+              <h3 className={`${isDarkMode ? 'text-white' : 'text-gray-900'} text-sm font-semibold tracking-wide`}>Bookmarks</h3>
+            )}
           </div>
 
           {bookmarks.length === 0 ? (
-            <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>No bookmarks yet. Click + Add to create one.</div>
+            <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>No bookmarks yet. Click + to create one.</div>
           ) : (
-            <div className={`${bookmarkStyle === 'chips' ? 'flex flex-wrap gap-2' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3'}`}>
+            <div className={`${
+              centerBookmarksGroup ? 'flex justify-center' : ''
+            }`}>
+              <div className={`${
+                bookmarkStyle === 'chips' ? 'flex flex-wrap gap-2' : 
+                bookmarkStyle === 'list' ? 'space-y-2' :
+                bookmarkStyle === 'minimal' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3' :
+                bookmarkStyle === 'compact' ? 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1.5' :
+                bookmarkStyle === 'modern' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4' :
+                'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3'
+              }`}>
               {bookmarks.map((bm) => (
                 bookmarkStyle === 'chips' ? (
                   <a
@@ -2557,6 +2582,151 @@ export default function Home() {
                     >
                       ×
                     </button>
+                    )}
+                  </a>
+                ) : bookmarkStyle === 'list' ? (
+                  <a
+                    key={bm.id}
+                    href={bm.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`flex items-center gap-3 p-3 rounded-lg transition-all hover:scale-[1.02] ${
+                      liquidGlassEnabled
+                        ? 'bg-white/5 backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/10'
+                        : glassmorphismEnabled
+                          ? (isDarkMode ? 'bg-white/5 ring-1 ring-white/10 hover:bg-white/10' : 'bg-white/50 ring-1 ring-white/30 hover:bg-white/70')
+                          : (isDarkMode ? 'bg-[#0a0a0a] ring-1 ring-white/5 hover:bg-[#111]' : 'bg-gray-50 ring-1 ring-gray-100 hover:bg-white')
+                    } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                  >
+                    {bm.icon ? (
+                      <img src={bm.icon} alt="icon" className="w-5 h-5 rounded flex-shrink-0" />
+                    ) : (
+                      <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-5 h-5 rounded flex-shrink-0`} />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
+                      <div className={`text-xs truncate ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
+                    </div>
+                    {isEditModalOpen && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </a>
+                ) : bookmarkStyle === 'minimal' ? (
+                  <a
+                    key={bm.id}
+                    href={bm.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`group relative p-4 rounded-lg border transition-all hover:shadow-sm ${
+                      isDarkMode 
+                        ? 'bg-transparent border-white/10 hover:border-white/20 hover:bg-white/5' 
+                        : 'bg-transparent border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {bm.icon ? (
+                        <img src={bm.icon} alt="icon" className="w-4 h-4 rounded" />
+                      ) : (
+                        <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-4 h-4 rounded`} />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
+                        <div className={`text-xs truncate ${isDarkMode ? 'text-white/50' : 'text-gray-400'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
+                      </div>
+                    </div>
+                    {isEditModalOpen && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                        className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </a>
+                ) : bookmarkStyle === 'compact' ? (
+                  <a
+                    key={bm.id}
+                    href={bm.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`group relative p-2 rounded-lg transition-all hover:scale-105 ${
+                      liquidGlassEnabled
+                        ? 'bg-white/5 backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/10'
+                        : glassmorphismEnabled
+                          ? (isDarkMode ? 'bg-white/5 ring-1 ring-white/10 hover:bg-white/10' : 'bg-white/50 ring-1 ring-white/30 hover:bg-white/70')
+                          : (isDarkMode ? 'bg-[#0a0a0a] ring-1 ring-white/5 hover:bg-[#111]' : 'bg-gray-50 ring-1 ring-gray-100 hover:bg-white')
+                    } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                  >
+                    <div className="flex flex-col items-center gap-1.5">
+                      {bm.icon ? (
+                        <img src={bm.icon} alt="icon" className="w-6 h-6 rounded" />
+                      ) : (
+                        <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-6 h-6 rounded`} />
+                      )}
+                      <div className={`text-[10px] font-medium text-center leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{ lineHeight: '1.2' }}>
+                        {bm.title.length > 12 ? bm.title.substring(0, 12) + '...' : bm.title}
+                      </div>
+                    </div>
+                    {isEditModalOpen && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                        className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${isDarkMode ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-red-400 text-white hover:bg-red-500'}`}
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </a>
+                ) : bookmarkStyle === 'modern' ? (
+                  <a
+                    key={bm.id}
+                    href={bm.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`group relative overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:scale-105 hover:-translate-y-1 ${
+                      isDarkMode
+                        ? 'bg-gradient-to-br from-white/10 to-white/5 ring-1 ring-white/20 hover:from-white/15 hover:to-white/10 hover:ring-white/30'
+                        : 'bg-gradient-to-br from-white to-gray-50 ring-1 ring-gray-200 hover:from-blue-50 hover:to-white hover:ring-blue-200'
+                    } shadow-lg hover:shadow-xl ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {bm.icon ? (
+                        <div className="relative">
+                          <img src={bm.icon} alt="icon" className="w-5 h-5 rounded-lg" />
+                          <div className={`absolute inset-0 rounded-lg ${isDarkMode ? 'bg-white/10' : 'bg-blue-500/10'} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                        </div>
+                      ) : (
+                        <div className={`w-5 h-5 rounded-lg ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-sm font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
+                        <div className={`text-xs truncate ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
+                      </div>
+                    </div>
+                    <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+                      isDarkMode ? 'bg-gradient-to-r from-transparent via-white/5 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-500/5 to-transparent'
+                    }`} />
+                    {isEditModalOpen && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                        className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                          isDarkMode ? 'bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400' : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-600'
+                        }`}
+                        title="Remove"
+                      >
+                        ×
+                      </button>
                     )}
                   </a>
                 ) : (
@@ -2599,6 +2769,7 @@ export default function Home() {
                   </a>
                 )
               ))}
+              </div>
             </div>
           )}
         </div>
@@ -2649,9 +2820,9 @@ export default function Home() {
 
         {/* Quick Add App Modal */}
         {isQuickAppOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/40" onClick={() => setIsQuickAppOpen(false)} />
-            <div className={`relative z-10 w-[92%] max-w-sm rounded-2xl p-4 ${isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+            <div className={`absolute bottom-20 right-4 z-10 w-80 rounded-2xl p-4 shadow-2xl ${isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
               <h4 className="text-sm font-semibold mb-3">Add Favorite App</h4>
               <div className="space-y-2">
                 <input
@@ -2897,72 +3068,137 @@ export default function Home() {
       </div>
 
       {/* Floating Notes Layer */}
-      {floatingNotes.map((n) => (
-        <div
-          key={n.id}
-          className={`fixed z-40 ${isEditModalOpen || floatingModeEnabled ? 'cursor-move' : 'cursor-default'}`}
-          style={{ left: n.x, top: n.y, transform: `rotate(${n.rotation}deg)` }}
-          onPointerDown={(e) => {
-            if (!floatingModeEnabled) return;
-            const target = e.currentTarget as HTMLElement;
-            (target as any)._dragging = true;
-            (target as any)._offsetX = e.clientX - n.x;
-            (target as any)._offsetY = e.clientY - n.y;
-            target.setPointerCapture(e.pointerId);
-          }}
-          onPointerMove={(e) => {
-            const target = e.currentTarget as any;
-            if (!floatingModeEnabled || !target._dragging) return;
-            const nx = e.clientX - target._offsetX;
-            const ny = e.clientY - target._offsetY;
-            setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, x: nx, y: ny } : x));
-          }}
-          onPointerUp={(e) => {
-            const target = e.currentTarget as any;
-            if (target._dragging) {
-              target._dragging = false;
-              target.releasePointerCapture(e.pointerId);
-            }
-          }}
-        >
-          <div className={`w-48 rounded-2xl p-3 shadow-lg ring-1 ${isDarkMode ? 'bg-amber-900/90 text-amber-50 ring-amber-700/50' : 'bg-amber-100 text-amber-900 ring-amber-200'}`}>
-            <textarea
-              value={n.text}
-              onChange={(e) => setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, text: e.target.value } : x))}
-              className={`w-full h-24 bg-transparent outline-none text-sm resize-none`}
-              placeholder="Type note..."
-            />
-            <div className="mt-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+      {floatingNotes.map((n) => {
+        const isDragging = draggingNote === n.id;
+
+        const handlePointerDown = (e: React.PointerEvent) => {
+          if (!floatingModeEnabled) return;
+          e.preventDefault();
+          setDraggingNote(n.id);
+          setDragStart({ x: e.clientX, y: e.clientY });
+          setInitialPos({ x: n.x, y: n.y });
+          e.currentTarget.setPointerCapture(e.pointerId);
+        };
+
+        const handlePointerMove = (e: React.PointerEvent) => {
+          if (!isDragging || !floatingModeEnabled) return;
+          e.preventDefault();
+          const deltaX = e.clientX - dragStart.x;
+          const deltaY = e.clientY - dragStart.y;
+          const newX = Math.max(0, Math.min(window.innerWidth - 192, initialPos.x + deltaX));
+          const newY = Math.max(0, Math.min(window.innerHeight - 200, initialPos.y + deltaY));
+          
+          setFloatingNotes(prev => prev.map(x => 
+            x.id === n.id ? { ...x, x: newX, y: newY } : x
+          ));
+        };
+
+        const handlePointerUp = (e: React.PointerEvent) => {
+          if (isDragging) {
+            setDraggingNote(null);
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          }
+        };
+
+        return (
+          <div
+            key={n.id}
+            className={`fixed z-40 select-none ${isDragging ? 'z-50' : ''} ${
+              floatingModeEnabled ? 'cursor-move' : 'cursor-default'
+            }`}
+            style={{ 
+              left: n.x, 
+              top: n.y, 
+              transform: `rotate(${n.rotation}deg)`,
+              transition: isDragging ? 'none' : 'transform 0.2s ease'
+            }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          >
+            <div className={`w-48 rounded-2xl p-3 shadow-lg ring-1 transition-all duration-200 ${
+              isDragging ? 'shadow-2xl scale-105' : 'shadow-lg'
+            } ${isDarkMode ? 'bg-amber-900/90 text-amber-50 ring-amber-700/50' : 'bg-amber-100 text-amber-900 ring-amber-200'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-medium opacity-70">
+                  {floatingModeEnabled ? 'Drag to move' : 'Floating Note'}
+                </div>
+                {floatingModeEnabled && (
+                  <div className="w-2 h-2 rounded-full bg-current opacity-50"></div>
+                )}
+              </div>
+              <textarea
+                value={n.text}
+                onChange={(e) => setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, text: e.target.value } : x))}
+                className={`w-full h-24 bg-transparent outline-none text-sm resize-none ${
+                  floatingModeEnabled ? 'pointer-events-none' : ''
+                }`}
+                placeholder="Type note..."
+                disabled={floatingModeEnabled}
+              />
+              <div className="mt-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                      isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'
+                    }`}
+                    title="Rotate left"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, rotation: x.rotation - 15 } : x));
+                    }}
+                  >
+                    ↺
+                  </button>
+                  <button
+                    type="button"
+                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                      isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'
+                    }`}
+                    title="Rotate right"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, rotation: x.rotation + 15 } : x));
+                    }}
+                  >
+                    ↻
+                  </button>
+                </div>
                 <button
                   type="button"
-                  className={`w-7 h-7 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'}`}
-                  title="Rotate left"
-                  onClick={() => setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, rotation: x.rotation - 10 } : x))}
+                  className={`px-2 py-1 rounded-lg text-xs transition-colors ${
+                    isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'
+                  }`}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFloatingNotes(prev => prev.filter(x => x.id !== n.id));
+                  }}
+                  title="Remove note"
                 >
-                  ↺
-                </button>
-                <button
-                  type="button"
-                  className={`w-7 h-7 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'}`}
-                  title="Rotate right"
-                  onClick={() => setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, rotation: x.rotation + 10 } : x))}
-                >
-                  ↻
+                  Remove
                 </button>
               </div>
-              <button
-                type="button"
-                className={`px-2 py-1 rounded-lg text-xs ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'}`}
-                onClick={() => setFloatingNotes(prev => prev.filter(x => x.id !== n.id))}
-                title="Remove note"
-              >
-                Remove
-              </button>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Left Sidebar */}
       <LeftSidebar
@@ -3072,6 +3308,10 @@ export default function Home() {
         onToggleBookmarks={() => setShowBookmarks(prev => !prev)}
         bookmarkStyle={bookmarkStyle}
         onSetBookmarkStyle={setBookmarkStyle}
+        showBookmarksTitle={showBookmarksTitle}
+        onToggleBookmarksTitle={() => setShowBookmarksTitle(prev => !prev)}
+        centerBookmarksGroup={centerBookmarksGroup}
+        onToggleCenterBookmarksGroup={() => setCenterBookmarksGroup(prev => !prev)}
         floatingModeEnabled={floatingModeEnabled}
         onToggleFloatingMode={() => setFloatingModeEnabled(prev => !prev)}
         onAddFloatingNote={() => {

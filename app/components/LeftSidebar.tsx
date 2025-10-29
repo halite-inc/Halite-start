@@ -58,8 +58,12 @@ interface LeftSidebarProps {
   onToggleCenterWidgetsGroup?: () => void;
   showBookmarks?: boolean;
   onToggleBookmarks?: () => void;
-  bookmarkStyle?: 'cards' | 'chips';
-  onSetBookmarkStyle?: (style: 'cards' | 'chips') => void;
+  bookmarkStyle?: 'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern';
+  onSetBookmarkStyle?: (style: 'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern') => void;
+  showBookmarksTitle?: boolean;
+  onToggleBookmarksTitle?: () => void;
+  centerBookmarksGroup?: boolean;
+  onToggleCenterBookmarksGroup?: () => void;
   floatingModeEnabled?: boolean;
   onToggleFloatingMode?: () => void;
   onAddFloatingNote?: () => void;
@@ -109,6 +113,10 @@ export default function LeftSidebar({
   onToggleBookmarks,
   bookmarkStyle,
   onSetBookmarkStyle,
+  showBookmarksTitle,
+  onToggleBookmarksTitle,
+  centerBookmarksGroup,
+  onToggleCenterBookmarksGroup,
   floatingModeEnabled,
   onToggleFloatingMode,
   onAddFloatingNote,
@@ -694,7 +702,7 @@ export default function LeftSidebar({
                   </label>
                   <select
                     value={bookmarkStyle || 'cards'}
-                    onChange={(e) => onSetBookmarkStyle && onSetBookmarkStyle(e.target.value as 'cards' | 'chips')}
+                    onChange={(e) => onSetBookmarkStyle && onSetBookmarkStyle(e.target.value as 'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern')}
                     className={`text-xs px-2 py-1 rounded border transition-colors ${
                       isDarkMode 
                         ? 'bg-gray-700 border-gray-600 text-white' 
@@ -703,7 +711,59 @@ export default function LeftSidebar({
                   >
                     <option value="cards">Cards</option>
                     <option value="chips">Chips</option>
+                    <option value="list">List</option>
+                    <option value="minimal">Minimal</option>
+                    <option value="compact">Compact</option>
+                    <option value="modern">Modern</option>
                   </select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
+                    </svg>
+                    Show Bookmarks Title
+                  </label>
+                  <button
+                    onClick={() => onToggleBookmarksTitle && onToggleBookmarksTitle()}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      showBookmarksTitle 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        showBookmarksTitle ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-sm font-medium flex items-center gap-2 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                    </svg>
+                    Center Bookmarks Group
+                  </label>
+                  <button
+                    onClick={() => onToggleCenterBookmarksGroup && onToggleCenterBookmarksGroup()}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      centerBookmarksGroup 
+                        ? 'bg-blue-500' 
+                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        centerBookmarksGroup ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
                 </div>
                 <div className="flex items-center justify-between">
                   <label className={`text-sm font-medium flex items-center gap-2 ${
