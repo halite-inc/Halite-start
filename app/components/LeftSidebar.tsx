@@ -56,6 +56,8 @@ interface LeftSidebarProps {
   onToggleCenterAppsGroup?: () => void;
   centerWidgetsGroup?: boolean;
   onToggleCenterWidgetsGroup?: () => void;
+  appGroupMarginTop: number;
+  onSetAppGroupMarginTop: (value: number) => void;
   showBookmarks?: boolean;
   onToggleBookmarks?: () => void;
   bookmarkStyle?: 'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern';
@@ -67,6 +69,12 @@ interface LeftSidebarProps {
   floatingModeEnabled?: boolean;
   onToggleFloatingMode?: () => void;
   onAddFloatingNote?: () => void;
+  liquidReflectionColor: string;
+  onSetLiquidReflectionColor: (color: string) => void;
+  showBookmarksParagraph?: boolean;
+  onToggleBookmarksParagraph?: () => void;
+  showTopTime?: boolean;
+  onToggleTopTime?: () => void;
 }
 
 export default function LeftSidebar({ 
@@ -109,6 +117,8 @@ export default function LeftSidebar({
   onToggleCenterAppsGroup,
   centerWidgetsGroup,
   onToggleCenterWidgetsGroup,
+  appGroupMarginTop,
+  onSetAppGroupMarginTop,
   showBookmarks,
   onToggleBookmarks,
   bookmarkStyle,
@@ -120,6 +130,12 @@ export default function LeftSidebar({
   floatingModeEnabled,
   onToggleFloatingMode,
   onAddFloatingNote,
+  liquidReflectionColor,
+  onSetLiquidReflectionColor,
+  showBookmarksParagraph,
+  onToggleBookmarksParagraph,
+  showTopTime,
+  onToggleTopTime,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
@@ -666,856 +682,608 @@ export default function LeftSidebar({
             {openSection === 'preferences' && (
             <div className={panelClass} >
               <h3 className="sr-only">Preferences</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h7" />
-                    </svg>
-                    Show Bookmarks
-                  </label>
-                  <button
-                    onClick={() => onToggleBookmarks && onToggleBookmarks()}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showBookmarks 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showBookmarks ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M4 12h12M6 17h6" />
-                    </svg>
-                    Bookmark Style
-                  </label>
-                  <select
-                    value={bookmarkStyle || 'cards'}
-                    onChange={(e) => onSetBookmarkStyle && onSetBookmarkStyle(e.target.value as 'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern')}
-                    className={`text-xs px-2 py-1 rounded border transition-colors ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                  >
-                    <option value="cards">Cards</option>
-                    <option value="chips">Chips</option>
-                    <option value="list">List</option>
-                    <option value="minimal">Minimal</option>
-                    <option value="compact">Compact</option>
-                    <option value="modern">Modern</option>
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
-                    </svg>
-                    Show Bookmarks Title
-                  </label>
-                  <button
-                    onClick={() => onToggleBookmarksTitle && onToggleBookmarksTitle()}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showBookmarksTitle 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showBookmarksTitle ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
-                    </svg>
-                    Center Bookmarks Group
-                  </label>
-                  <button
-                    onClick={() => onToggleCenterBookmarksGroup && onToggleCenterBookmarksGroup()}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      centerBookmarksGroup 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        centerBookmarksGroup ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
-                    </svg>
-                    Show App Titles
-                  </label>
-                  <button
-                    onClick={onToggleShowAppTitles}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showAppTitles 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showAppTitles ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4a8 8 0 110 16 8 8 0 010-16z" />
-                    </svg>
-                    Full Rounded Icons
-                  </label>
-                  <button
-                    onClick={() => onToggleFullRoundedIcons && onToggleFullRoundedIcons()}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      fullRoundedIconsEnabled 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        fullRoundedIconsEnabled ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className={`rounded-xl p-3 ${isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+              <div className="space-y-5">
+                <div className="space-y-3">
+                  <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Bookmarks</h4>
                   <div className="flex items-center justify-between">
                     <label className={`text-sm font-medium flex items-center gap-2 ${
                       isDarkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h7" />
                       </svg>
-                      Animate Icons
+                      Show Bookmarks
                     </label>
                     <button
-                      onClick={onToggleAnimateIcons}
+                      onClick={() => onToggleBookmarks && onToggleBookmarks()}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        animateIconsEnabled 
+                        showBookmarks 
                           ? 'bg-blue-500' 
                           : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
                       }`}
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          animateIconsEnabled ? 'translate-x-6' : 'translate-x-1'
+                          showBookmarks ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
                     </button>
                   </div>
-                  {animateIconsEnabled && (
-                  <div className="mt-3">
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
+                      </svg>
+                      Show Bookmarks Title
+                    </label>
+                    <button
+                      onClick={() => onToggleBookmarksTitle && onToggleBookmarksTitle()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showBookmarksTitle 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showBookmarksTitle ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
+                      </svg>
+                      Show Bookmarks Helper Text
+                    </label>
+                    <button
+                      onClick={() => onToggleBookmarksParagraph && onToggleBookmarksParagraph()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showBookmarksParagraph 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showBookmarksParagraph ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                      </svg>
+                      Center Bookmarks Group
+                    </label>
+                    <button
+                      onClick={() => onToggleCenterBookmarksGroup && onToggleCenterBookmarksGroup()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        centerBookmarksGroup 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          centerBookmarksGroup ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M4 12h12M6 17h6" />
+                      </svg>
+                      Bookmark Style
+                    </label>
+                    <select
+                      value={bookmarkStyle || 'cards'}
+                      onChange={(e) => onSetBookmarkStyle && onSetBookmarkStyle(e.target.value as 'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern')}
+                      className={`text-xs px-2 py-1 rounded border transition-colors ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-white border-gray-300 text-gray-900'
+                      }`}
+                    >
+                      <option value="cards">Cards</option>
+                      <option value="chips">Chips</option>
+                      <option value="list">List</option>
+                      <option value="minimal">Minimal</option>
+                      <option value="compact">Compact</option>
+                      <option value="modern">Modern</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>App &amp; Widget Layout</h4>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
+                      </svg>
+                      Show App Titles
+                    </label>
+                    <button
+                      onClick={onToggleShowAppTitles}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showAppTitles 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showAppTitles ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                      </svg>
+                      Center App Cards Group
+                    </label>
+                    <button
+                      onClick={() => onToggleCenterAppsGroup && onToggleCenterAppsGroup()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        centerAppsGroup 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          centerAppsGroup ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div>
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 10h16M4 14h10" />
+                      </svg>
+                      App Cards Top Margin
+                    </label>
+                    <div className="mt-2 flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={0}
+                        max={400}
+                        step={5}
+                        value={appGroupMarginTop}
+                        onChange={(e) => onSetAppGroupMarginTop(Number(e.target.value))}
+                        className="flex-1 accent-blue-500"
+                      />
+                      <span className={`text-xs font-medium ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
+                        {appGroupMarginTop}px
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                      </svg>
+                      Center Widget Cards Group
+                    </label>
+                    <button
+                      onClick={() => onToggleCenterWidgetsGroup && onToggleCenterWidgetsGroup()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        centerWidgetsGroup 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          centerWidgetsGroup ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Display</h4>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+                      </svg>
+                      Show Search Bar
+                    </label>
+                    <button
+                      onClick={() => onToggleSearchBar && onToggleSearchBar()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showSearchBar 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showSearchBar ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4a8 8 0 110 16 8 8 0 010-16z" />
+                      </svg>
+                      Full Rounded Icons
+                    </label>
+                    <button
+                      onClick={() => onToggleFullRoundedIcons && onToggleFullRoundedIcons()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        fullRoundedIconsEnabled 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          fullRoundedIconsEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364 6.364l-2.121-2.121M8.757 8.757L6.636 6.636m0 10.728l2.121-2.121m8.486-8.486l2.121-2.121" />
+                      </svg>
+                      Show Time (Top Bar)
+                    </label>
+                    <button
+                      onClick={() => onToggleTopTime && onToggleTopTime()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showTopTime 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showTopTime ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Animations &amp; Effects</h4>
+                  <div className={`rounded-xl p-3 ${isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
                     <div className="flex items-center justify-between">
                       <label className={`text-sm font-medium flex items-center gap-2 ${
                         isDarkMode ? 'text-gray-300' : 'text-gray-700'
                       }`}>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 12h16M4 16h10" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" />
                         </svg>
-                        Hover Animation
+                        Animate Icons
                       </label>
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setIsHoverDropdownOpen(v => !v)}
-                          className={`text-xs px-3 py-1.5 rounded-lg ring-1 transition-colors flex items-center gap-1 ${
-                            isDarkMode ? 'bg-[#0f1115] text-white ring-white/10 hover:bg-white/5' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'
+                      <button
+                        onClick={onToggleAnimateIcons}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          animateIconsEnabled 
+                            ? 'bg-blue-500' 
+                            : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            animateIconsEnabled ? 'translate-x-6' : 'translate-x-1'
                           }`}
-                          aria-haspopup="listbox"
-                          aria-expanded={isHoverDropdownOpen}
-                        >
-                          <span className="capitalize flex items-center gap-1.5">
-                            {renderHoverIcon(hoverAnimationStyle)}
-                            {hoverAnimationStyle}
-                          </span>
-                          <svg className={`w-3.5 h-3.5 transition-transform ${isHoverDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        />
+                      </button>
+                    </div>
+                    {animateIconsEnabled && (
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between">
+                        <label className={`text-sm font-medium flex items-center gap-2 ${
+                          isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 12h16M4 16h10" />
                           </svg>
-                        </button>
-                        {isHoverDropdownOpen && (
-                          <div className={`absolute right-0 mt-2 z-20 w-40 rounded-xl overflow-hidden shadow-lg ring-1 ${
-                            isDarkMode ? 'bg-[#121212] ring-white/10' : 'bg-white ring-gray-200'
-                          }`}
-                            role="listbox"
+                          Hover Animation
+                        </label>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setIsHoverDropdownOpen(v => !v)}
+                            className={`text-xs px-3 py-1.5 rounded-lg ring-1 transition-colors flex items-center gap-1 ${
+                              isDarkMode ? 'bg-[#0f1115] text-white ring-white/10 hover:bg-white/5' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'
+                            }`}
+                            aria-haspopup="listbox"
+                            aria-expanded={isHoverDropdownOpen}
                           >
-                            {(['scale','tilt','skew','spin','bounce','pulse','float','slide','glow'] as const).map(opt => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onMouseDown={(e) => { e.preventDefault(); onSetHoverAnimationStyle(opt); setIsHoverDropdownOpen(false); }}
-                                className={`w-full text-left px-3 py-2 text-xs capitalize transition-colors flex items-center gap-2 ${
-                                  isDarkMode ? 'text-white hover:bg-white/10' : 'text-gray-800 hover:bg-gray-100'
-                                } ${hoverAnimationStyle === opt ? (isDarkMode ? 'bg-white/5' : 'bg-gray-50') : ''}`}
-                                role="option"
-                                aria-selected={hoverAnimationStyle === opt}
-                              >
-                                {renderHoverIcon(opt)}
-                                {opt}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                            <span className="capitalize flex items-center gap-1.5">
+                              {renderHoverIcon(hoverAnimationStyle)}
+                              {hoverAnimationStyle}
+                            </span>
+                            <svg className={`w-3.5 h-3.5 transition-transform ${isHoverDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {isHoverDropdownOpen && (
+                            <div className={`absolute right-0 mt-2 z-20 w-40 rounded-xl overflow-hidden shadow-lg ring-1 ${
+                              isDarkMode ? 'bg-[#121212] ring-white/10' : 'bg-white ring-gray-200'
+                            }`}
+                              role="listbox"
+                            >
+                              {(['scale','tilt','skew','spin','bounce','pulse','float','slide','glow'] as const).map(opt => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onMouseDown={(e) => { e.preventDefault(); onSetHoverAnimationStyle(opt); setIsHoverDropdownOpen(false); }}
+                                  className={`w-full text-left px-3 py-2 text-xs capitalize transition-colors flex items-center gap-2 ${
+                                    isDarkMode ? 'text-white hover:bg-white/10' : 'text-gray-800 hover:bg-gray-100'
+                                  } ${hoverAnimationStyle === opt ? (isDarkMode ? 'bg-white/5' : 'bg-gray-50') : ''}`}
+                                  role="option"
+                                  aria-selected={hoverAnimationStyle === opt}
+                                >
+                                  {renderHoverIcon(opt)}
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    )}
+                    {animateIconsEnabled && (
+                    <div className="mt-3 flex items-center justify-between">
+                      <label className={`text-sm font-medium flex items-center gap-2 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M4 8h16M6 12h12" />
+                        </svg>
+                        Also apply to widgets
+                      </label>
+                      <button
+                        onClick={onToggleAnimateWidgets}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          animateWidgetsEnabled 
+                            ? 'bg-blue-500' 
+                            : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            animateWidgetsEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    )}
                   </div>
-                  )}
-                  {animateIconsEnabled && (
-                  <div className="mt-3 flex items-center justify-between">
+                  <div className="flex items-center justify-between">
                     <label className={`text-sm font-medium flex items-center gap-2 ${
                       isDarkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M4 8h16M6 12h12" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h6m0 0l-2-2m2 2l-2 2M15 17h6m0 0l-2-2m2 2l-2 2M8 12h8" />
                       </svg>
-                      Also apply to widgets
+                      Autofil Icons
                     </label>
                     <button
-                      onClick={onToggleAnimateWidgets}
+                      onClick={onToggleAutofulIcons}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        animateWidgetsEnabled 
+                        autofulIconsEnabled 
                           ? 'bg-blue-500' 
                           : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
                       }`}
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          animateWidgetsEnabled ? 'translate-x-6' : 'translate-x-1'
+                          autofulIconsEnabled ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
                     </button>
                   </div>
-                  )}
                 </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h6m0 0l-2-2m2 2l-2 2M15 17h6m0 0l-2-2m2 2l-2 2M8 12h8" />
-                    </svg>
-                    Autofil Icons
-                  </label>
-                  <button
-                    onClick={onToggleAutofulIcons}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      autofulIconsEnabled 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        autofulIconsEnabled ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
-                    </svg>
-                    Show Search Bar
-                  </label>
-                  <button
-                    onClick={() => onToggleSearchBar && onToggleSearchBar()}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showSearchBar 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showSearchBar ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
-                    </svg>
-                    Center App Cards Group
-                  </label>
-                  <button
-                    onClick={() => onToggleCenterAppsGroup && onToggleCenterAppsGroup()}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      centerAppsGroup 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        centerAppsGroup ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
-                    </svg>
-                    Center Widget Cards Group
-                  </label>
-                  <button
-                    onClick={() => onToggleCenterWidgetsGroup && onToggleCenterWidgetsGroup()}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      centerWidgetsGroup 
-                        ? 'bg-blue-500' 
-                        : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        centerWidgetsGroup ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                    </svg>
-                    App Card Text Color
-                  </label>
-                  <select
-                    value={appTitleColor}
-                    onChange={(e) => onSetAppTitleColor(e.target.value as 'auto' | 'black' | 'white')}
-                    className={`text-xs px-2 py-1 rounded border transition-colors ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                  >
-                    <option value="auto">Auto</option>
-                    <option value="black">Black</option>
-                    <option value="white">White</option>
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-sm font-medium flex items-center gap-2 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    Widget Text Color
-                  </label>
-                  <select
-                    value={widgetTextColor}
-                    onChange={(e) => onSetWidgetTextColor(e.target.value as 'auto' | 'black' | 'white')}
-                    className={`text-xs px-2 py-1 rounded border transition-colors ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
-                  >
-                    <option value="auto">Auto</option>
-                    <option value="black">Black</option>
-                    <option value="white">White</option>
-                  </select>
-                </div>
-                {/* Visual Effects Mode - Modern cards */}
-                <div className="grid grid-cols-3 gap-3">
-                  {/* Normal */}
-                  <button
-                    onClick={onToggleNormalMode}
-                    className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
-                      normalModeEnabled
-                        ? 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-lg ring-2 ring-slate-400/50'
-                        : isDarkMode
-                          ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
-                          : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-sm'
-                    }`}
-                    title="Normal Mode"
-                  >
-                    <div className="relative z-10 flex flex-col items-center gap-2">
-                      <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                        normalModeEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
-                      }`}>
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
-                        </svg>
-                      </div>
-                      <span>Normal</span>
-                    </div>
-                    <span className={`pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent ${normalModeEnabled ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`} />
-                  </button>
 
-                  {/* Glassmorphism */}
-                  <button
-                    onClick={onToggleGlassmorphism}
-                    className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
-                      glassmorphismEnabled
-                        ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg ring-2 ring-blue-400/50'
-                        : isDarkMode
-                          ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
-                          : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-sm'
-                    }`}
-                    title="Toggle Glassmorphism"
-                  >
-                    <div className="relative z-10 flex flex-col items-center gap-2">
-                      <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                        glassmorphismEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
-                      }`}>
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M4 7h16M4 12h10M4 17h7" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </div>
-                      <span>Glass</span>
-                    </div>
-                    <span className={`pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/10 blur-xl ${glassmorphismEnabled ? 'opacity-50' : 'opacity-0 group-hover:opacity-30'} transition-opacity`} />
-                  </button>
-
-                  {/* Apple Liquid Glass */}
-                  <button
-                    onClick={onToggleLiquidGlass}
-                    className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
-                      liquidGlassEnabled
-                        ? 'bg-gradient-to-br from-cyan-400 via-blue-500 to-fuchsia-500 text-white shadow-lg ring-2 ring-cyan-300/50'
-                        : isDarkMode
-                          ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
-                          : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-sm'
-                    }`}
-                    title="Toggle Apple Liquid Glass"
-                  >
-                    <div className="relative z-10 flex flex-col items-center gap-2">
-                      <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                        liquidGlassEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
-                      }`}>
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2.5c5 5 7.5 8.4 7.5 11.5a7.5 7.5 0 11-15 0C4.5 10.9 7 7.5 12 2.5z" />
-                        </svg>
-                      </div>
-                      <span>Liquid</span>
-                    </div>
-                    <span className={`pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-white/20 blur-2xl ${liquidGlassEnabled ? 'opacity-60' : 'opacity-0 group-hover:opacity-40'} transition-opacity`} />
-                  </button>
-
-                  
-                </div>
-              </div>
-            </div>
-            )}
-
-            {/* Floating Elements */}
-            <button
-              onClick={() => setOpenSection(openSection === 'advanced' ? null : 'advanced')}
-              className={sectionHeaderClass}
-              title="Floating Elements"
-              aria-expanded={openSection === 'advanced'}
-            >
-              <span className="text-sm font-semibold">Floating Elements</span>
-              <svg className={`w-4 h-4 transition-transform ${openSection === 'advanced' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {openSection === 'advanced' && (
-              <div className={panelClass}>
                 <div className="space-y-3">
+                  <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Typography</h4>
                   <div className="flex items-center justify-between">
-                    <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Enable Floating Mode</label>
-                    <button
-                      onClick={() => onToggleFloatingMode && onToggleFloatingMode()}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        floatingModeEnabled ? 'bg-blue-500' : (isDarkMode ? 'bg-gray-600' : 'bg-gray-300')
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                      App Card Text Color
+                    </label>
+                    <select
+                      value={appTitleColor}
+                      onChange={(e) => onSetAppTitleColor(e.target.value as 'auto' | 'black' | 'white')}
+                      className={`text-xs px-2 py-1 rounded border transition-colors ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-white border-gray-300 text-gray-900'
                       }`}
                     >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${floatingModeEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-                    </button>
+                      <option value="auto">Auto</option>
+                      <option value="black">Black</option>
+                      <option value="white">White</option>
+                    </select>
                   </div>
-                  <button
-                    onClick={() => onAddFloatingNote && onAddFloatingNote()}
-                    className={`w-full px-3 py-2 rounded-lg text-sm font-semibold ${isDarkMode ? 'bg-white/10 hover:bg-white/15 text-white' : 'bg-white hover:bg-gray-50 text-gray-800 ring-1 ring-gray-200'}`}
-                  >
-                    + Add Floating Note
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Background */}
-            <button
-              onClick={() => setOpenSection(openSection === 'background' ? null : 'background')}
-              className={sectionHeaderClass}
-              title="Background"
-              aria-expanded={openSection === 'background'}
-            >
-              <span className="text-sm font-semibold">Background</span>
-              <svg className={`w-4 h-4 transition-transform ${openSection === 'background' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {openSection === 'background' && (
-            <div className={panelClass} >
-              <h3 className="sr-only">Background</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Image URL
-                  </label>
-                  <div className="relative group">
-                    <span className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4-4a2 2 0 012.828 0L16 16m-2-2l1-1a2 2 0 012.828 0L20 14m-6-8h6m-3-3v6" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      value={newBackgroundImage}
-                      onChange={(e) => setNewBackgroundImage(e.target.value)}
-                      placeholder="https://example.com/image.jpg"
-                      className={`w-full pl-10 pr-3 py-2 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-blue-500/60 transition-all ${
-                        isDarkMode 
-                          ? 'bg-white/5 border-white/10 text-white placeholder-gray-400'
-                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500'
-                      }`}
-                    />
-                  </div>
-                  {bgError && (
-                    <p className={`mt-2 text-xs ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>{bgError}</p>
-                  )}
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Upload Image
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className={`w-full cursor-pointer rounded-2xl border focus:outline-none transition ${
-                      isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
-                    } file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-blue-500 file:text-white hover:file:bg-blue-600`}
-                  />
-                  {bgError && (
-                    <p className={`mt-2 text-xs ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>{bgError}</p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    if (newBackgroundImage) {
-                      setBgError(null);
-                      // Validate URL image orientation before applying
-                      getImageDimensionsFromUrl(newBackgroundImage)
-                        .then(({ width, height }) => {
-                          if (width < height) {
-                            setBgError('Portrait images are not recommended for wallpapers. Please choose a landscape image.');
-                            return;
-                          }
-                          onSetBackgroundImage(newBackgroundImage);
-                          setNewBackgroundImage('');
-                        })
-                        .catch(() => {
-                          setBgError('Could not load image from URL. Please check the link.');
-                        });
-                    }
-                  }}
-                  disabled={!newBackgroundImage}
-                  className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all ${
-                    newBackgroundImage
-                      ? 'bg-blue-600 hover:bg-blue-500 text-white shadow'
-                      : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                  }`}
-                >
-                  Set Background
-                </button>
-                <button
-                  onClick={async () => {
-                    try { await deleteImageBlob('backgroundImage'); } catch {}
-                    onSetBackgroundImage('');
-                  }}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                    isDarkMode ? 'bg-white/5 text-white ring-1 ring-white/10 hover:bg-white/10' : 'bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  Remove
-                </button>
-                </div>
-                {backgroundImage && (
-                  <div className="mt-3">
-                    <p className={`text-xs ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                      Current background: {backgroundImage.length > 30 ? backgroundImage.substring(0, 30) + '...' : backgroundImage}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-            )}
-
-            {/* Add App */}
-            <button
-              onClick={() => setOpenSection(openSection === 'addApp' ? null : 'addApp')}
-              className={sectionHeaderClass}
-              title="Add App"
-              aria-expanded={openSection === 'addApp'}
-            >
-              <span className="text-sm font-semibold">Add App</span>
-              <svg className={`w-4 h-4 transition-transform ${openSection === 'addApp' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {openSection === 'addApp' && (
-            <div className={panelClass} >
-              <h3 className="sr-only">Add App</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    App Name
-                  </label>
-                  <div className="relative group">
-                    <span className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 12h8M7 17h6" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      value={newApp.title}
-                      onChange={(e) => setNewApp({ ...newApp, title: e.target.value })}
-                      onKeyPress={handleKeyPress}
-                      placeholder="e.g., Twitter, GitHub"
-                      className={`w-full pl-10 pr-3 py-2 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-blue-500/60 transition-all ${
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                      Widget Text Color
+                    </label>
+                    <select
+                      value={widgetTextColor}
+                      onChange={(e) => onSetWidgetTextColor(e.target.value as 'auto' | 'black' | 'white')}
+                      className={`text-xs px-2 py-1 rounded border transition-colors ${
                         isDarkMode 
-                          ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' 
-                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500'
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-white border-gray-300 text-gray-900'
                       }`}
-                    />
+                    >
+                      <option value="auto">Auto</option>
+                      <option value="black">Black</option>
+                      <option value="white">White</option>
+                    </select>
                   </div>
                 </div>
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    URL
-                  </label>
-                  <div className="relative group">
-                    <span className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 010 5.656l-1.414 1.414a4 4 0 01-5.656-5.656l1.414-1.414m5.656-5.656l1.414 1.414a4 4 0 010 5.656" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      value={newApp.href}
-                      onChange={(e) => setNewApp({ ...newApp, href: e.target.value })}
-                      onKeyPress={handleKeyPress}
-                      placeholder="e.g., twitter.com or https://twitter.com"
-                      className={`w-full pl-10 pr-3 py-2 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-blue-500/60 transition-all ${
-                        isDarkMode 
-                          ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' 
-                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500'
-                      }`}
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={handleAddApp}
-                  disabled={!newApp.title || !newApp.href}
-                  className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 text-white px-4 py-2 rounded-lg font-medium transition duration-300"
-                >
-                  Add App
-                </button>
-              </div>
-            </div>
-            )}
 
-            {/* Current Apps List */}
-            <div>
+                {/* Visual Effects Mode - Modern cards */}
+                <div className="space-y-3">
+                  <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Visual Effects</h4>
+                  <div className="grid grid-cols-3 gap-3">
+              {/* Normal */}
               <button
-                onClick={() => setIsAppsExpanded(!isAppsExpanded)}
-                className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
-                  isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                onClick={onToggleNormalMode}
+                className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
+                  normalModeEnabled
+                    ? 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-lg ring-2 ring-slate-400/50'
+                    : isDarkMode
+                      ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
+                      : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-sm'
                 }`}
+                title="Normal Mode"
               >
-                <h3 className={`text-lg font-medium flex items-center gap-2 ${
-                  isDarkMode ? 'text-white' : 'text-gray-800'
-                }`}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                  Current Apps ({apps.length})
-                </h3>
-                <svg
-                  className={`w-5 h-5 transition-transform duration-200 ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  } ${isAppsExpanded ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                    normalModeEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
+                  }`}>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
+                    </svg>
+                  </div>
+                  <span>Normal</span>
+                </div>
+                <span className={`pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent ${normalModeEnabled ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`} />
               </button>
-              
-              {isAppsExpanded && (
-                <div className="space-y-2 mt-2">
-                  {apps.map((app) => (
-                    <div key={app.id} className={`flex items-center justify-between p-3 rounded-lg ${
-                      isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
+
+              {/* Glassmorphism */}
+              <button
+                onClick={onToggleGlassmorphism}
+                className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
+                  glassmorphismEnabled
+                    ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg ring-2 ring-blue-400/50'
+                    : isDarkMode
+                      ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
+                      : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-sm'
+                }`}
+                title="Toggle Glassmorphism"
+              >
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                    glassmorphismEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
+                  }`}>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 7h16M4 12h10M4 17h7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <span>Glass</span>
+                </div>
+                <span className={`pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/10 blur-xl ${glassmorphismEnabled ? 'opacity-50' : 'opacity-0 group-hover:opacity-30'} transition-opacity`} />
+              </button>
+
+              {/* Apple Liquid Glass */}
+              <button
+                onClick={onToggleLiquidGlass}
+                className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
+                  liquidGlassEnabled
+                    ? 'bg-gradient-to-br from-cyan-400 via-blue-500 to-fuchsia-500 text-white shadow-lg ring-2 ring-cyan-300/50'
+                    : isDarkMode
+                      ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
+                      : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-sm'
+                }`}
+                title="Toggle Apple Liquid Glass"
+              >
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                    liquidGlassEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
+                  }`}>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2.5c5 5 7.5 8.4 7.5 11.5a7.5 7.5 0 11-15 0C4.5 10.9 7 7.5 12 2.5z" />
+                    </svg>
+                  </div>
+                  <span>Liquid</span>
+                </div>
+                <span className={`pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-white/20 blur-2xl ${liquidGlassEnabled ? 'opacity-60' : 'opacity-0 group-hover:opacity-40'} transition-opacity`} />
+              </button>
+                  </div>
+                  {liquidGlassEnabled && (
+                    <div className={`mt-3 rounded-xl p-3 ${
+                      isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'
                     }`}>
-                      <div>
-                        <p className={`font-medium ${
-                          isDarkMode ? 'text-white' : 'text-gray-800'
+                      <label className={`text-sm font-medium flex items-center gap-2 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+                        </svg>
+                        Liquid Reflection Color
+                      </label>
+                      <div className="mt-3 flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={liquidReflectionColor}
+                          onChange={(e) => onSetLiquidReflectionColor(e.target.value)}
+                          className={`h-9 w-12 cursor-pointer rounded-lg p-1 ${
+                            isDarkMode ? 'bg-transparent border border-white/20' : 'bg-white border border-gray-200'
+                          }`}
+                          title="Choose the highlight tint used across liquid surfaces"
+                        />
+                        <span className={`text-xs font-medium ${
+                          isDarkMode ? 'text-gray-300' : 'text-gray-600'
                         }`}>
-                          {app.title}
-                        </p>
-                        <p className={`text-sm truncate ${
-                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>
-                          {app.href}
-                        </p>
+                          {liquidReflectionColor.toUpperCase()}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                  {apps.length === 0 && (
-                    <p className={`text-center py-4 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                      No apps added yet
-                    </p>
                   )}
                 </div>
-              )}
-            </div>
-
-            {/* Advanced (Debug, Reset) */}
-            <button
-              onClick={() => setOpenSection(openSection === 'advanced' ? null : 'advanced')}
-              className={sectionHeaderClass}
-              title="Advanced"
-              aria-expanded={openSection === 'advanced'}
-            >
-              <span className="text-sm font-semibold">Advanced</span>
-              <svg className={`w-4 h-4 transition-transform ${openSection === 'advanced' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {openSection === 'advanced' && (
-            <div className={panelClass} >
-              <div className="flex items-center justify-between">
-                <h3 className={`text-lg font-medium flex items-center gap-2 ${
-                  isDarkMode ? 'text-white' : 'text-gray-800'
-                }`}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Debug
-                </h3>
-                <button
-                  onClick={() => {
-                    console.log('🔍 Current localStorage contents:');
-                    console.log('Theme:', localStorage.getItem('theme'));
-                    console.log('Normal Mode:', localStorage.getItem('normalModeEnabled'));
-                    console.log('Glassmorphism:', localStorage.getItem('glassmorphismEnabled'));
-                    console.log('Liquid Glass:', localStorage.getItem('liquidGlassEnabled'));
-                    console.log('Show App Titles:', localStorage.getItem('showAppTitles'));
-                    console.log('Background Image:', localStorage.getItem('backgroundImage'));
-                    console.log('App Title Color:', localStorage.getItem('appTitleColor'));
-                    console.log('Widget Text Color:', localStorage.getItem('widgetTextColor'));
-                    console.log('Apps:', localStorage.getItem('favoriteApps'));
-                    console.log('Widgets:', localStorage.getItem('widgets'));
-                    
-                    console.log('🔍 Current React state:');
-                    console.log('isDarkMode:', isDarkMode);
-                    console.log('normalModeEnabled:', normalModeEnabled);
-                    console.log('glassmorphismEnabled:', glassmorphismEnabled);
-                    console.log('liquidGlassEnabled:', liquidGlassEnabled);
-                    console.log('showAppTitles:', showAppTitles);
-                    console.log('backgroundImage:', backgroundImage);
-                    console.log('appTitleColor:', appTitleColor);
-                    console.log('widgetTextColor:', widgetTextColor);
-                  }}
-                  className="px-3 py-1.5 text-sm rounded-lg font-medium transition-colors duration-200 bg-yellow-500 hover:bg-yellow-600 text-white"
-                  title="Log current state to console"
-                >
-                  Debug State
-                </button>
               </div>
-              <p className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                Click to log current state and localStorage contents to console.
-              </p>
-            </div>
-            )}
-            {openSection === 'advanced' && (
-            <div className={panelClass} >
-              <div className="flex items-center justify-between">
-                <h3 className={`text-lg font-medium flex items-center gap-2 ${
-                  isDarkMode ? 'text-white' : 'text-gray-800'
-                }`}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Reset
-                </h3>
-                <button
-                  onClick={onResetSettings}
-                  className="px-3 py-1.5 text-sm rounded-lg font-medium transition-colors duration-200 bg-red-500 hover:bg-red-600 text-white"
-                  title="Reset all settings to defaults"
-                >
-                  Reset to Defaults
-                </button>
-              </div>
-              <p className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                Resets theme, app titles, colors, glass effect, and background image.
-              </p>
             </div>
             )}
           </div>

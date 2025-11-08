@@ -92,6 +92,18 @@ const getFaviconUrl = (url: string): string => {
   }
 };
 
+const hexToRgb = (hex: string): [number, number, number] => {
+  let value = hex.trim().replace('#', '');
+  if (value.length === 3) {
+    value = value.split('').map((char) => char + char).join('');
+  }
+  if (value.length !== 6) {
+    return [255, 255, 255];
+  }
+  const num = parseInt(value, 16);
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+};
+
 function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean }) {
   const {
     attributes,
@@ -1551,6 +1563,20 @@ export default function Home() {
   const [isQuickAppOpen, setIsQuickAppOpen] = useState<boolean>(false);
   const [quickAppTitleInput, setQuickAppTitleInput] = useState<string>('');
   const [quickAppUrlInput, setQuickAppUrlInput] = useState<string>('');
+  const [appGroupMarginTop, setAppGroupMarginTop] = useState<number>(240);
+  const [liquidReflectionColor, setLiquidReflectionColor] = useState<string>('#ffffff');
+  const [userName, setUserName] = useState<string>('user');
+  const [isNameEditorOpen, setIsNameEditorOpen] = useState<boolean>(false);
+  const [nameInput, setNameInput] = useState<string>('user');
+  const nameEditorRef = useRef<HTMLDivElement | null>(null);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+  const [showBookmarksParagraph, setShowBookmarksParagraph] = useState<boolean>(true);
+  const [showTopTime, setShowTopTime] = useState<boolean>(false);
+  const [topClockTime, setTopClockTime] = useState<Date>(new Date());
+
+  const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
+  const displayName = userName.trim() || 'user';
+  const topClockLabel = topClockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1567,6 +1593,37 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isNameEditorOpen) return;
+    const handleClick = (event: MouseEvent) => {
+      if (nameEditorRef.current && !nameEditorRef.current.contains(event.target as Node)) {
+        setIsNameEditorOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [isNameEditorOpen]);
+
+  useEffect(() => {
+    if (isNameEditorOpen) {
+      setNameInput(userName);
+      const focusTimer = window.setTimeout(() => {
+        nameInputRef.current?.focus();
+        nameInputRef.current?.select();
+      }, 0);
+      return () => window.clearTimeout(focusTimer);
+    }
+  }, [isNameEditorOpen, userName]);
+
+  useEffect(() => {
+    if (!showTopTime) return;
+    setTopClockTime(new Date());
+    const intervalId = window.setInterval(() => {
+      setTopClockTime(new Date());
+    }, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [showTopTime]);
 
 
 
@@ -1750,6 +1807,40 @@ export default function Home() {
         console.log('✅ Hover animation style loaded:', savedHover);
       }
 
+      const savedAppMargin = localStorage.getItem('appGroupMarginTop');
+      if (savedAppMargin !== null) {
+        const parsedMargin = parseInt(savedAppMargin, 10);
+        if (!Number.isNaN(parsedMargin)) {
+          setAppGroupMarginTop(parsedMargin);
+          console.log('✅ App cards margin top loaded:', parsedMargin);
+        }
+      }
+
+      const savedLiquidReflectionColor = localStorage.getItem('liquidReflectionColor');
+      if (savedLiquidReflectionColor) {
+        setLiquidReflectionColor(savedLiquidReflectionColor);
+        console.log('✅ Liquid reflection color loaded:', savedLiquidReflectionColor);
+      }
+
+      const savedUserName = localStorage.getItem('userName');
+      if (savedUserName) {
+        setUserName(savedUserName);
+        setNameInput(savedUserName);
+        console.log('✅ User name loaded:', savedUserName);
+      }
+
+      const savedBookmarksParagraph = localStorage.getItem('showBookmarksParagraph');
+      if (savedBookmarksParagraph !== null) {
+        setShowBookmarksParagraph(savedBookmarksParagraph === 'true');
+        console.log('✅ Bookmarks paragraph visibility loaded:', savedBookmarksParagraph);
+      }
+
+      const savedTopTime = localStorage.getItem('showTopTime');
+      if (savedTopTime !== null) {
+        setShowTopTime(savedTopTime === 'true');
+        console.log('✅ Top time visibility loaded:', savedTopTime);
+      }
+
       // Load visual modes - this is critical for persistence
       const savedNormal = localStorage.getItem('normalModeEnabled');
       const savedGlass = localStorage.getItem('glassmorphismEnabled');
@@ -1879,7 +1970,12 @@ export default function Home() {
         animateIconsEnabled,
         animateWidgetsEnabled,
         hoverAnimationStyle,
-        fullRoundedIconsEnabled
+        fullRoundedIconsEnabled,
+        appGroupMarginTop,
+        liquidReflectionColor,
+        userName,
+        showBookmarksParagraph,
+        showTopTime
       });
 
       // Save theme
@@ -1915,6 +2011,11 @@ export default function Home() {
       localStorage.setItem('hoverAnimationStyle', hoverAnimationStyle);
       localStorage.setItem('fullRoundedIconsEnabled', fullRoundedIconsEnabled.toString());
       localStorage.setItem('bookmarkStyle', bookmarkStyle);
+      localStorage.setItem('appGroupMarginTop', appGroupMarginTop.toString());
+      localStorage.setItem('liquidReflectionColor', liquidReflectionColor);
+      localStorage.setItem('userName', userName);
+      localStorage.setItem('showBookmarksParagraph', showBookmarksParagraph.toString());
+      localStorage.setItem('showTopTime', showTopTime.toString());
 
       // Apply theme to document
       if (isDarkMode) {
@@ -1934,11 +2035,14 @@ export default function Home() {
         document.documentElement.classList.remove('has-app-bg');
       }
 
+      document.documentElement.style.setProperty('--liquid-reflection-rgb', liquidReflectionRgb);
+
       console.log('✅ All settings saved to localStorage successfully');
     }
   }, [
     isDarkMode, 
     showAppTitles, 
+    showSearchBar,
     backgroundImage, 
     normalModeEnabled, 
     glassmorphismEnabled, 
@@ -1954,6 +2058,13 @@ export default function Home() {
     centerAppsGroup,
     centerWidgetsGroup,
     showBookmarks,
+    showBookmarksParagraph,
+    showBookmarksTitle,
+    centerBookmarksGroup,
+    appGroupMarginTop,
+    liquidReflectionColor,
+    userName,
+    showTopTime,
     isLoading,
     isResetting
   ]);
@@ -1996,6 +2107,17 @@ export default function Home() {
     }
   };
 
+  const handleSaveGreetingName = () => {
+    const trimmed = nameInput.trim();
+    setUserName(trimmed || 'user');
+    setIsNameEditorOpen(false);
+  };
+
+  const handleCancelGreetingEdit = () => {
+    setIsNameEditorOpen(false);
+    setNameInput(userName);
+  };
+
   const resetSettings = () => {
     setShowResetModal(true);
     return;
@@ -2035,6 +2157,12 @@ export default function Home() {
     setAnimateIconsEnabled(false);
     setAnimateWidgetsEnabled(false);
     setHoverAnimationStyle('scale');
+    setAppGroupMarginTop(240);
+    setLiquidReflectionColor('#ffffff');
+    setUserName('user');
+    setNameInput('user');
+    setShowBookmarksParagraph(true);
+    setShowTopTime(false);
     
     // Restore default apps and widgets
     setApps(defaultApps);
@@ -2057,6 +2185,11 @@ export default function Home() {
         localStorage.setItem('animateIconsEnabled', 'false');
         localStorage.setItem('animateWidgetsEnabled', 'false');
         localStorage.setItem('hoverAnimationStyle', 'scale');
+        localStorage.setItem('appGroupMarginTop', '240');
+        localStorage.setItem('liquidReflectionColor', '#ffffff');
+        localStorage.setItem('userName', 'user');
+        localStorage.setItem('showBookmarksParagraph', 'true');
+        localStorage.setItem('showTopTime', 'false');
         
         // Save apps and widgets with explicit stringification
         const appsJson = JSON.stringify(defaultApps);
@@ -2097,6 +2230,7 @@ export default function Home() {
       document.documentElement.classList.remove('dark');
       document.documentElement.style.setProperty('--app-bg-image', 'none');
       document.documentElement.classList.remove('has-app-bg');
+      document.documentElement.style.setProperty('--liquid-reflection-rgb', '255,255,255');
     }
     
     // Note: isResetting will be set to false by a useEffect when the state updates complete
@@ -2127,6 +2261,12 @@ export default function Home() {
     setAnimateIconsEnabled(false);
     setAnimateWidgetsEnabled(false);
     setHoverAnimationStyle('scale');
+    setAppGroupMarginTop(240);
+    setLiquidReflectionColor('#ffffff');
+    setUserName('user');
+    setNameInput('user');
+    setShowBookmarksParagraph(true);
+    setShowTopTime(false);
     setApps(defaultApps);
     setWidgets(defaultWidgets);
     if (typeof window !== 'undefined') {
@@ -2143,6 +2283,11 @@ export default function Home() {
         localStorage.setItem('animateIconsEnabled', 'false');
         localStorage.setItem('animateWidgetsEnabled', 'false');
         localStorage.setItem('hoverAnimationStyle', 'scale');
+        localStorage.setItem('appGroupMarginTop', '240');
+        localStorage.setItem('liquidReflectionColor', '#ffffff');
+        localStorage.setItem('userName', 'user');
+        localStorage.setItem('showBookmarksParagraph', 'true');
+        localStorage.setItem('showTopTime', 'false');
         const appsJson = JSON.stringify(defaultApps);
         const widgetsJson = JSON.stringify(defaultWidgets);
         localStorage.setItem('favoriteApps', appsJson);
@@ -2154,6 +2299,7 @@ export default function Home() {
       document.documentElement.classList.remove('dark');
       document.documentElement.style.setProperty('--app-bg-image', 'none');
       document.documentElement.classList.remove('has-app-bg');
+      document.documentElement.style.setProperty('--liquid-reflection-rgb', '255,255,255');
     }
   };
 
@@ -2276,8 +2422,9 @@ export default function Home() {
                 : 'url(/walp.png)'
             ),
         backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff',
-        backgroundRepeat: 'no-repeat'
-      }}
+        backgroundRepeat: 'no-repeat',
+        '--liquid-reflection-rgb': liquidReflectionRgb,
+      } as React.CSSProperties}
     >
       {/* StickyNoteLayer removed */}
       {/* Global keyframes for iOS-style jiggle */}
@@ -2297,6 +2444,91 @@ export default function Home() {
           <div className="liquid-glass-noise" />
         </>
       )}
+      <div ref={nameEditorRef} className="fixed top-4 right-4 z-40 flex flex-col items-end gap-2">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              setIsNameEditorOpen(prev => !prev);
+              setNameInput(userName);
+            }}
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
+              isDarkMode
+                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15'
+                : 'bg-gray-900 text-white ring-gray-900/10 hover:bg-gray-800'
+            }`}
+            title="Click to personalise your greeting"
+            aria-expanded={isNameEditorOpen}
+            aria-controls="greeting-name-editor"
+          >
+            {`hi ${displayName}`}
+          </button>
+          {isNameEditorOpen && (
+            <div
+              id="greeting-name-editor"
+              className={`absolute right-0 mt-2 w-60 rounded-2xl shadow-xl ring-1 p-4 flex flex-col gap-3 ${
+                isDarkMode
+                  ? 'bg-[#141414] text-white ring-white/10'
+                  : 'bg-white text-gray-900 ring-gray-200'
+              }`}
+            >
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Update greeting</span>
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSaveGreetingName();
+                    }
+                    if (e.key === 'Escape') {
+                      e.preventDefault();
+                      handleCancelGreetingEdit();
+                    }
+                  }}
+                  className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${
+                    isDarkMode ? 'bg-white/10 text-white placeholder-white/40' : 'bg-gray-50 text-gray-900 placeholder-gray-400'
+                  }`}
+                  placeholder="Enter your name"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={handleCancelGreetingEdit}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                    isDarkMode ? 'text-white/70 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveGreetingName}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-500 text-white hover:bg-blue-600"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        {showTopTime && (
+          <span
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 ${
+              isDarkMode
+                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl'
+                : 'bg-gray-900 text-white ring-gray-900/10'
+            }`}
+            aria-live="polite"
+          >
+            {topClockLabel}
+          </span>
+        )}
+      </div>
         <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
 
           {/* Apps Grid with Drag and Drop */}
@@ -2306,7 +2538,7 @@ export default function Home() {
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
-            <div className="mb-6 mt-[240px]">
+            <div className="mb-6" style={{ marginTop: appGroupMarginTop }}>
               <div className={`${
                 centerAppsGroup
                   ? 'grid w-fit mx-auto [grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]'
@@ -2543,7 +2775,9 @@ export default function Home() {
           </div>
 
           {bookmarks.length === 0 ? (
-            <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>No bookmarks yet. Click + to create one.</div>
+            showBookmarksParagraph ? (
+              <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>No bookmarks yet. Click + to create one.</div>
+            ) : null
           ) : (
             <div className={`${
               centerBookmarksGroup ? 'flex justify-center' : ''
@@ -2989,7 +3223,7 @@ export default function Home() {
 
       {/* Floating Action Dock */}
       <div
-        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border px-1.5 py-1.5 sm:px-2 sm:py-2 flex items-center gap-1 sm:gap-2 z-30 ${
+        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border px-1 py-1 sm:px-1.5 sm:py-1.5 flex items-center gap-1 z-30 ${
           liquidGlassEnabled
             ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
             : glassmorphismEnabled
@@ -3006,7 +3240,7 @@ export default function Home() {
           onClick={() => {
             setIsEditModalOpen(!isEditModalOpen);
           }}
-          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
             liquidGlassEnabled
               ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
               : glassmorphismEnabled
@@ -3030,7 +3264,7 @@ export default function Home() {
         {/* Quick Add Favorite App Button (left of Settings) */}
         <button
           onClick={quickAddFavoriteApp}
-          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
             liquidGlassEnabled
               ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
               : glassmorphismEnabled
@@ -3050,7 +3284,7 @@ export default function Home() {
           onClick={() => {
             setIsSidebarOpen(prev => !prev);
           }}
-          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
             liquidGlassEnabled
               ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
               : glassmorphismEnabled
@@ -3310,8 +3544,16 @@ export default function Home() {
         onSetBookmarkStyle={setBookmarkStyle}
         showBookmarksTitle={showBookmarksTitle}
         onToggleBookmarksTitle={() => setShowBookmarksTitle(prev => !prev)}
+        showBookmarksParagraph={showBookmarksParagraph}
+        onToggleBookmarksParagraph={() => setShowBookmarksParagraph(prev => !prev)}
         centerBookmarksGroup={centerBookmarksGroup}
         onToggleCenterBookmarksGroup={() => setCenterBookmarksGroup(prev => !prev)}
+        appGroupMarginTop={appGroupMarginTop}
+        onSetAppGroupMarginTop={(value) => setAppGroupMarginTop(value)}
+        liquidReflectionColor={liquidReflectionColor}
+        onSetLiquidReflectionColor={(value) => setLiquidReflectionColor(value)}
+        showTopTime={showTopTime}
+        onToggleTopTime={() => setShowTopTime(prev => !prev)}
         floatingModeEnabled={floatingModeEnabled}
         onToggleFloatingMode={() => setFloatingModeEnabled(prev => !prev)}
         onAddFloatingNote={() => {

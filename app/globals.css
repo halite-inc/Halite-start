@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --liquid-reflection-rgb: 255,255,255;
 }
 
 @theme inline {
@@ -22,6 +23,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --liquid-reflection-rgb: 255,255,255;
 }
 
 body {
@@ -85,8 +87,8 @@ html {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 80% at -10% -10%, rgba(255,255,255,0.45), transparent 60%),
-    radial-gradient(95% 65% at 110% 0%, rgba(255,255,255,0.23), transparent 60%);
+    radial-gradient(120% 80% at -10% -10%, rgba(var(--liquid-reflection-rgb),0.45), transparent 60%),
+    radial-gradient(95% 65% at 110% 0%, rgba(var(--liquid-reflection-rgb),0.23), transparent 60%);
   pointer-events: none;
 }
 
@@ -95,7 +97,13 @@ html {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.12) 40%, rgba(255,255,255,0.06) 60%, transparent 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--liquid-reflection-rgb),0.45),
+    rgba(var(--liquid-reflection-rgb),0.12) 40%,
+    rgba(var(--liquid-reflection-rgb),0.06) 60%,
+    transparent 100%
+  );
   mix-blend-mode: soft-light;
   opacity: 0.35;
   pointer-events: none;
