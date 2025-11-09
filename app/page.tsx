@@ -34,7 +34,7 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'mood-tracker' | 'pomodoro' | 'random-quote' | 'dice' | 'coin-flip';
   title: string;
 }
 
@@ -104,7 +104,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled, squareRoundedIconsEnabled }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean; squareRoundedIconsEnabled: boolean }) {
   const {
     attributes,
     listeners,
@@ -158,7 +158,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
       {/* App Card */}
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${fullRoundedIconsEnabled ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
+        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${fullRoundedIconsEnabled ? 'rounded-full' : squareRoundedIconsEnabled ? 'rounded-lg' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
@@ -1374,6 +1374,338 @@ function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateI
 
 // StickyNoteWidget removed
 
+// Playful Widgets
+function MoodTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+  const [mood, setMood] = useState<number>(3);
+  const moods = ['😢', '😕', '😐', '🙂', '😊'];
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
+    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
+      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
+      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
+      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
+      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
+      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
+      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
+      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-yellow-400/50' :
+      'hover:scale-110 hover:-translate-y-0.5'
+    : '';
+
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+      <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
+        onClick={() => !isEditModalOpen && setMood((mood + 1) % 5)}
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
+          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        } ${
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${
+          liquidGlassEnabled
+            ? 'liquid-surface'
+            : glassmorphismEnabled
+            ? (isDark 
+                ? 'bg-purple-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                : 'bg-purple-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+            : (isDark 
+                ? 'bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+                : 'bg-gradient-to-br from-purple-400 via-pink-400 to-purple-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-purple-200')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+      >
+        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        <div className={`text-4xl sm:text-5xl transition-transform duration-300 ${!isEditModalOpen ? 'hover:scale-125' : ''}`}>
+          {moods[mood]}
+        </div>
+      </div>
+      {isEditModalOpen && (
+        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
+      )}
+    </div>
+  );
+}
+
+function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+  const [time, setTime] = useState(25 * 60);
+  const [isRunning, setIsRunning] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  useEffect(() => {
+    if (isRunning && time > 0) {
+      const timer = setInterval(() => setTime(t => t - 1), 1000);
+      return () => clearInterval(timer);
+    } else if (time === 0) {
+      setIsRunning(false);
+    }
+  }, [isRunning, time]);
+
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  const progress = 1 - (time / (25 * 60));
+
+  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
+    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
+      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
+      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
+      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
+      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
+      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
+      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
+      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-red-400/50' :
+      'hover:scale-110 hover:-translate-y-0.5'
+    : '';
+
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+      <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
+        onClick={() => !isEditModalOpen && setIsRunning(!isRunning)}
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
+          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        } ${
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${
+          liquidGlassEnabled
+            ? 'liquid-surface'
+            : glassmorphismEnabled
+            ? (isDark 
+                ? 'bg-red-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                : 'bg-red-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+            : (isDark 
+                ? 'bg-gradient-to-br from-red-500 via-orange-500 to-red-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+                : 'bg-gradient-to-br from-red-400 via-orange-400 to-red-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-red-200')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+      >
+        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        <div className="absolute inset-0 rounded-3xl" style={{ background: `conic-gradient(from 0deg, rgba(255,255,255,0.3) ${progress * 360}deg, transparent ${progress * 360}deg)` }} />
+        <div className={`text-lg sm:text-xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
+          {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+        </div>
+        <div className="text-xs mt-1 opacity-80">🍅</div>
+      </div>
+      {isEditModalOpen && (
+        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
+      )}
+    </div>
+  );
+}
+
+function RandomQuoteWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+  const quotes = [
+    "Dream big!",
+    "You've got this!",
+    "Stay positive!",
+    "Keep going!",
+    "Believe!",
+    "Smile! 😊"
+  ];
+  const [quote, setQuote] = useState(quotes[0]);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
+    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
+      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
+      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
+      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
+      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
+      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
+      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
+      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-blue-400/50' :
+      'hover:scale-110 hover:-translate-y-0.5'
+    : '';
+
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+      <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
+        onClick={() => !isEditModalOpen && setQuote(quotes[Math.floor(Math.random() * quotes.length)])}
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
+          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        } ${
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${
+          liquidGlassEnabled
+            ? 'liquid-surface'
+            : glassmorphismEnabled
+            ? (isDark 
+                ? 'bg-blue-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                : 'bg-blue-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+            : (isDark 
+                ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+                : 'bg-gradient-to-br from-blue-400 via-cyan-400 to-blue-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-blue-200')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+      >
+        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        <div className={`text-xs sm:text-sm font-semibold text-center px-2 ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
+          {quote}
+        </div>
+      </div>
+      {isEditModalOpen && (
+        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
+      )}
+    </div>
+  );
+}
+
+function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+  const [value, setValue] = useState(1);
+  const [rolling, setRolling] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  const roll = () => {
+    if (rolling) return;
+    setRolling(true);
+    const rolls = Array.from({ length: 10 }, () => Math.floor(Math.random() * 6) + 1);
+    rolls.forEach((roll, i) => {
+      setTimeout(() => setValue(roll), i * 50);
+    });
+    setTimeout(() => setRolling(false), 500);
+  };
+
+  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
+    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
+      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
+      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
+      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
+      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
+      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
+      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
+      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-green-400/50' :
+      'hover:scale-110 hover:-translate-y-0.5'
+    : '';
+
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+      <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
+        onClick={() => !isEditModalOpen && roll()}
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
+          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        } ${
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${
+          liquidGlassEnabled
+            ? 'liquid-surface'
+            : glassmorphismEnabled
+            ? (isDark 
+                ? 'bg-green-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                : 'bg-green-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+            : (isDark 
+                ? 'bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+                : 'bg-gradient-to-br from-green-400 via-emerald-400 to-green-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-green-200')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${rolling ? 'animate-spin' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+      >
+        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        <div className={`text-3xl sm:text-4xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
+          {value}
+        </div>
+      </div>
+      {isEditModalOpen && (
+        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
+      )}
+    </div>
+  );
+}
+
+function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+  const [side, setSide] = useState<'H' | 'T'>('H');
+  const [flipping, setFlipping] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  const flip = () => {
+    if (flipping) return;
+    setFlipping(true);
+    setTimeout(() => {
+      setSide(Math.random() > 0.5 ? 'H' : 'T');
+      setFlipping(false);
+    }, 500);
+  };
+
+  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
+    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
+      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
+      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
+      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
+      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
+      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
+      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
+      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-yellow-400/50' :
+      'hover:scale-110 hover:-translate-y-0.5'
+    : '';
+
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+      <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
+        onClick={() => !isEditModalOpen && flip()}
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
+          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        } ${
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${
+          liquidGlassEnabled
+            ? 'liquid-surface'
+            : glassmorphismEnabled
+            ? (isDark 
+                ? 'bg-yellow-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                : 'bg-yellow-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+            : (isDark 
+                ? 'bg-gradient-to-br from-yellow-500 via-amber-500 to-yellow-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+                : 'bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-yellow-200')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${flipping ? 'animate-spin' : ''}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+      >
+        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        <div className={`text-2xl sm:text-3xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
+          {side}
+        </div>
+      </div>
+      {isEditModalOpen && (
+        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
+      )}
+    </div>
+  );
+}
+
 function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
@@ -1547,6 +1879,7 @@ export default function Home() {
   const [centerAppsGroup, setCenterAppsGroup] = useState<boolean>(false);
   const [centerWidgetsGroup, setCenterWidgetsGroup] = useState<boolean>(false);
   const [fullRoundedIconsEnabled, setFullRoundedIconsEnabled] = useState<boolean>(false);
+  const [squareRoundedIconsEnabled, setSquareRoundedIconsEnabled] = useState<boolean>(false);
   const [showBookmarks, setShowBookmarks] = useState<boolean>(true);
   const [bookmarkStyle, setBookmarkStyle] = useState<'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern'>('cards');
   const [showBookmarksTitle, setShowBookmarksTitle] = useState<boolean>(true);
@@ -1726,7 +2059,11 @@ export default function Home() {
       const savedFullRounded = localStorage.getItem('fullRoundedIconsEnabled');
       if (savedFullRounded !== null) {
         setFullRoundedIconsEnabled(savedFullRounded === 'true');
-        console.log('✅ Full rounded icons loaded:', savedFullRounded === 'true');
+      }
+      const savedSquareRounded = localStorage.getItem('squareRoundedIconsEnabled');
+      if (savedSquareRounded !== null) {
+        setSquareRoundedIconsEnabled(savedSquareRounded === 'true');
+        console.log('✅ Square rounded icons loaded:', savedSquareRounded === 'true');
       }
       const savedCenterAppsGroup = localStorage.getItem('centerAppsGroup');
       if (savedCenterAppsGroup !== null) {
@@ -2010,6 +2347,7 @@ export default function Home() {
       localStorage.setItem('animateWidgetsEnabled', animateWidgetsEnabled.toString());
       localStorage.setItem('hoverAnimationStyle', hoverAnimationStyle);
       localStorage.setItem('fullRoundedIconsEnabled', fullRoundedIconsEnabled.toString());
+      localStorage.setItem('squareRoundedIconsEnabled', squareRoundedIconsEnabled.toString());
       localStorage.setItem('bookmarkStyle', bookmarkStyle);
       localStorage.setItem('appGroupMarginTop', appGroupMarginTop.toString());
       localStorage.setItem('liquidReflectionColor', liquidReflectionColor);
@@ -2312,11 +2650,11 @@ export default function Home() {
     setApps([...apps, appWithIcon]);
   };
 
-  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner') => {
+  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'mood-tracker' | 'pomodoro' | 'random-quote' | 'dice' | 'coin-flip') => {
     const widget: Widget = {
       id: Date.now().toString(),
       type,
-      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : type === 'fidget-spinner' ? 'Fidget Spinner' : 'Spacer'
+      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : type === 'fidget-spinner' ? 'Fidget Spinner' : type === 'mood-tracker' ? 'Mood Tracker' : type === 'pomodoro' ? 'Pomodoro Timer' : type === 'random-quote' ? 'Random Quote' : type === 'dice' ? 'Dice Roller' : type === 'coin-flip' ? 'Coin Flip' : 'Spacer'
     };
     setWidgets([...widgets, widget]);
   };
@@ -2444,6 +2782,22 @@ export default function Home() {
           <div className="liquid-glass-noise" />
         </>
       )}
+      {/* Time pill - top left */}
+      {showTopTime && (
+        <div className="fixed top-4 left-4 z-40">
+          <span
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 ${
+              isDarkMode
+                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl'
+                : 'bg-gray-900 text-white ring-gray-900/10'
+            }`}
+            aria-live="polite"
+          >
+            {topClockLabel}
+          </span>
+        </div>
+      )}
+      {/* Greetings pill - top right */}
       <div ref={nameEditorRef} className="fixed top-4 right-4 z-40 flex flex-col items-end gap-2">
         <div className="relative">
           <button
@@ -2461,7 +2815,7 @@ export default function Home() {
             aria-expanded={isNameEditorOpen}
             aria-controls="greeting-name-editor"
           >
-            {`hi ${displayName}`}
+            {`Hi, ${displayName}`}
           </button>
           {isNameEditorOpen && (
             <div
@@ -2516,18 +2870,6 @@ export default function Home() {
             </div>
           )}
         </div>
-        {showTopTime && (
-          <span
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 ${
-              isDarkMode
-                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl'
-                : 'bg-gray-900 text-white ring-gray-900/10'
-            }`}
-            aria-live="polite"
-          >
-            {topClockLabel}
-          </span>
-        )}
       </div>
         <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
 
@@ -2561,6 +2903,7 @@ export default function Home() {
                     animateIconsEnabled={animateIconsEnabled}
                     hoverAnimationStyle={hoverAnimationStyle}
                     fullRoundedIconsEnabled={fullRoundedIconsEnabled}
+                    squareRoundedIconsEnabled={squareRoundedIconsEnabled}
                   />
                 ))}
               </div>
@@ -2710,6 +3053,96 @@ export default function Home() {
                             />
                           ) : widget.type === 'fidget-spinner' ? (
                             <FidgetSpinnerWidget
+                              key={widget.id}
+                              widget={widget}
+                              isDark={isDarkMode}
+                              onRemove={() => {
+                                setWidgets(widgets.filter(w => w.id !== widget.id));
+                              }}
+                              isEditModalOpen={isEditModalOpen}
+                              backgroundImage={backgroundImage}
+                              glassmorphismEnabled={glassmorphismEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
+                              widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
+                              animateIconsEnabled={animateIconsEnabled}
+                              animateWidgetsEnabled={animateWidgetsEnabled}
+                              hoverAnimationStyle={hoverAnimationStyle}
+                            />
+                          ) : widget.type === 'mood-tracker' ? (
+                            <MoodTrackerWidget
+                              key={widget.id}
+                              widget={widget}
+                              isDark={isDarkMode}
+                              onRemove={() => {
+                                setWidgets(widgets.filter(w => w.id !== widget.id));
+                              }}
+                              isEditModalOpen={isEditModalOpen}
+                              backgroundImage={backgroundImage}
+                              glassmorphismEnabled={glassmorphismEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
+                              widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
+                              animateIconsEnabled={animateIconsEnabled}
+                              animateWidgetsEnabled={animateWidgetsEnabled}
+                              hoverAnimationStyle={hoverAnimationStyle}
+                            />
+                          ) : widget.type === 'pomodoro' ? (
+                            <PomodoroWidget
+                              key={widget.id}
+                              widget={widget}
+                              isDark={isDarkMode}
+                              onRemove={() => {
+                                setWidgets(widgets.filter(w => w.id !== widget.id));
+                              }}
+                              isEditModalOpen={isEditModalOpen}
+                              backgroundImage={backgroundImage}
+                              glassmorphismEnabled={glassmorphismEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
+                              widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
+                              animateIconsEnabled={animateIconsEnabled}
+                              animateWidgetsEnabled={animateWidgetsEnabled}
+                              hoverAnimationStyle={hoverAnimationStyle}
+                            />
+                          ) : widget.type === 'random-quote' ? (
+                            <RandomQuoteWidget
+                              key={widget.id}
+                              widget={widget}
+                              isDark={isDarkMode}
+                              onRemove={() => {
+                                setWidgets(widgets.filter(w => w.id !== widget.id));
+                              }}
+                              isEditModalOpen={isEditModalOpen}
+                              backgroundImage={backgroundImage}
+                              glassmorphismEnabled={glassmorphismEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
+                              widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
+                              animateIconsEnabled={animateIconsEnabled}
+                              animateWidgetsEnabled={animateWidgetsEnabled}
+                              hoverAnimationStyle={hoverAnimationStyle}
+                            />
+                          ) : widget.type === 'dice' ? (
+                            <DiceWidget
+                              key={widget.id}
+                              widget={widget}
+                              isDark={isDarkMode}
+                              onRemove={() => {
+                                setWidgets(widgets.filter(w => w.id !== widget.id));
+                              }}
+                              isEditModalOpen={isEditModalOpen}
+                              backgroundImage={backgroundImage}
+                              glassmorphismEnabled={glassmorphismEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
+                              widgetTextColor={widgetTextColor}
+                              jiggleIndex={index}
+                              animateIconsEnabled={animateIconsEnabled}
+                              animateWidgetsEnabled={animateWidgetsEnabled}
+                              hoverAnimationStyle={hoverAnimationStyle}
+                            />
+                          ) : widget.type === 'coin-flip' ? (
+                            <CoinFlipWidget
                               key={widget.id}
                               widget={widget}
                               isDark={isDarkMode}
@@ -3514,6 +3947,8 @@ export default function Home() {
         }}
         fullRoundedIconsEnabled={fullRoundedIconsEnabled}
         onToggleFullRoundedIcons={() => setFullRoundedIconsEnabled(prev => !prev)}
+        squareRoundedIconsEnabled={squareRoundedIconsEnabled}
+        onToggleSquareRoundedIcons={() => setSquareRoundedIconsEnabled(prev => !prev)}
         appTitleColor={appTitleColor}
         onSetAppTitleColor={(color) => {
           console.log('🎨 App title color changed to:', color);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { saveImageBlob, deleteImageBlob } from '../lib/idb';
+import { saveImageBlob, deleteImageBlob, getImageObjectUrl } from '../lib/idb';
 
 interface App {
   id: string;
@@ -12,7 +12,7 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'mood-tracker' | 'pomodoro' | 'random-quote' | 'dice' | 'coin-flip';
   title: string;
 }
 
@@ -38,11 +38,13 @@ interface LeftSidebarProps {
   onToggleNormalMode: () => void;
   fullRoundedIconsEnabled?: boolean;
   onToggleFullRoundedIcons?: () => void;
+  squareRoundedIconsEnabled?: boolean;
+  onToggleSquareRoundedIcons?: () => void;
   appTitleColor: 'auto' | 'black' | 'white';
   onSetAppTitleColor: (color: 'auto' | 'black' | 'white') => void;
   widgetTextColor: 'auto' | 'black' | 'white';
   onSetWidgetTextColor: (color: 'auto' | 'black' | 'white') => void;
-  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner') => void;
+  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'mood-tracker' | 'pomodoro' | 'random-quote' | 'dice' | 'coin-flip') => void;
   onResetSettings: () => void;
   autofulIconsEnabled: boolean;
   onToggleAutofulIcons: () => void;
@@ -99,6 +101,8 @@ export default function LeftSidebar({
   onToggleNormalMode,
   fullRoundedIconsEnabled,
   onToggleFullRoundedIcons,
+  squareRoundedIconsEnabled,
+  onToggleSquareRoundedIcons,
   appTitleColor, 
   onSetAppTitleColor, 
   widgetTextColor, 
@@ -143,6 +147,8 @@ export default function LeftSidebar({
   const [newBackgroundImage, setNewBackgroundImage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [bgError, setBgError] = useState<string | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
+  const previewImageUrlRef = useRef<string>('');
 
   // Single-open accordion for sections
   const [openSection, setOpenSection] = useState<'widgets' | 'preferences' | 'background' | 'addApp' | 'advanced' | null>('preferences');
@@ -249,6 +255,45 @@ export default function LeftSidebar({
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [isOpen, onClose]);
+
+  // Load preview image URL for IndexedDB images
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Cleanup previous object URL if it was created from IndexedDB
+    const previousUrl = previewImageUrlRef.current;
+    if (previousUrl && previousUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previousUrl);
+    }
+    
+    if (!backgroundImage) {
+      setPreviewImageUrl('');
+      previewImageUrlRef.current = '';
+      return;
+    }
+    
+    if (backgroundImage.startsWith('idb:')) {
+      const key = backgroundImage.replace('idb:', '');
+      getImageObjectUrl(key).then(url => {
+        if (url && isMounted) {
+          setPreviewImageUrl(url);
+          previewImageUrlRef.current = url;
+        }
+      }).catch(() => {
+        if (isMounted) {
+          setPreviewImageUrl('');
+          previewImageUrlRef.current = '';
+        }
+      });
+    } else {
+      setPreviewImageUrl(backgroundImage);
+      previewImageUrlRef.current = backgroundImage;
+    }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [backgroundImage]);
 
   const handleAddApp = () => {
     if (newApp.title && newApp.href) {
@@ -659,6 +704,90 @@ export default function LeftSidebar({
                     </div>
                   </button>
 
+                  {/* Mood Tracker Widget Preview */}
+                  <button
+                    onClick={() => addWidget('mood-tracker')}
+                    className={`p-3 rounded-xl transition-all duration-300 hover:border-purple-400 hover:text-purple-400 hover:skew-x-3 hover:skew-y-1 ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
+                        isDarkMode ? 'bg-purple-900 text-white border-purple-700' : 'bg-purple-100 text-purple-800 border-purple-300'
+                      }`}>
+                        <span className="text-3xl">😊</span>
+                      </div>
+                      <p className="text-xs font-medium">Mood</p>
+                    </div>
+                  </button>
+
+                  {/* Pomodoro Widget Preview */}
+                  <button
+                    onClick={() => addWidget('pomodoro')}
+                    className={`p-3 rounded-xl transition-all duration-300 hover:border-red-400 hover:text-red-400 hover:skew-x-3 hover:skew-y-1 ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
+                        isDarkMode ? 'bg-red-900 text-white border-red-700' : 'bg-red-100 text-red-800 border-red-300'
+                      }`}>
+                        <span className="text-2xl">🍅</span>
+                      </div>
+                      <p className="text-xs font-medium">Pomodoro</p>
+                    </div>
+                  </button>
+
+                  {/* Random Quote Widget Preview */}
+                  <button
+                    onClick={() => addWidget('random-quote')}
+                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
+                        isDarkMode ? 'bg-blue-900 text-white border-blue-700' : 'bg-blue-100 text-blue-800 border-blue-300'
+                      }`}>
+                        <span className="text-xs font-semibold px-2 text-center">Quote</span>
+                      </div>
+                      <p className="text-xs font-medium">Quote</p>
+                    </div>
+                  </button>
+
+                  {/* Dice Widget Preview */}
+                  <button
+                    onClick={() => addWidget('dice')}
+                    className={`p-3 rounded-xl transition-all duration-300 hover:border-green-400 hover:text-green-400 hover:skew-x-3 hover:skew-y-1 ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
+                        isDarkMode ? 'bg-green-900 text-white border-green-700' : 'bg-green-100 text-green-800 border-green-300'
+                      }`}>
+                        <span className="text-2xl font-bold">6</span>
+                      </div>
+                      <p className="text-xs font-medium">Dice</p>
+                    </div>
+                  </button>
+
+                  {/* Coin Flip Widget Preview */}
+                  <button
+                    onClick={() => addWidget('coin-flip')}
+                    className={`p-3 rounded-xl transition-all duration-300 hover:border-yellow-400 hover:text-yellow-400 hover:skew-x-3 hover:skew-y-1 ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
+                        isDarkMode ? 'bg-yellow-900 text-white border-yellow-700' : 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                      }`}>
+                        <span className="text-2xl font-bold">H</span>
+                      </div>
+                      <p className="text-xs font-medium">Coin Flip</p>
+                    </div>
+                  </button>
 
                 {/* Sticky Note Widget Preview removed */}
 
@@ -872,8 +1001,8 @@ export default function LeftSidebar({
                       <input
                         type="range"
                         min={0}
-                        max={400}
-                        step={5}
+                        max={800}
+                        step={1}
                         value={appGroupMarginTop}
                         onChange={(e) => onSetAppGroupMarginTop(Number(e.target.value))}
                         className="flex-1 accent-blue-500"
@@ -957,6 +1086,30 @@ export default function LeftSidebar({
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                           fullRoundedIconsEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                      </svg>
+                      Square Rounded Icons
+                    </label>
+                    <button
+                      onClick={() => onToggleSquareRoundedIcons && onToggleSquareRoundedIcons()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        squareRoundedIconsEnabled 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          squareRoundedIconsEnabled ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
                     </button>
@@ -1282,6 +1435,90 @@ export default function LeftSidebar({
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+            )}
+
+            {/* Background Section */}
+            <button
+              onClick={() => setOpenSection(openSection === 'background' ? null : 'background')}
+              className={sectionHeaderClass}
+              title="Background"
+              aria-expanded={openSection === 'background'}
+            >
+              <span className="text-sm font-semibold">Background</span>
+              <svg className={`w-4 h-4 transition-transform ${openSection === 'background' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {openSection === 'background' && (
+            <div className={panelClass}>
+              <h3 className="sr-only">Background</h3>
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Background Image</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Upload Background Image
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className={`block w-full text-sm ${
+                          isDarkMode 
+                            ? 'text-gray-300 file:bg-white/10 file:text-white file:border-white/20 file:hover:bg-white/20' 
+                            : 'text-gray-700 file:bg-gray-100 file:text-gray-800 file:border-gray-300 file:hover:bg-gray-200'
+                        } file:rounded-lg file:px-4 file:py-2 file:mr-4 file:border file:cursor-pointer`}
+                      />
+                      {bgError && (
+                        <p className={`mt-2 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                          {bgError}
+                        </p>
+                      )}
+                      {selectedFile && (
+                        <p className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Processing: {selectedFile.name}
+                        </p>
+                      )}
+                    </div>
+                    {backgroundImage && (
+                      <div className="space-y-2">
+                        <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Current Background
+                        </label>
+                        <div className="relative rounded-lg overflow-hidden border-2 border-dashed" style={{ aspectRatio: '16/9' }}>
+                          {previewImageUrl ? (
+                            <img
+                              src={previewImageUrl}
+                              alt="Background preview"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className={`w-full h-full flex items-center justify-center ${isDarkMode ? 'bg-gray-800/50 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+                              <span className="text-xs">Loading preview...</span>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => {
+                            onSetBackgroundImage('');
+                            setBgError(null);
+                            setSelectedFile(null);
+                          }}
+                          className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                            isDarkMode 
+                              ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30' 
+                              : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                          }`}
+                        >
+                          Remove Background
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
