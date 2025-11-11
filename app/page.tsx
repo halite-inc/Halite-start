@@ -104,7 +104,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled, squareRoundedIconsEnabled }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean; squareRoundedIconsEnabled: boolean }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled, squareRoundedIconsEnabled, onContextMenu }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean; squareRoundedIconsEnabled: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -177,6 +177,11 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
         onClick={() => {
           if (!isEditModalOpen) {
             window.location.href = app.href;
+          }
+        }}
+        onContextMenu={(e) => {
+          if (!isEditModalOpen) {
+            onContextMenu(e, app.id);
           }
         }}
       >
@@ -1906,6 +1911,7 @@ export default function Home() {
   const [showBookmarksParagraph, setShowBookmarksParagraph] = useState<boolean>(true);
   const [showTopTime, setShowTopTime] = useState<boolean>(false);
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
   const displayName = userName.trim() || 'user';
@@ -1948,6 +1954,47 @@ export default function Home() {
       return () => window.clearTimeout(focusTimer);
     }
   }, [isNameEditorOpen, userName]);
+
+  // Close context menu on outside click or Escape key
+  useEffect(() => {
+    if (!contextMenu) return;
+    
+    const handleClick = (e: MouseEvent) => {
+      // Don't close if clicking inside the context menu
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-context-menu]')) {
+        setContextMenu(null);
+      }
+    };
+    
+    const handleContextMenu = (e: MouseEvent) => {
+      // Close when right-clicking elsewhere
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-context-menu]')) {
+        setContextMenu(null);
+      }
+    };
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setContextMenu(null);
+      }
+    };
+    
+    // Add a small delay to avoid closing immediately when opening
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleClick, true);
+      document.addEventListener('contextmenu', handleContextMenu, true);
+      document.addEventListener('keydown', handleKeyDown);
+    }, 100);
+    
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('contextmenu', handleContextMenu, true);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [contextMenu]);
 
   useEffect(() => {
     if (!showTopTime) return;
@@ -2669,6 +2716,32 @@ export default function Home() {
     setApps(apps.filter(app => app.id !== id));
   };
 
+  const handleContextMenu = (e: React.MouseEvent, appId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Calculate position with viewport bounds checking
+    const menuWidth = 160;
+    const menuHeight = 50;
+    const x = Math.min(e.clientX, window.innerWidth - menuWidth - 10);
+    const y = Math.min(e.clientY, window.innerHeight - menuHeight - 10);
+    
+    setContextMenu({
+      x: Math.max(10, x),
+      y: Math.max(10, y),
+      appId,
+    });
+  };
+
+  const handleOpenInNewTab = () => {
+    if (!contextMenu) return;
+    const app = apps.find(a => a.id === contextMenu.appId);
+    if (app) {
+      window.open(app.href, '_blank', 'noopener,noreferrer');
+    }
+    setContextMenu(null);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -2904,6 +2977,7 @@ export default function Home() {
                     hoverAnimationStyle={hoverAnimationStyle}
                     fullRoundedIconsEnabled={fullRoundedIconsEnabled}
                     squareRoundedIconsEnabled={squareRoundedIconsEnabled}
+                    onContextMenu={handleContextMenu}
                   />
                 ))}
               </div>
@@ -3998,7 +4072,65 @@ export default function Home() {
         }}
       />
 
-
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          data-context-menu
+          className="fixed z-[100]"
+          style={{
+            left: `${contextMenu.x}px`,
+            top: `${contextMenu.y}px`,
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          <div
+            className={`min-w-[160px] rounded-xl shadow-xl ring-1 overflow-hidden ${
+              isDarkMode
+                ? glassmorphismEnabled
+                  ? 'bg-[#2B2B2B]/90 backdrop-blur-md ring-white/20'
+                  : liquidGlassEnabled
+                    ? 'liquid-surface'
+                    : 'bg-[#1e1e1e] ring-white/10'
+                : glassmorphismEnabled
+                  ? 'bg-white/90 backdrop-blur-md ring-gray-200/40'
+                  : liquidGlassEnabled
+                    ? 'liquid-surface'
+                    : 'bg-white ring-gray-200'
+            }`}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenInNewTab();
+              }}
+              className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
+                isDarkMode
+                  ? 'text-white hover:bg-white/10'
+                  : 'text-gray-800 hover:bg-gray-100'
+              }`}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+              Open in new tab
+            </button>
+          </div>
+        </div>
+      )}
 
     </main>
   );
