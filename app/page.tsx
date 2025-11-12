@@ -2898,11 +2898,11 @@ export default function Home() {
     setApps([...apps, appWithIcon]);
   };
 
-  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'mood-tracker' | 'pomodoro' | 'random-quote' | 'dice' | 'coin-flip') => {
+  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip') => {
     const widget: Widget = {
       id: Date.now().toString(),
       type,
-      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : type === 'fidget-spinner' ? 'Fidget Spinner' : type === 'mood-tracker' ? 'Mood Tracker' : type === 'pomodoro' ? 'Pomodoro Timer' : type === 'random-quote' ? 'Random Quote' : type === 'dice' ? 'Dice Roller' : type === 'coin-flip' ? 'Coin Flip' : 'Spacer'
+      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : type === 'fidget-spinner' ? 'Fidget Spinner' : type === 'pomodoro' ? 'Pomodoro Timer' : type === 'dice' ? 'Dice Roller' : type === 'coin-flip' ? 'Coin Flip' : 'Spacer'
     };
     setWidgets([...widgets, widget]);
   };
