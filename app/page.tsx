@@ -3253,6 +3253,7 @@ export default function Home() {
                       hoverAnimationStyle={hoverAnimationStyle}
                       fullRoundedIconsEnabled={fullRoundedIconsEnabled}
                       squareRoundedIconsEnabled={squareRoundedIconsEnabled}
+                      monochromeIcons={monochromeIcons}
                       onContextMenu={handleContextMenu}
                     />
                   )
