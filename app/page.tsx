@@ -30,11 +30,15 @@ interface App {
   title: string;
   href: string;
   icon?: string;
+  type?: 'default' | 'halite';
+  haliteUrls?: string[];
+  haliteIcons?: string[];
+  haliteName?: string;
 }
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'mood-tracker' | 'pomodoro' | 'random-quote' | 'dice' | 'coin-flip';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip';
   title: string;
 }
 
@@ -45,13 +49,6 @@ interface Bookmark {
   icon?: string;
 }
 
-interface FloatingNote {
-  id: string;
-  text: string;
-  x: number;
-  y: number;
-  rotation: number; // degrees
-}
 
 const defaultApps: App[] = [
   { id: 'youtube', title: 'YouTube', href: 'https://youtube.com', icon: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=32' },
@@ -104,7 +101,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled, squareRoundedIconsEnabled, onContextMenu }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean; squareRoundedIconsEnabled: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled, squareRoundedIconsEnabled, monochromeIcons, onContextMenu }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean; squareRoundedIconsEnabled: boolean; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -163,7 +160,9 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface liquid-pressable'
+            : liquidGlassEnabled
             ? 'liquid-surface liquid-pressable'
             : glassmorphismEnabled
               ? (isDark 
@@ -174,9 +173,16 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
                   : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}${extraClasses} ${hoverClass}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
-        onClick={() => {
+        onClick={(e) => {
           if (!isEditModalOpen) {
-            window.location.href = app.href;
+            if (e.shiftKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              // Open in new tab (not window)
+              window.open(app.href, '_blank', 'noopener,noreferrer');
+            } else {
+              window.location.href = app.href;
+            }
           }
         }}
         onContextMenu={(e) => {
@@ -185,7 +191,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
           }
         }}
       >
-        {liquidGlassEnabled && (
+        {(liquidGlassEnabled || fluidModeEnabled) && (
           <div className="pointer-events-none absolute inset-0 rounded-2xl" />
         )}
         {/* App Icon */}
@@ -194,7 +200,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
             <img 
               src={app.icon} 
               alt={`${app.title} icon`}
-              className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm ${iconBgClass}`}
+              className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm ${iconBgClass} ${monochromeIcons ? 'grayscale' : ''}`}
               onError={(e) => {
                 // Show a fallback icon if the image fails to load
                 e.currentTarget.style.display = 'none';
@@ -238,7 +244,216 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
   );
 }
 
-function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled, squareRoundedIconsEnabled, monochromeIcons, onContextMenu }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean; squareRoundedIconsEnabled: boolean; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: app.id, disabled: !isEditModalOpen });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const hoverClass = animateIconsEnabled
+    ? hoverAnimationStyle === 'tilt'
+      ? 'hover:-rotate-3 hover:translate-y-[-2px]'
+      : hoverAnimationStyle === 'skew'
+        ? 'hover:skew-x-3 hover:skew-y-1'
+        : hoverAnimationStyle === 'spin'
+          ? 'hover:rotate-6'
+          : hoverAnimationStyle === 'bounce'
+            ? 'hover:-translate-y-1'
+            : hoverAnimationStyle === 'pulse'
+              ? 'hover:scale-[1.06]'
+              : hoverAnimationStyle === 'float'
+                ? 'hover:-translate-y-1.5'
+                : hoverAnimationStyle === 'slide'
+                  ? 'hover:translate-x-1'
+                  : hoverAnimationStyle === 'glow'
+                    ? 'hover:shadow-[0_0_24px_rgba(59,130,246,0.6)]'
+                    : 'hover:scale-110 hover:-translate-y-0.5'
+    : '';
+
+  const haliteUrls = app.haliteUrls || [];
+  const haliteIcons = app.haliteIcons || [];
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isEditModalOpen && haliteUrls.length > 0) {
+      // Always open all URLs in new tabs to keep dashboard open
+      haliteUrls.forEach((url) => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      });
+    }
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative group ${showAppTitles ? 'w-[40px] sm:w-[48px] lg:w-[60px]' : 'w-[48px] sm:w-[60px] lg:w-[70px]'} ${isDragging ? 'z-50' : ''}`}
+    >
+      {/* Halite Card */}
+      <div
+        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
+        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${fullRoundedIconsEnabled ? 'rounded-full' : squareRoundedIconsEnabled ? 'rounded-lg' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
+          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        } ${
+          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        } ${
+          fluidModeEnabled
+            ? 'fluid-surface liquid-pressable'
+            : liquidGlassEnabled
+            ? 'liquid-surface liquid-pressable'
+            : glassmorphismEnabled
+              ? (isDark 
+                  ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
+                  : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]')
+              : (isDark 
+                  ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]' 
+                  : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
+        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${hoverClass}`}
+        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+        onClick={handleClick}
+        onContextMenu={(e) => {
+          if (!isEditModalOpen) {
+            onContextMenu(e, app.id);
+          }
+        }}
+      >
+        {(liquidGlassEnabled || fluidModeEnabled) && (
+          <div className="pointer-events-none absolute inset-0 rounded-2xl" />
+        )}
+        {/* Dynamic Grid of Mini Icons (2x2 diagonal, 3x1, or 2x2) */}
+        {haliteUrls.length === 2 ? (
+          <div className="w-full h-full p-1 relative">
+            {/* First icon - top left */}
+            <div className="absolute top-0 left-0 w-1/2 h-1/2 flex items-center justify-center relative overflow-hidden rounded">
+              {haliteIcons[0] && haliteIcons[0].trim() !== '' ? (
+                <>
+                  <img
+                    src={haliteIcons[0]}
+                    alt={`${app.title} 1`}
+                    className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale' : ''}`}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        const fallback = parent.querySelector('.halite-fallback-0') as HTMLElement;
+                        if (fallback) fallback.classList.remove('hidden');
+                      }
+                    }}
+                  />
+                  <div className="halite-fallback-0 hidden w-full h-full rounded flex items-center justify-center text-[8px] bg-white/20">
+                    🔗
+                  </div>
+                </>
+              ) : (
+                <div className={`w-full h-full rounded flex items-center justify-center text-[8px] ${isDark ? 'bg-white/10 text-white/60' : 'bg-white/30 text-gray-600'}`}>
+                  🔗
+                </div>
+              )}
+            </div>
+            {/* Second icon - bottom right */}
+            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 flex items-center justify-center relative overflow-hidden rounded">
+              {haliteIcons[1] && haliteIcons[1].trim() !== '' ? (
+                <>
+                  <img
+                    src={haliteIcons[1]}
+                    alt={`${app.title} 2`}
+                    className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale' : ''}`}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        const fallback = parent.querySelector('.halite-fallback-1') as HTMLElement;
+                        if (fallback) fallback.classList.remove('hidden');
+                      }
+                    }}
+                  />
+                  <div className="halite-fallback-1 hidden w-full h-full rounded flex items-center justify-center text-[8px] bg-white/20">
+                    🔗
+                  </div>
+                </>
+              ) : (
+                <div className={`w-full h-full rounded flex items-center justify-center text-[8px] ${isDark ? 'bg-white/10 text-white/60' : 'bg-white/30 text-gray-600'}`}>
+                  🔗
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className={`w-full h-full p-1 grid gap-0.5 ${
+            haliteUrls.length === 3 ? 'grid-cols-3 grid-rows-1' :
+            'grid-cols-2 grid-rows-2'
+          }`}>
+            {haliteUrls.map((url, index) => {
+              const hasIcon = haliteIcons[index] && haliteIcons[index].trim() !== '';
+              return (
+                <div key={index} className="w-full h-full flex items-center justify-center relative overflow-hidden rounded">
+                  {hasIcon ? (
+                    <>
+                      <img
+                        src={haliteIcons[index]}
+                        alt={`${app.title} ${index + 1}`}
+                        className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale' : ''}`}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            const fallback = parent.querySelector('.halite-fallback') as HTMLElement;
+                            if (fallback) fallback.classList.remove('hidden');
+                          }
+                        }}
+                      />
+                      <div className="halite-fallback hidden w-full h-full rounded flex items-center justify-center text-[8px] bg-white/20">
+                        🔗
+                      </div>
+                    </>
+                  ) : (
+                    <div className={`halite-fallback w-full h-full rounded flex items-center justify-center text-[8px] ${isDark ? 'bg-white/10 text-white/60' : 'bg-white/30 text-gray-600'}`}>
+                      🔗
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      
+      {/* App Title - Below the card (shown for halite if name is set) */}
+      {showAppTitles && app.haliteName && (
+        <div className="mt-2 text-center w-full">
+          <span className={`truncate text-xs font-medium ${
+            appTitleColor === 'auto' 
+              ? (isDark ? 'text-white' : 'text-gray-800')
+              : appTitleColor === 'black' 
+                ? 'text-black' 
+                : 'text-white'
+          }`}>{app.haliteName}</span>
+        </div>
+      )}
+      
+      {/* Delete Button - Only show when edit modal is open */}
+      {isEditModalOpen && (
+        <button
+          onClick={() => onRemove(app.id)}
+          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
+          title="Remove app"
+        >
+          ×
+        </button>
+      )}
+    </div>
+  );
+}
+
+function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Add loading flag
@@ -301,7 +516,9 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
@@ -359,7 +576,7 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
   );
 }
 
-function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [weather, setWeather] = useState({ temp: '22°', condition: 'Sunny', location: 'Loading...' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -478,7 +695,9 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
@@ -490,7 +709,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
-        {liquidGlassEnabled && (
+        {(liquidGlassEnabled || fluidModeEnabled) && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         {/* Rain droplet effect */}
@@ -563,7 +782,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
   );
 }
 
-function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [date, setDate] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const {
@@ -641,7 +860,9 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
@@ -653,7 +874,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
-        {liquidGlassEnabled && (
+        {(liquidGlassEnabled || fluidModeEnabled) && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         {/* Subtle accent */}
@@ -662,7 +883,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         {/* Center current day number overlay with top margin */}
         <div className="absolute inset-0 flex justify-center items-start z-0 pointer-events-none">
           <div className={`mt-[43.5px] sm:mt-[51.5px] text-5xl sm:text-6xl font-extrabold tracking-tight ${
-            liquidGlassEnabled
+            (liquidGlassEnabled || fluidModeEnabled)
               ? (isDark ? 'text-white/25' : 'text-gray-900/25')
               : glassmorphismEnabled
                 ? (isDark ? 'text-white/20' : 'text-gray-900/20')
@@ -705,7 +926,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   );
 }
 
-function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [waterIntake, setWaterIntake] = useState(() => {
     // Initialize with saved value or 0
     if (typeof window !== 'undefined') {
@@ -795,7 +1016,9 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
@@ -807,7 +1030,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {liquidGlassEnabled && (
+        {(liquidGlassEnabled || fluidModeEnabled) && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         <div className="text-center flex flex-col justify-center items-center h-full relative px-2 py-3">
@@ -901,7 +1124,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
   );
 }
 
-function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [notes, setNotes] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`notes_${widget.id}`);
@@ -953,7 +1176,9 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
             : glassmorphismEnabled
             ? (isDark 
@@ -965,7 +1190,7 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {liquidGlassEnabled && (
+        {(liquidGlassEnabled || fluidModeEnabled) && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
         )}
         {/* Subtle texture overlay */}
@@ -1014,7 +1239,7 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
 
 
 
-function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const {
     attributes,
@@ -1069,7 +1294,9 @@ function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImag
         className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center overflow-hidden transition-all duration-300 ${widgetHoverClass} ${
           isDragging ? 'opacity-50 rotate-3 scale-105' : ''
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'bg-white/10 backdrop-blur-xl ring-1 ring-white/20'
             : glassmorphismEnabled
               ? (isDark ? 'bg-white/10 ring-1 ring-white/15' : 'bg-white/70 ring-1 ring-white/40')
@@ -1077,6 +1304,9 @@ function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImag
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
+        {(liquidGlassEnabled || fluidModeEnabled) && (
+          <div className="pointer-events-none absolute inset-0 rounded-3xl" />
+        )}
         {photoUrl ? (
           <img src={photoUrl} alt="Photo" className="w-full h-full object-cover" />
         ) : (
@@ -1117,7 +1347,7 @@ function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImag
     </div>
   );
 }
-function FidgetSpinnerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function FidgetSpinnerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const {
     attributes,
     listeners,
@@ -1239,7 +1469,9 @@ function FidgetSpinnerWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
               ? (isDark ? 'bg-white/10 ring-1 ring-white/15' : 'bg-white/60 ring-1 ring-white/40')
@@ -1379,66 +1611,7 @@ function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateI
 
 // StickyNoteWidget removed
 
-// Playful Widgets
-function MoodTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
-  const [mood, setMood] = useState<number>(3);
-  const moods = ['😢', '😕', '😐', '🙂', '😊'];
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
-
-  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
-    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
-      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
-      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
-      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
-      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
-      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
-      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
-      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-yellow-400/50' :
-      'hover:scale-110 hover:-translate-y-0.5'
-    : '';
-
-  return (
-    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
-      <div
-        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        onClick={() => !isEditModalOpen && setMood((mood + 1) % 5)}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${
-          liquidGlassEnabled
-            ? 'liquid-surface'
-            : glassmorphismEnabled
-            ? (isDark 
-                ? 'bg-purple-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                : 'bg-purple-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-            : (isDark 
-                ? 'bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
-                : 'bg-gradient-to-br from-purple-400 via-pink-400 to-purple-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-purple-200')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
-        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
-      >
-        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
-        <div className={`text-4xl sm:text-5xl transition-transform duration-300 ${!isEditModalOpen ? 'hover:scale-125' : ''}`}>
-          {moods[mood]}
-        </div>
-      </div>
-      {isEditModalOpen && (
-        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
-      )}
-    </div>
-  );
-}
-
-function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [time, setTime] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const {
@@ -1485,7 +1658,9 @@ function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
@@ -1497,7 +1672,7 @@ function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        {(liquidGlassEnabled || fluidModeEnabled) && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
         <div className="absolute inset-0 rounded-3xl" style={{ background: `conic-gradient(from 0deg, rgba(255,255,255,0.3) ${progress * 360}deg, transparent ${progress * 360}deg)` }} />
         <div className={`text-lg sm:text-xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
           {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
@@ -1511,72 +1686,8 @@ function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   );
 }
 
-function RandomQuoteWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
-  const quotes = [
-    "Dream big!",
-    "You've got this!",
-    "Stay positive!",
-    "Keep going!",
-    "Believe!",
-    "Smile! 😊"
-  ];
-  const [quote, setQuote] = useState(quotes[0]);
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
 
-  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
-    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
-      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
-      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
-      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
-      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
-      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
-      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
-      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-blue-400/50' :
-      'hover:scale-110 hover:-translate-y-0.5'
-    : '';
-
-  return (
-    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
-      <div
-        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        onClick={() => !isEditModalOpen && setQuote(quotes[Math.floor(Math.random() * quotes.length)])}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${
-          liquidGlassEnabled
-            ? 'liquid-surface'
-            : glassmorphismEnabled
-            ? (isDark 
-                ? 'bg-blue-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                : 'bg-blue-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-            : (isDark 
-                ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
-                : 'bg-gradient-to-br from-blue-400 via-cyan-400 to-blue-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-blue-200')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
-        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
-      >
-        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
-        <div className={`text-xs sm:text-sm font-semibold text-center px-2 ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
-          {quote}
-        </div>
-      </div>
-      {isEditModalOpen && (
-        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
-      )}
-    </div>
-  );
-}
-
-function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [value, setValue] = useState(1);
   const [rolling, setRolling] = useState(false);
   const {
@@ -1620,7 +1731,9 @@ function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
@@ -1632,7 +1745,7 @@ function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${rolling ? 'animate-spin' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        {(liquidGlassEnabled || fluidModeEnabled) && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
         <div className={`text-3xl sm:text-4xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
           {value}
         </div>
@@ -1644,7 +1757,7 @@ function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage
   );
 }
 
-function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [side, setSide] = useState<'H' | 'T'>('H');
   const [flipping, setFlipping] = useState(false);
   const {
@@ -1687,7 +1800,9 @@ function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
             ? (isDark 
@@ -1699,7 +1814,7 @@ function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${flipping ? 'animate-spin' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        {(liquidGlassEnabled || fluidModeEnabled) && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
         <div className={`text-2xl sm:text-3xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
           {side}
         </div>
@@ -1711,7 +1826,7 @@ function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   );
 }
 
-function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
+function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const {
@@ -1759,7 +1874,9 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
         } ${
           isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
         } ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-surface'
+            : liquidGlassEnabled
             ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
             : glassmorphismEnabled
             ? (isDark 
@@ -1770,7 +1887,7 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
                   : 'bg-gradient-to-br from-white via-gray-50 to-white text-black shadow-[0_12px_40px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-gray-100')
         }`}
       >
-        {liquidGlassEnabled && (
+        {(liquidGlassEnabled || fluidModeEnabled) && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
         )}
         <div className="relative w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 lg:w-26 lg:h-26 xl:w-28 xl:h-28">
@@ -1863,6 +1980,12 @@ export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [showAppTitles, setShowAppTitles] = useState(true);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
+  const [searchBarCompact, setSearchBarCompact] = useState<boolean>(false);
+  const [searchBarWidth, setSearchBarWidth] = useState<'narrow' | 'medium' | 'wide'>('medium');
+  const [fluidThemeColor, setFluidThemeColor] = useState<string>('#9333ea'); // Default purple
+  const [monochromeIcons, setMonochromeIcons] = useState<boolean>(false);
+  const [youtubeSearchMode, setYoutubeSearchMode] = useState<boolean>(false);
+  const [haliteFolderName, setHaliteFolderName] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [isSuggestOpen, setIsSuggestOpen] = useState<boolean>(false);
@@ -1890,20 +2013,19 @@ export default function Home() {
   const [showBookmarksTitle, setShowBookmarksTitle] = useState<boolean>(true);
   const [centerBookmarksGroup, setCenterBookmarksGroup] = useState<boolean>(false);
   const [showResetModal, setShowResetModal] = useState<boolean>(false);
-  const [floatingNotes, setFloatingNotes] = useState<FloatingNote[]>([]);
-  const [floatingModeEnabled, setFloatingModeEnabled] = useState<boolean>(false);
-  const [draggingNote, setDraggingNote] = useState<string | null>(null);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [initialPos, setInitialPos] = useState({ x: 0, y: 0 });
   const [isAddBookmarkOpen, setIsAddBookmarkOpen] = useState<boolean>(false);
   const [bookmarkTitleInput, setBookmarkTitleInput] = useState<string>('');
   const [bookmarkUrlInput, setBookmarkUrlInput] = useState<string>('');
   const [isQuickAppOpen, setIsQuickAppOpen] = useState<boolean>(false);
   const [quickAppTitleInput, setQuickAppTitleInput] = useState<string>('');
   const [quickAppUrlInput, setQuickAppUrlInput] = useState<string>('');
+  const [isHaliteModalOpen, setIsHaliteModalOpen] = useState<boolean>(false);
+  const [haliteUrls, setHaliteUrls] = useState<string[]>(['', '', '', '']);
   const [appGroupMarginTop, setAppGroupMarginTop] = useState<number>(240);
   const [liquidReflectionColor, setLiquidReflectionColor] = useState<string>('#ffffff');
+  const [fluidModeEnabled, setFluidModeEnabled] = useState<boolean>(false);
   const [userName, setUserName] = useState<string>('user');
+  const [greetingStyle, setGreetingStyle] = useState<'hi' | 'welcome' | 'time-based'>('hi');
   const [isNameEditorOpen, setIsNameEditorOpen] = useState<boolean>(false);
   const [nameInput, setNameInput] = useState<string>('user');
   const nameEditorRef = useRef<HTMLDivElement | null>(null);
@@ -1914,8 +2036,27 @@ export default function Home() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
+  const fluidThemeRgb = hexToRgb(fluidThemeColor).join(', ');
   const displayName = userName.trim() || 'user';
   const topClockLabel = topClockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // Get greeting text based on style
+  const getGreeting = () => {
+    if (greetingStyle === 'welcome') {
+      return `Welcome, ${displayName}`;
+    } else if (greetingStyle === 'time-based') {
+      const hour = new Date().getHours();
+      if (hour < 12) {
+        return `Good morning, ${displayName}`;
+      } else if (hour < 17) {
+        return `Good afternoon, ${displayName}`;
+      } else {
+        return `Good evening, ${displayName}`;
+      }
+    } else {
+      return `Hi, ${displayName}`;
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1932,6 +2073,14 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
+  
+  // Update fluid theme color CSS variable when color changes
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const rgb = hexToRgb(fluidThemeColor).join(', ');
+      document.documentElement.style.setProperty('--fluid-color-rgb', rgb);
+    }
+  }, [fluidThemeColor]);
 
   useEffect(() => {
     if (!isNameEditorOpen) return;
@@ -2059,10 +2208,6 @@ export default function Home() {
         if (savedCenterBm != null) setCenterBookmarksGroup(savedCenterBm === 'true');
         const savedBmStyle = localStorage.getItem('bookmarkStyle');
         if (savedBmStyle === 'chips' || savedBmStyle === 'cards') setBookmarkStyle(savedBmStyle);
-        const savedFloat = localStorage.getItem('floatingNotes');
-        if (savedFloat) setFloatingNotes(JSON.parse(savedFloat));
-        const savedFloatMode = localStorage.getItem('floatingModeEnabled');
-        if (savedFloatMode != null) setFloatingModeEnabled(savedFloatMode === 'true');
       } catch {}
 
       // Load theme
@@ -2102,6 +2247,27 @@ export default function Home() {
       if (savedShowSearchBar !== null) {
         setShowSearchBar(savedShowSearchBar === 'true');
         console.log('✅ Show search bar loaded:', savedShowSearchBar === 'true');
+      }
+      const savedSearchBarCompact = localStorage.getItem('searchBarCompact');
+      if (savedSearchBarCompact !== null) {
+        const compactValue = savedSearchBarCompact === 'true';
+        setSearchBarCompact(compactValue);
+        console.log('✅ Search bar compact loaded:', compactValue);
+      }
+      const savedSearchBarWidth = localStorage.getItem('searchBarWidth');
+      if (savedSearchBarWidth && (savedSearchBarWidth === 'narrow' || savedSearchBarWidth === 'medium' || savedSearchBarWidth === 'wide')) {
+        setSearchBarWidth(savedSearchBarWidth as 'narrow' | 'medium' | 'wide');
+        console.log('✅ Search bar width loaded:', savedSearchBarWidth);
+      }
+      const savedFluidThemeColor = localStorage.getItem('fluidThemeColor');
+      if (savedFluidThemeColor) {
+        setFluidThemeColor(savedFluidThemeColor);
+        console.log('✅ Fluid theme color loaded:', savedFluidThemeColor);
+      }
+      const savedMonochromeIcons = localStorage.getItem('monochromeIcons');
+      if (savedMonochromeIcons !== null) {
+        setMonochromeIcons(savedMonochromeIcons === 'true');
+        console.log('✅ Monochrome icons loaded:', savedMonochromeIcons === 'true');
       }
       const savedFullRounded = localStorage.getItem('fullRoundedIconsEnabled');
       if (savedFullRounded !== null) {
@@ -2229,53 +2395,56 @@ export default function Home() {
       const savedNormal = localStorage.getItem('normalModeEnabled');
       const savedGlass = localStorage.getItem('glassmorphismEnabled');
       const savedLiquid = localStorage.getItem('liquidGlassEnabled');
+      const savedFluid = localStorage.getItem('fluidModeEnabled');
       
       
       console.log('🔍 Mode settings found in localStorage:', { 
         normal: savedNormal, 
         glass: savedGlass, 
-        liquid: savedLiquid 
+        liquid: savedLiquid,
+        fluid: savedFluid
       });
       
       // Set modes based on saved values, ensuring only one is active
-      if (savedNormal === 'true') {
+      if (savedFluid === 'true') {
+        setNormalModeEnabled(false);
+        setGlassmorphismEnabled(false);
+        setLiquidGlassEnabled(false);
+        setFluidModeEnabled(true);
+        console.log('✅ Fluid mode restored from localStorage');
+      } else if (savedNormal === 'true') {
         setNormalModeEnabled(true);
         setGlassmorphismEnabled(false);
         setLiquidGlassEnabled(false);
+        setFluidModeEnabled(false);
         console.log('✅ Normal mode restored from localStorage');
       } else if (savedGlass === 'true') {
         setNormalModeEnabled(false);
         setGlassmorphismEnabled(true);
         setLiquidGlassEnabled(false);
+        setFluidModeEnabled(false);
         console.log('✅ Glassmorphism mode restored from localStorage');
       } else if (savedLiquid === 'true') {
         setNormalModeEnabled(false);
         setGlassmorphismEnabled(false);
         setLiquidGlassEnabled(true);
+        setFluidModeEnabled(false);
         console.log('✅ Liquid glass mode restored from localStorage');
       } else {
         // No modes saved, default to normal
         setNormalModeEnabled(true);
         setGlassmorphismEnabled(false);
         setLiquidGlassEnabled(false);
+        setFluidModeEnabled(false);
         console.log('🔄 No modes saved, defaulting to normal mode');
       }
       
-      // Log the states immediately after setting them
-      console.log('🔄 States set during loading:', {
-        normal: savedNormal === 'true',
-        glass: savedGlass === 'true',
-        liquid: savedLiquid === 'true'
-      });
-      
-      // Force a re-render after setting all states
-      setTimeout(() => {
-        console.log('🔄 Final state after loading:', {
-          normal: normalModeEnabled,
-          glass: glassmorphismEnabled,
-          liquid: liquidGlassEnabled
-        });
-      }, 100);
+      // Load greeting style
+      const savedGreetingStyle = localStorage.getItem('greetingStyle');
+      if (savedGreetingStyle === 'hi' || savedGreetingStyle === 'welcome' || savedGreetingStyle === 'time-based') {
+        setGreetingStyle(savedGreetingStyle);
+        console.log('✅ Greeting style loaded:', savedGreetingStyle);
+      }
       
       console.log('✅ All settings loaded successfully');
       setIsLoading(false); // Mark loading as complete
@@ -2314,13 +2483,6 @@ export default function Home() {
     }
   }, [bookmarks, isResetting, isLoading]);
 
-  // Save floating notes & mode
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !isResetting && !isLoading) {
-      localStorage.setItem('floatingNotes', JSON.stringify(floatingNotes));
-      localStorage.setItem('floatingModeEnabled', floatingModeEnabled.toString());
-    }
-  }, [floatingNotes, floatingModeEnabled, isResetting, isLoading]);
 
   // Reset completion - localStorage saving is now passive and only happens on user changes
   useEffect(() => {
@@ -2343,11 +2505,15 @@ export default function Home() {
         theme: isDarkMode ? 'dark' : 'light',
         showAppTitles,
         showSearchBar,
+        searchBarCompact,
+        searchBarWidth,
+        fluidThemeColor,
         // searchTerm intentionally not persisted so it starts empty on reload
         backgroundImage,
         normalModeEnabled,
         glassmorphismEnabled,
         liquidGlassEnabled,
+        fluidModeEnabled,
         appTitleColor,
         widgetTextColor,
         autofulIconsEnabled,
@@ -2358,6 +2524,7 @@ export default function Home() {
         appGroupMarginTop,
         liquidReflectionColor,
         userName,
+        greetingStyle,
         showBookmarksParagraph,
         showTopTime
       });
@@ -2368,6 +2535,10 @@ export default function Home() {
       // Save show app titles
       localStorage.setItem('showAppTitles', showAppTitles.toString());
       localStorage.setItem('showSearchBar', showSearchBar.toString());
+      localStorage.setItem('searchBarCompact', searchBarCompact.toString());
+      localStorage.setItem('searchBarWidth', searchBarWidth);
+      localStorage.setItem('fluidThemeColor', fluidThemeColor);
+      localStorage.setItem('monochromeIcons', monochromeIcons.toString());
       localStorage.setItem('centerAppsGroup', centerAppsGroup.toString());
       localStorage.setItem('centerWidgetsGroup', centerWidgetsGroup.toString());
       localStorage.setItem('showBookmarks', showBookmarks.toString());
@@ -2385,6 +2556,7 @@ export default function Home() {
       localStorage.setItem('normalModeEnabled', normalModeEnabled.toString());
       localStorage.setItem('glassmorphismEnabled', glassmorphismEnabled.toString());
       localStorage.setItem('liquidGlassEnabled', liquidGlassEnabled.toString());
+      localStorage.setItem('fluidModeEnabled', fluidModeEnabled.toString());
       
       // Save colors
       localStorage.setItem('appTitleColor', appTitleColor);
@@ -2399,6 +2571,7 @@ export default function Home() {
       localStorage.setItem('appGroupMarginTop', appGroupMarginTop.toString());
       localStorage.setItem('liquidReflectionColor', liquidReflectionColor);
       localStorage.setItem('userName', userName);
+      localStorage.setItem('greetingStyle', greetingStyle);
       localStorage.setItem('showBookmarksParagraph', showBookmarksParagraph.toString());
       localStorage.setItem('showTopTime', showTopTime.toString());
 
@@ -2428,10 +2601,15 @@ export default function Home() {
     isDarkMode, 
     showAppTitles, 
     showSearchBar,
+    searchBarCompact,
+    searchBarWidth,
     backgroundImage, 
     normalModeEnabled, 
     glassmorphismEnabled, 
     liquidGlassEnabled, 
+    fluidModeEnabled,
+    fluidThemeColor,
+    monochromeIcons,
     appTitleColor, 
     widgetTextColor,
     autofulIconsEnabled,
@@ -2449,6 +2627,7 @@ export default function Home() {
     appGroupMarginTop,
     liquidReflectionColor,
     userName,
+    greetingStyle,
     showTopTime,
     isLoading,
     isResetting
@@ -2487,8 +2666,13 @@ export default function Home() {
     const term = (query ?? '').trim();
     if (!term) return;
     if (typeof window !== 'undefined') {
-      const url = `https://www.google.com/search?q=${encodeURIComponent(term)}`;
-      window.open(url, '_blank');
+      if (youtubeSearchMode) {
+        const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(term)}`;
+        window.open(url, '_blank');
+      } else {
+        const url = `https://www.google.com/search?q=${encodeURIComponent(term)}`;
+        window.open(url, '_blank');
+      }
     }
   };
 
@@ -2548,6 +2732,11 @@ export default function Home() {
     setNameInput('user');
     setShowBookmarksParagraph(true);
     setShowTopTime(false);
+    setSearchBarCompact(false);
+    setSearchBarWidth('medium');
+    setFluidThemeColor('#9333ea');
+    setMonochromeIcons(false);
+    setFluidModeEnabled(false);
     
     // Restore default apps and widgets
     setApps(defaultApps);
@@ -2563,6 +2752,7 @@ export default function Home() {
         localStorage.setItem('normalModeEnabled', 'true');
         localStorage.setItem('glassmorphismEnabled', 'false');
         localStorage.setItem('liquidGlassEnabled', 'false');
+        localStorage.setItem('fluidModeEnabled', 'false');
         
         localStorage.setItem('appTitleColor', 'auto');
         localStorage.setItem('widgetTextColor', 'auto');
@@ -2573,8 +2763,19 @@ export default function Home() {
         localStorage.setItem('appGroupMarginTop', '240');
         localStorage.setItem('liquidReflectionColor', '#ffffff');
         localStorage.setItem('userName', 'user');
+        localStorage.setItem('greetingStyle', 'hi');
         localStorage.setItem('showBookmarksParagraph', 'true');
         localStorage.setItem('showTopTime', 'false');
+        localStorage.setItem('searchBarCompact', 'false');
+        localStorage.setItem('searchBarWidth', 'medium');
+        localStorage.setItem('fluidThemeColor', '#9333ea');
+        localStorage.setItem('monochromeIcons', 'false');
+        
+        // Reset CSS variable
+        if (typeof document !== 'undefined') {
+          const defaultRgb = hexToRgb('#9333ea').join(', ');
+          document.documentElement.style.setProperty('--fluid-color-rgb', defaultRgb);
+        }
         
         // Save apps and widgets with explicit stringification
         const appsJson = JSON.stringify(defaultApps);
@@ -2712,6 +2913,38 @@ export default function Home() {
     setIsQuickAppOpen(true);
   };
 
+  const openHaliteModal = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHaliteUrls(['', '', '', '']);
+    setHaliteFolderName('');
+    setIsHaliteModalOpen(true);
+  };
+
+  const addHaliteFolder = () => {
+    const validUrls = haliteUrls.filter(url => url.trim() !== '');
+    if (validUrls.length >= 2 && validUrls.length <= 4) {
+      const normalizedUrls = validUrls.map(url => {
+        const trimmed = url.trim();
+        return trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+      });
+      const haliteIcons = normalizedUrls.map(url => getFaviconUrl(url));
+      const folderName = haliteFolderName.trim() || 'Halite';
+      const haliteApp: App = {
+        id: `halite-${Date.now()}`,
+        title: folderName,
+        href: normalizedUrls[0], // First URL as primary
+        type: 'halite',
+        haliteUrls: normalizedUrls,
+        haliteIcons: haliteIcons,
+        haliteName: folderName,
+      };
+      addApp(haliteApp);
+      setHaliteUrls(['', '', '', '']);
+      setHaliteFolderName('');
+      setIsHaliteModalOpen(false);
+    }
+  };
+
   const removeApp = (id: string) => {
     setApps(apps.filter(app => app.id !== id));
   };
@@ -2737,7 +2970,14 @@ export default function Home() {
     if (!contextMenu) return;
     const app = apps.find(a => a.id === contextMenu.appId);
     if (app) {
-      window.open(app.href, '_blank', 'noopener,noreferrer');
+      if (app.type === 'halite' && app.haliteUrls && app.haliteUrls.length > 0) {
+        // Open all halite URLs in new tabs
+        app.haliteUrls.forEach(url => {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        });
+      } else {
+        window.open(app.href, '_blank', 'noopener,noreferrer');
+      }
     }
     setContextMenu(null);
   };
@@ -2807,6 +3047,18 @@ export default function Home() {
       }
     } catch {}
   }, [mounted]);
+
+  // Handle Ctrl+Y to toggle YouTube search mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'y') {
+        e.preventDefault();
+        setYoutubeSearchMode(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
@@ -2888,7 +3140,7 @@ export default function Home() {
             aria-expanded={isNameEditorOpen}
             aria-controls="greeting-name-editor"
           >
-            {`Hi, ${displayName}`}
+            {getGreeting()}
           </button>
           {isNameEditorOpen && (
             <div
@@ -2960,25 +3212,50 @@ export default function Home() {
                   : 'grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'
               } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px] ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0.5 sm:gap-x-0.5 lg:gap-x-0.5'}` }>
                 {apps.map((app, index) => (
-                  <SortableLinkCard
-                    key={app.id}
-                    app={app}
-                    onRemove={removeApp}
-                    isDark={isDarkMode}
-                    showAppTitles={showAppTitles}
-                    backgroundImage={backgroundImage}
-                    glassmorphismEnabled={glassmorphismEnabled}
-                    appTitleColor={appTitleColor}
-                    liquidGlassEnabled={liquidGlassEnabled}
-                    isEditModalOpen={isEditModalOpen}
-                    jiggleIndex={index}
-                    autofulIconsEnabled={autofulIconsEnabled}
-                    animateIconsEnabled={animateIconsEnabled}
-                    hoverAnimationStyle={hoverAnimationStyle}
-                    fullRoundedIconsEnabled={fullRoundedIconsEnabled}
-                    squareRoundedIconsEnabled={squareRoundedIconsEnabled}
-                    onContextMenu={handleContextMenu}
-                  />
+                  app.type === 'halite' ? (
+                    <HaliteCard
+                      key={app.id}
+                      app={app}
+                      onRemove={removeApp}
+                      isDark={isDarkMode}
+                      showAppTitles={showAppTitles}
+                      backgroundImage={backgroundImage}
+                      glassmorphismEnabled={glassmorphismEnabled}
+                      appTitleColor={appTitleColor}
+                      liquidGlassEnabled={liquidGlassEnabled}
+                      fluidModeEnabled={fluidModeEnabled}
+                      isEditModalOpen={isEditModalOpen}
+                      jiggleIndex={index}
+                      autofulIconsEnabled={autofulIconsEnabled}
+                      animateIconsEnabled={animateIconsEnabled}
+                      hoverAnimationStyle={hoverAnimationStyle}
+                      fullRoundedIconsEnabled={fullRoundedIconsEnabled}
+                      squareRoundedIconsEnabled={squareRoundedIconsEnabled}
+                      monochromeIcons={monochromeIcons}
+                      onContextMenu={handleContextMenu}
+                    />
+                  ) : (
+                    <SortableLinkCard
+                      key={app.id}
+                      app={app}
+                      onRemove={removeApp}
+                      isDark={isDarkMode}
+                      showAppTitles={showAppTitles}
+                      backgroundImage={backgroundImage}
+                      glassmorphismEnabled={glassmorphismEnabled}
+                      appTitleColor={appTitleColor}
+                      liquidGlassEnabled={liquidGlassEnabled}
+                      fluidModeEnabled={fluidModeEnabled}
+                      isEditModalOpen={isEditModalOpen}
+                      jiggleIndex={index}
+                      autofulIconsEnabled={autofulIconsEnabled}
+                      animateIconsEnabled={animateIconsEnabled}
+                      hoverAnimationStyle={hoverAnimationStyle}
+                      fullRoundedIconsEnabled={fullRoundedIconsEnabled}
+                      squareRoundedIconsEnabled={squareRoundedIconsEnabled}
+                      onContextMenu={handleContextMenu}
+                    />
+                  )
                 ))}
               </div>
             </div>
@@ -3012,6 +3289,7 @@ export default function Home() {
                         backgroundImage={backgroundImage}
                          glassmorphismEnabled={glassmorphismEnabled}
                          liquidGlassEnabled={liquidGlassEnabled}
+                         fluidModeEnabled={fluidModeEnabled}
                         widgetTextColor={widgetTextColor}
                         jiggleIndex={index}
                         animateIconsEnabled={animateIconsEnabled}
@@ -3031,6 +3309,7 @@ export default function Home() {
                           backgroundImage={backgroundImage}
                              glassmorphismEnabled={glassmorphismEnabled}
                              liquidGlassEnabled={liquidGlassEnabled}
+                             fluidModeEnabled={fluidModeEnabled}
                              widgetTextColor={widgetTextColor}
                              jiggleIndex={index}
                              animateIconsEnabled={animateIconsEnabled}
@@ -3050,6 +3329,7 @@ export default function Home() {
                             backgroundImage={backgroundImage}
                                glassmorphismEnabled={glassmorphismEnabled}
                                liquidGlassEnabled={liquidGlassEnabled}
+                               fluidModeEnabled={fluidModeEnabled}
                             widgetTextColor={widgetTextColor}
                             jiggleIndex={index}
                             animateIconsEnabled={animateIconsEnabled}
@@ -3069,6 +3349,7 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                                glassmorphismEnabled={glassmorphismEnabled}
                                liquidGlassEnabled={liquidGlassEnabled}
+                               fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3087,6 +3368,7 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                                 liquidGlassEnabled={liquidGlassEnabled}
+                                fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3119,6 +3401,7 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
+                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3137,24 +3420,7 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
-                              widgetTextColor={widgetTextColor}
-                              jiggleIndex={index}
-                              animateIconsEnabled={animateIconsEnabled}
-                              animateWidgetsEnabled={animateWidgetsEnabled}
-                              hoverAnimationStyle={hoverAnimationStyle}
-                            />
-                          ) : widget.type === 'mood-tracker' ? (
-                            <MoodTrackerWidget
-                              key={widget.id}
-                              widget={widget}
-                              isDark={isDarkMode}
-                              onRemove={() => {
-                                setWidgets(widgets.filter(w => w.id !== widget.id));
-                              }}
-                              isEditModalOpen={isEditModalOpen}
-                              backgroundImage={backgroundImage}
-                              glassmorphismEnabled={glassmorphismEnabled}
-                              liquidGlassEnabled={liquidGlassEnabled}
+                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3173,24 +3439,7 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
-                              widgetTextColor={widgetTextColor}
-                              jiggleIndex={index}
-                              animateIconsEnabled={animateIconsEnabled}
-                              animateWidgetsEnabled={animateWidgetsEnabled}
-                              hoverAnimationStyle={hoverAnimationStyle}
-                            />
-                          ) : widget.type === 'random-quote' ? (
-                            <RandomQuoteWidget
-                              key={widget.id}
-                              widget={widget}
-                              isDark={isDarkMode}
-                              onRemove={() => {
-                                setWidgets(widgets.filter(w => w.id !== widget.id));
-                              }}
-                              isEditModalOpen={isEditModalOpen}
-                              backgroundImage={backgroundImage}
-                              glassmorphismEnabled={glassmorphismEnabled}
-                              liquidGlassEnabled={liquidGlassEnabled}
+                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3209,6 +3458,7 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
+                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3227,6 +3477,7 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
+                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3245,6 +3496,7 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                                liquidGlassEnabled={liquidGlassEnabled}
+                               fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                             />
@@ -3563,39 +3815,146 @@ export default function Home() {
         {isQuickAppOpen && (
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/40" onClick={() => setIsQuickAppOpen(false)} />
-            <div className={`absolute bottom-20 right-4 z-10 w-80 rounded-2xl p-4 shadow-2xl ${isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
-              <h4 className="text-sm font-semibold mb-3">Add Favorite App</h4>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  placeholder="App name"
-                  value={quickAppTitleInput}
-                  onChange={(e) => setQuickAppTitleInput(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
-                />
-                <input
-                  type="text"
-                  placeholder="URL (e.g., twitter.com or https://twitter.com)"
-                  value={quickAppUrlInput}
-                  onChange={(e) => setQuickAppUrlInput(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
-                />
+            <div className="absolute bottom-20 right-4 z-10 flex gap-4">
+              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${fluidModeEnabled ? 'fluid-mode-elevated' : liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+                <h4 className="text-sm font-semibold mb-3">Add Favorite App</h4>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="App name"
+                    value={quickAppTitleInput}
+                    onChange={(e) => setQuickAppTitleInput(e.target.value)}
+                    className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="URL (e.g., twitter.com or https://twitter.com)"
+                    value={quickAppUrlInput}
+                    onChange={(e) => setQuickAppUrlInput(e.target.value)}
+                    className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                  />
+                </div>
+                <div className="mt-3 flex justify-end gap-2">
+                  <button onClick={() => setIsQuickAppOpen(false)} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
+                  <button
+                    onClick={() => {
+                      const t = quickAppTitleInput.trim();
+                      const raw = quickAppUrlInput.trim();
+                      if (!t || !raw) return;
+                      const normalizedHref = raw.startsWith('http') ? raw : `https://${raw}`;
+                      addApp({ id: Date.now().toString(), title: t, href: normalizedHref });
+                      setQuickAppTitleInput('');
+                      setQuickAppUrlInput('');
+                      setIsQuickAppOpen(false);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-500'} text-white`}
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
-              <div className="mt-3 flex justify-end gap-2">
-                <button onClick={() => setIsQuickAppOpen(false)} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
-                <button
-                  onClick={() => {
-                    const t = quickAppTitleInput.trim();
-                    const raw = quickAppUrlInput.trim();
-                    if (!t || !raw) return;
-                    const normalizedHref = raw.startsWith('http') ? raw : `https://${raw}`;
-                    addApp({ id: Date.now().toString(), title: t, href: normalizedHref });
-                    setIsQuickAppOpen(false);
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-500'} text-white`}
-                >
-                  Add
-                </button>
+              <div className={`w-64 rounded-2xl p-4 shadow-2xl max-h-96 overflow-y-auto custom-scrollbar ${fluidModeEnabled ? 'fluid-mode-elevated' : liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+                <h4 className="text-sm font-semibold mb-3">Popular Websites</h4>
+                <div className="space-y-2">
+                  {[
+                    { title: 'YouTube', url: 'youtube.com' },
+                    { title: 'GitHub', url: 'github.com' },
+                    { title: 'Twitter', url: 'twitter.com' },
+                    { title: 'Reddit', url: 'reddit.com' },
+                    { title: 'Instagram', url: 'instagram.com' },
+                    { title: 'LinkedIn', url: 'linkedin.com' },
+                    { title: 'Facebook', url: 'facebook.com' },
+                    { title: 'Netflix', url: 'netflix.com' },
+                    { title: 'Spotify', url: 'spotify.com' },
+                    { title: 'Discord', url: 'discord.com' },
+                    { title: 'Notion', url: 'notion.so' },
+                    { title: 'Figma', url: 'figma.com' },
+                    { title: 'Amazon', url: 'amazon.com' },
+                    { title: 'Google', url: 'google.com' },
+                    { title: 'Gmail', url: 'gmail.com' },
+                  ].map((site) => (
+                    <button
+                      key={site.url}
+                      onClick={() => {
+                        addApp({ 
+                          id: Date.now().toString(), 
+                          title: site.title, 
+                          href: `https://${site.url}`,
+                          icon: getFaviconUrl(`https://${site.url}`)
+                        });
+                        setIsQuickAppOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${
+                        isDarkMode 
+                          ? 'bg-white/5 hover:bg-white/10 text-white' 
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
+                      }`}
+                    >
+                      <img 
+                        src={getFaviconUrl(`https://${site.url}`)} 
+                        alt="" 
+                        className="w-4 h-4"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      <span>{site.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Halite Modal */}
+        {isHaliteModalOpen && (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/40" onClick={() => setIsHaliteModalOpen(false)} />
+            <div className="absolute bottom-20 right-4 z-10">
+              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${fluidModeEnabled ? 'fluid-mode-elevated' : liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+                <h4 className="text-sm font-semibold mb-3">Add Halite Folder</h4>
+                <p className={`text-xs mb-3 ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Add 2-4 URLs to create a folder that opens all sites</p>
+                <div className="space-y-2 mb-3">
+                  <input
+                    type="text"
+                    placeholder="Folder name (optional)"
+                    value={haliteFolderName}
+                    onChange={(e) => setHaliteFolderName(e.target.value)}
+                    className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                  />
+                </div>
+                <div className="space-y-2">
+                  {[0, 1, 2, 3].map((index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      placeholder={`URL ${index + 1} (e.g., twitter.com)`}
+                      value={haliteUrls[index] || ''}
+                      onChange={(e) => {
+                        const newUrls = [...haliteUrls];
+                        newUrls[index] = e.target.value;
+                        setHaliteUrls(newUrls);
+                      }}
+                      className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                    />
+                  ))}
+                </div>
+                <div className="mt-3 flex justify-end gap-2">
+                  <button 
+                    onClick={() => setIsHaliteModalOpen(false)} 
+                    className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={addHaliteFolder}
+                    disabled={haliteUrls.filter(url => url.trim() !== '').length < 2 || haliteUrls.filter(url => url.trim() !== '').length > 4}
+                    className={`px-3 py-1.5 rounded-lg text-sm ${haliteUrls.filter(url => url.trim() !== '').length >= 2 && haliteUrls.filter(url => url.trim() !== '').length <= 4 ? (isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-500') : 'bg-gray-400 cursor-not-allowed'} text-white`}
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -3623,7 +3982,11 @@ export default function Home() {
 
         {/* Search Bar under widget cards group */}
         {showSearchBar && (
-          <div className={`mt-6 mb-6 relative rounded-2xl p-2 sm:p-2.5 shadow-lg ${
+          <div className={`mt-6 mb-6 relative rounded-2xl ${
+            searchBarCompact ? 'p-1.5 sm:p-2' : 'p-2 sm:p-2.5'
+          } shadow-lg ${
+            searchBarWidth === 'narrow' ? 'max-w-md mx-auto' : searchBarWidth === 'wide' ? 'max-w-4xl mx-auto' : 'max-w-2xl mx-auto'
+          } ${
             liquidGlassEnabled
               ? 'liquid-surface'
               : glassmorphismEnabled
@@ -3631,6 +3994,13 @@ export default function Home() {
                 : (isDarkMode ? 'bg-[#0f1115] ring-1 ring-white/10' : 'bg-white ring-1 ring-gray-200')
           }`}>
             <div className="flex items-stretch gap-2">
+              {youtubeSearchMode && (
+                <div className="flex items-center px-2">
+                  <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </div>
+              )}
               <div className="relative flex-1">
               <input
                 type="text"
@@ -3655,8 +4025,10 @@ export default function Home() {
                     setHighlightIndex((prev) => (prev - 1 + searchSuggestions.length) % searchSuggestions.length);
                   }
                 }}
-                placeholder="Search apps..."
-                className={`w-full px-3 py-2 rounded-full border-0 bg-transparent text-sm focus:outline-none focus:ring-0 transition-none ${
+                placeholder={youtubeSearchMode ? "Search YouTube..." : "Search apps..."}
+                className={`w-full ${
+                  searchBarCompact ? 'px-2 py-1.5 text-xs' : 'px-3 py-2 text-sm'
+                } rounded-full border-0 bg-transparent focus:outline-none focus:ring-0 transition-none ${
                   isDarkMode
                     ? 'text-white placeholder-gray-400'
                     : 'text-gray-900 placeholder-gray-500'
@@ -3666,13 +4038,15 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => submitSearch(highlightIndex >= 0 ? searchSuggestions[highlightIndex] : searchTerm)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold bg-transparent ring-0 transition-none ${
+                className={`${
+                  searchBarCompact ? 'px-3 py-1.5' : 'px-4 py-2'
+                } rounded-full text-sm font-semibold bg-transparent ring-0 transition-none ${
                   isDarkMode ? 'text-white/80' : 'text-gray-800/80'
                 }`}
                 title="Search"
                 aria-label="Search"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`${searchBarCompact ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
                 </svg>
               </button>
@@ -3731,7 +4105,9 @@ export default function Home() {
       {/* Floating Action Dock */}
       <div
         className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border px-1 py-1 sm:px-1.5 sm:py-1.5 flex items-center gap-1 z-30 ${
-          liquidGlassEnabled
+          fluidModeEnabled
+            ? 'fluid-mode-elevated border-purple-400/30'
+            : liquidGlassEnabled
             ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
             : glassmorphismEnabled
               ? (isDarkMode
@@ -3748,7 +4124,9 @@ export default function Home() {
             setIsEditModalOpen(!isEditModalOpen);
           }}
           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
-            liquidGlassEnabled
+            fluidModeEnabled
+              ? 'bg-white/15 text-white ring-purple-400/30 hover:bg-white/20'
+              : liquidGlassEnabled
               ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
               : glassmorphismEnabled
                 ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
@@ -3769,22 +4147,40 @@ export default function Home() {
         </button>
 
         {/* Quick Add Favorite App Button (left of Settings) */}
-        <button
-          onClick={quickAddFavoriteApp}
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
-            liquidGlassEnabled
-              ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
-              : glassmorphismEnabled
-                ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
-                : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
-          } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
-          title="Add Favorite App"
-          aria-label="Add Favorite App"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
+        <div className="relative">
+          <button
+            onClick={quickAddFavoriteApp}
+            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
+              fluidModeEnabled
+                ? 'bg-white/15 text-white ring-purple-400/30 hover:bg-white/20'
+                : liquidGlassEnabled
+                ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
+                : glassmorphismEnabled
+                  ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+                  : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+            } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
+            title="Add Favorite App"
+            aria-label="Add Favorite App"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          {/* Shine button for Halite */}
+          <button
+            onClick={openHaliteModal}
+            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center z-10"
+            title="Add Halite Folder"
+            aria-label="Add Halite Folder"
+            style={{
+              boxShadow: '0 2px 8px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+            }}
+          >
+            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          </button>
+        </div>
         
         {/* Settings Button */}
         <button
@@ -3792,7 +4188,9 @@ export default function Home() {
             setIsSidebarOpen(prev => !prev);
           }}
           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
-            liquidGlassEnabled
+            fluidModeEnabled
+              ? 'bg-white/15 text-white ring-purple-400/30 hover:bg-white/20'
+              : liquidGlassEnabled
               ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
               : glassmorphismEnabled
                 ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
@@ -3808,138 +4206,6 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Floating Notes Layer */}
-      {floatingNotes.map((n) => {
-        const isDragging = draggingNote === n.id;
-
-        const handlePointerDown = (e: React.PointerEvent) => {
-          if (!floatingModeEnabled) return;
-          e.preventDefault();
-          setDraggingNote(n.id);
-          setDragStart({ x: e.clientX, y: e.clientY });
-          setInitialPos({ x: n.x, y: n.y });
-          e.currentTarget.setPointerCapture(e.pointerId);
-        };
-
-        const handlePointerMove = (e: React.PointerEvent) => {
-          if (!isDragging || !floatingModeEnabled) return;
-          e.preventDefault();
-          const deltaX = e.clientX - dragStart.x;
-          const deltaY = e.clientY - dragStart.y;
-          const newX = Math.max(0, Math.min(window.innerWidth - 192, initialPos.x + deltaX));
-          const newY = Math.max(0, Math.min(window.innerHeight - 200, initialPos.y + deltaY));
-          
-          setFloatingNotes(prev => prev.map(x => 
-            x.id === n.id ? { ...x, x: newX, y: newY } : x
-          ));
-        };
-
-        const handlePointerUp = (e: React.PointerEvent) => {
-          if (isDragging) {
-            setDraggingNote(null);
-            e.currentTarget.releasePointerCapture(e.pointerId);
-          }
-        };
-
-        return (
-          <div
-            key={n.id}
-            className={`fixed z-40 select-none ${isDragging ? 'z-50' : ''} ${
-              floatingModeEnabled ? 'cursor-move' : 'cursor-default'
-            }`}
-            style={{ 
-              left: n.x, 
-              top: n.y, 
-              transform: `rotate(${n.rotation}deg)`,
-              transition: isDragging ? 'none' : 'transform 0.2s ease'
-            }}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-          >
-            <div className={`w-48 rounded-2xl p-3 shadow-lg ring-1 transition-all duration-200 ${
-              isDragging ? 'shadow-2xl scale-105' : 'shadow-lg'
-            } ${isDarkMode ? 'bg-amber-900/90 text-amber-50 ring-amber-700/50' : 'bg-amber-100 text-amber-900 ring-amber-200'}`}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-xs font-medium opacity-70">
-                  {floatingModeEnabled ? 'Drag to move' : 'Floating Note'}
-                </div>
-                {floatingModeEnabled && (
-                  <div className="w-2 h-2 rounded-full bg-current opacity-50"></div>
-                )}
-              </div>
-              <textarea
-                value={n.text}
-                onChange={(e) => setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, text: e.target.value } : x))}
-                className={`w-full h-24 bg-transparent outline-none text-sm resize-none ${
-                  floatingModeEnabled ? 'pointer-events-none' : ''
-                }`}
-                placeholder="Type note..."
-                disabled={floatingModeEnabled}
-              />
-              <div className="mt-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
-                      isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'
-                    }`}
-                    title="Rotate left"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, rotation: x.rotation - 15 } : x));
-                    }}
-                  >
-                    ↺
-                  </button>
-                  <button
-                    type="button"
-                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
-                      isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'
-                    }`}
-                    title="Rotate right"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setFloatingNotes(prev => prev.map(x => x.id === n.id ? { ...x, rotation: x.rotation + 15 } : x));
-                    }}
-                  >
-                    ↻
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className={`px-2 py-1 rounded-lg text-xs transition-colors ${
-                    isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white hover:bg-gray-100 ring-1 ring-gray-200'
-                  }`}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setFloatingNotes(prev => prev.filter(x => x.id !== n.id));
-                  }}
-                  title="Remove note"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })}
 
       {/* Left Sidebar */}
       <LeftSidebar
@@ -3990,6 +4256,7 @@ export default function Home() {
             if (next) {
               setLiquidGlassEnabled(false);
               setNormalModeEnabled(false);
+              setFluidModeEnabled(false);
             }
             return next;
           });
@@ -4002,6 +4269,7 @@ export default function Home() {
             if (next) {
               setGlassmorphismEnabled(false);
               setNormalModeEnabled(false);
+              setFluidModeEnabled(false);
             }
             return next;
           });
@@ -4015,6 +4283,7 @@ export default function Home() {
             if (next) {
               setGlassmorphismEnabled(false);
               setLiquidGlassEnabled(false);
+              setFluidModeEnabled(false);
             }
             return next;
           });
@@ -4063,12 +4332,64 @@ export default function Home() {
         onSetLiquidReflectionColor={(value) => setLiquidReflectionColor(value)}
         showTopTime={showTopTime}
         onToggleTopTime={() => setShowTopTime(prev => !prev)}
-        floatingModeEnabled={floatingModeEnabled}
-        onToggleFloatingMode={() => setFloatingModeEnabled(prev => !prev)}
-        onAddFloatingNote={() => {
-          const id = Date.now().toString();
-          setFloatingNotes(prev => [...prev, { id, text: 'New note', x: window.innerWidth / 2 - 80, y: 160, rotation: 0 }]);
-          setIsSidebarOpen(false);
+        fluidModeEnabled={fluidModeEnabled}
+        onToggleFluidMode={() => {
+          setFluidModeEnabled(prev => {
+            const next = !prev;
+            if (next) {
+              setGlassmorphismEnabled(false);
+              setLiquidGlassEnabled(false);
+              setNormalModeEnabled(false);
+            }
+            return next;
+          });
+        }}
+        greetingStyle={greetingStyle}
+        onSetGreetingStyle={(style) => setGreetingStyle(style)}
+        searchBarCompact={searchBarCompact}
+        onToggleSearchBarCompact={() => {
+          setSearchBarCompact(prev => {
+            const newValue = !prev;
+            // Save immediately
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('searchBarCompact', newValue.toString());
+              console.log('💾 Search bar compact saved immediately:', newValue);
+            }
+            return newValue;
+          });
+        }}
+        searchBarWidth={searchBarWidth}
+        onSetSearchBarWidth={(width) => {
+          setSearchBarWidth(width);
+          // Save immediately
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('searchBarWidth', width);
+            console.log('💾 Search bar width saved immediately:', width);
+          }
+        }}
+        fluidThemeColor={fluidThemeColor}
+        onSetFluidThemeColor={(color) => {
+          setFluidThemeColor(color);
+          // Save immediately
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('fluidThemeColor', color);
+            console.log('💾 Fluid theme color saved immediately:', color);
+            // Update CSS variable immediately
+            const rgb = hexToRgb(color).join(', ');
+            document.documentElement.style.setProperty('--fluid-color-rgb', rgb);
+          }
+        }}
+        monochromeIcons={monochromeIcons}
+        onToggleMonochromeIcons={() => {
+          setMonochromeIcons(prev => {
+            const newValue = !prev;
+            // Save immediately
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('monochromeIcons', newValue.toString());
+              console.log('💾 Monochrome icons saved immediately:', newValue);
+            }
+            return newValue;
+          });
         }}
       />
 

@@ -145,17 +145,92 @@ html {
   border: 1px solid rgba(255,255,255,0.20);
 }
 
+/* Fluid Mode Theme */
+.fluid-mode-elevated {
+  --fluid-color-rgb: 147, 51, 234; /* Default purple, can be overridden */
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(32px) saturate(180%);
+  background: linear-gradient(145deg, rgba(var(--fluid-color-rgb), 0.15), rgba(var(--fluid-color-rgb), 0.12), rgba(var(--fluid-color-rgb), 0.10));
+  border: 1px solid rgba(var(--fluid-color-rgb), 0.25);
+  box-shadow: 
+    0 24px 80px rgba(var(--fluid-color-rgb), 0.25),
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(var(--fluid-color-rgb), 0.10);
+}
+
+.dark .fluid-mode-elevated {
+  --fluid-color-rgb: 147, 51, 234; /* Default purple, can be overridden */
+  background: linear-gradient(145deg, rgba(var(--fluid-color-rgb), 0.20), rgba(var(--fluid-color-rgb), 0.15), rgba(var(--fluid-color-rgb), 0.12));
+  border: 1px solid rgba(var(--fluid-color-rgb), 0.30);
+  box-shadow: 
+    0 24px 80px rgba(var(--fluid-color-rgb), 0.30),
+    inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+.fluid-surface {
+  position: relative;
+  --fluid-color-rgb: 147, 51, 234; /* Default purple, can be overridden */
+  background: linear-gradient(135deg, rgba(var(--fluid-color-rgb), 0.20) 0%, rgba(var(--fluid-color-rgb), 0.15) 50%, rgba(var(--fluid-color-rgb), 0.10) 100%);
+  border: 1px solid rgba(var(--fluid-color-rgb), 0.35);
+  box-shadow:
+    0 8px 32px rgba(var(--fluid-color-rgb), 0.25),
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    inset 0 -1px 0 rgba(var(--fluid-color-rgb), 0.10);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  overflow: hidden;
+}
+
+.fluid-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 80% at -10% -10%, rgba(var(--fluid-color-rgb), 0.40), transparent 60%),
+    radial-gradient(95% 65% at 110% 0%, rgba(var(--fluid-color-rgb), 0.25), transparent 60%);
+  pointer-events: none;
+}
+
+.fluid-surface::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--fluid-color-rgb), 0.35),
+    rgba(var(--fluid-color-rgb), 0.20) 40%,
+    rgba(var(--fluid-color-rgb), 0.10) 60%,
+    transparent 100%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0.40;
+  pointer-events: none;
+}
+
+.dark .fluid-surface {
+  background: linear-gradient(135deg, rgba(var(--fluid-color-rgb), 0.15) 0%, rgba(var(--fluid-color-rgb), 0.12) 50%, rgba(var(--fluid-color-rgb), 0.08) 100%);
+  border: 1px solid rgba(var(--fluid-color-rgb), 0.25);
+  box-shadow:
+    0 10px 30px rgba(var(--fluid-color-rgb), 0.30),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
 /* Accessibility: when users reduce transparency, fall back to solid surfaces */
 @media (prefers-reduced-transparency: reduce) {
   .liquid-surface,
-  .liquid-elevated {
+  .liquid-elevated,
+  .fluid-surface,
+  .fluid-mode-elevated {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     background: rgba(255,255,255,0.9) !important;
     border-color: rgba(0,0,0,0.08) !important;
   }
   .dark .liquid-surface,
-  .dark .liquid-elevated {
+  .dark .liquid-elevated,
+  .dark .fluid-surface,
+  .dark .fluid-mode-elevated {
     background: rgba(30,30,30,0.95) !important;
     border-color: rgba(255,255,255,0.12) !important;
   }

@@ -12,7 +12,7 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'mood-tracker' | 'pomodoro' | 'random-quote' | 'dice' | 'coin-flip';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip';
   title: string;
 }
 
@@ -44,7 +44,7 @@ interface LeftSidebarProps {
   onSetAppTitleColor: (color: 'auto' | 'black' | 'white') => void;
   widgetTextColor: 'auto' | 'black' | 'white';
   onSetWidgetTextColor: (color: 'auto' | 'black' | 'white') => void;
-  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'mood-tracker' | 'pomodoro' | 'random-quote' | 'dice' | 'coin-flip') => void;
+  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip') => void;
   onResetSettings: () => void;
   autofulIconsEnabled: boolean;
   onToggleAutofulIcons: () => void;
@@ -68,15 +68,24 @@ interface LeftSidebarProps {
   onToggleBookmarksTitle?: () => void;
   centerBookmarksGroup?: boolean;
   onToggleCenterBookmarksGroup?: () => void;
-  floatingModeEnabled?: boolean;
-  onToggleFloatingMode?: () => void;
-  onAddFloatingNote?: () => void;
   liquidReflectionColor: string;
   onSetLiquidReflectionColor: (color: string) => void;
   showBookmarksParagraph?: boolean;
   onToggleBookmarksParagraph?: () => void;
   showTopTime?: boolean;
   onToggleTopTime?: () => void;
+  fluidModeEnabled?: boolean;
+  onToggleFluidMode?: () => void;
+  greetingStyle?: 'hi' | 'welcome' | 'time-based';
+  onSetGreetingStyle?: (style: 'hi' | 'welcome' | 'time-based') => void;
+  searchBarCompact?: boolean;
+  onToggleSearchBarCompact?: () => void;
+  searchBarWidth?: 'narrow' | 'medium' | 'wide';
+  onSetSearchBarWidth?: (width: 'narrow' | 'medium' | 'wide') => void;
+  fluidThemeColor?: string;
+  onSetFluidThemeColor?: (color: string) => void;
+  monochromeIcons?: boolean;
+  onToggleMonochromeIcons?: () => void;
 }
 
 export default function LeftSidebar({ 
@@ -131,15 +140,24 @@ export default function LeftSidebar({
   onToggleBookmarksTitle,
   centerBookmarksGroup,
   onToggleCenterBookmarksGroup,
-  floatingModeEnabled,
-  onToggleFloatingMode,
-  onAddFloatingNote,
   liquidReflectionColor,
   onSetLiquidReflectionColor,
   showBookmarksParagraph,
   onToggleBookmarksParagraph,
   showTopTime,
   onToggleTopTime,
+  fluidModeEnabled,
+  onToggleFluidMode,
+  greetingStyle,
+  onSetGreetingStyle,
+  searchBarCompact,
+  onToggleSearchBarCompact,
+  searchBarWidth,
+  onSetSearchBarWidth,
+  fluidThemeColor,
+  onSetFluidThemeColor,
+  monochromeIcons,
+  onToggleMonochromeIcons,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
@@ -397,8 +415,8 @@ export default function LeftSidebar({
   }
 
   // Derived styles based on active visual mode
-  const isGlass = glassmorphismEnabled;
-  const isLiquid = liquidGlassEnabled;
+  const isGlass = glassmorphismEnabled && !fluidModeEnabled;
+  const isLiquid = liquidGlassEnabled && !fluidModeEnabled;
   const sectionHeaderClass = `w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
     isDarkMode
       ? 'bg-white/5 text-white ring-1 ring-white/10 hover:bg-white/10'
@@ -409,9 +427,12 @@ export default function LeftSidebar({
       ? 'rounded-xl p-3 bg-[#121212]/85 ring-1 ring-white/10'
       : 'rounded-xl p-3 bg-white/90 ring-1 ring-gray-200'
   }`;
-  const modeLabel = liquidGlassEnabled ? 'Liquid' : (glassmorphismEnabled ? 'Glass' : 'Normal');
+  const modeLabel = fluidModeEnabled ? 'Fluid' : (liquidGlassEnabled ? 'Liquid' : (glassmorphismEnabled ? 'Glass' : 'Normal'));
+  const isFluid = fluidModeEnabled;
   const modeBadgeClass = `${
-    isLiquid
+    isFluid
+      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white ring-1 ring-white/20'
+      : isLiquid
       ? 'bg-white/15 text-white ring-1 ring-white/20'
       : isGlass
         ? (isDarkMode ? 'bg-white/10 text-white ring-1 ring-white/15' : 'bg-white text-gray-800 ring-1 ring-white/40')
@@ -427,13 +448,15 @@ export default function LeftSidebar({
           aria-hidden="true"
         />
       )}
-      {/* Left Sidebar */}
+      {/* Right Sidebar */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed left-4 top-4 bottom-4 w-96 sm:w-[420px] rounded-2xl overflow-hidden transform transition-all duration-300 ease-in-out z-50 ${
-          glassmorphismEnabled
+        className={`fixed right-4 top-20 bottom-4 w-96 sm:w-[420px] rounded-2xl overflow-hidden transform transition-all duration-300 ease-in-out z-50 ${
+          fluidModeEnabled
+            ? 'fluid-mode-elevated'
+            : glassmorphismEnabled
             ? isDarkMode 
               ? 'bg-[#2B2B2B]/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
               : 'bg-white/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
@@ -441,7 +464,7 @@ export default function LeftSidebar({
               ? 'liquid-elevated'
               : isDarkMode ? 'bg-[#2B2B2B] shadow-[0_8px_24px_rgba(0,0,0,0.35)]' : 'bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]'
         } ${
-          isOpen ? 'translate-x-0' : '-translate-x-[calc(100%+1rem)]'
+          isOpen ? 'translate-x-0' : 'translate-x-[calc(100%+1rem)]'
         }`}
       >
           <div className="flex flex-col h-full">
@@ -704,23 +727,6 @@ export default function LeftSidebar({
                     </div>
                   </button>
 
-                  {/* Mood Tracker Widget Preview */}
-                  <button
-                    onClick={() => addWidget('mood-tracker')}
-                    className={`p-3 rounded-xl transition-all duration-300 hover:border-purple-400 hover:text-purple-400 hover:skew-x-3 hover:skew-y-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
-                        isDarkMode ? 'bg-purple-900 text-white border-purple-700' : 'bg-purple-100 text-purple-800 border-purple-300'
-                      }`}>
-                        <span className="text-3xl">😊</span>
-                      </div>
-                      <p className="text-xs font-medium">Mood</p>
-                    </div>
-                  </button>
-
                   {/* Pomodoro Widget Preview */}
                   <button
                     onClick={() => addWidget('pomodoro')}
@@ -735,23 +741,6 @@ export default function LeftSidebar({
                         <span className="text-2xl">🍅</span>
                       </div>
                       <p className="text-xs font-medium">Pomodoro</p>
-                    </div>
-                  </button>
-
-                  {/* Random Quote Widget Preview */}
-                  <button
-                    onClick={() => addWidget('random-quote')}
-                    className={`p-3 rounded-xl transition-all duration-300 hover:border-blue-400 hover:text-blue-400 hover:skew-x-3 hover:skew-y-1 ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${
-                        isDarkMode ? 'bg-blue-900 text-white border-blue-700' : 'bg-blue-100 text-blue-800 border-blue-300'
-                      }`}>
-                        <span className="text-xs font-semibold px-2 text-center">Quote</span>
-                      </div>
-                      <p className="text-xs font-medium">Quote</p>
                     </div>
                   </button>
 
@@ -1066,6 +1055,62 @@ export default function LeftSidebar({
                       />
                     </button>
                   </div>
+                  
+                  {/* Search Bar Compact Toggle */}
+                  {showSearchBar && (
+                    <div className="flex items-center justify-between">
+                      <label className={`text-sm font-medium flex items-center gap-2 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        Compact Search Bar
+                      </label>
+                      <button
+                        onClick={() => onToggleSearchBarCompact && onToggleSearchBarCompact()}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          searchBarCompact 
+                            ? 'bg-blue-500' 
+                            : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            searchBarCompact ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Search Bar Width Preset */}
+                  {showSearchBar && (
+                    <div className="flex flex-col gap-2">
+                      <label className={`text-sm font-medium flex items-center gap-2 ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        Search Bar Width
+                      </label>
+                      <select
+                        value={searchBarWidth || 'medium'}
+                        onChange={(e) => onSetSearchBarWidth && onSetSearchBarWidth(e.target.value as 'narrow' | 'medium' | 'wide')}
+                        className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${
+                          isDarkMode 
+                            ? 'bg-gray-700 border-gray-600 text-white' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        }`}
+                      >
+                        <option value="narrow">Narrow</option>
+                        <option value="medium">Medium</option>
+                        <option value="wide">Wide</option>
+                      </select>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between">
                     <label className={`text-sm font-medium flex items-center gap-2 ${
                       isDarkMode ? 'text-gray-300' : 'text-gray-700'
@@ -1110,6 +1155,30 @@ export default function LeftSidebar({
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                           squareRoundedIconsEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                      </svg>
+                      Monochrome Icons
+                    </label>
+                    <button
+                      onClick={() => onToggleMonochromeIcons && onToggleMonochromeIcons()}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        monochromeIcons 
+                          ? 'bg-blue-500' 
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          monochromeIcons ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
                     </button>
@@ -1326,15 +1395,42 @@ export default function LeftSidebar({
                   </div>
                 </div>
 
+                <div className="space-y-3">
+                  <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Greeting</h4>
+                  <div className="flex items-center justify-between">
+                    <label className={`text-sm font-medium flex items-center gap-2 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      Greeting Style
+                    </label>
+                    <select
+                      value={greetingStyle || 'hi'}
+                      onChange={(e) => onSetGreetingStyle && onSetGreetingStyle(e.target.value as 'hi' | 'welcome' | 'time-based')}
+                      className={`text-xs px-2 py-1 rounded border transition-colors ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-white border-gray-300 text-gray-900'
+                      }`}
+                    >
+                      <option value="hi">Hi</option>
+                      <option value="welcome">Welcome</option>
+                      <option value="time-based">Good Morning/Afternoon/Evening</option>
+                    </select>
+                  </div>
+                </div>
+
                 {/* Visual Effects Mode - Modern cards */}
                 <div className="space-y-3">
                   <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Visual Effects</h4>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
               {/* Normal */}
               <button
                 onClick={onToggleNormalMode}
                 className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
-                  normalModeEnabled
+                  normalModeEnabled && !fluidModeEnabled
                     ? 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-lg ring-2 ring-slate-400/50'
                     : isDarkMode
                       ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
@@ -1344,7 +1440,7 @@ export default function LeftSidebar({
               >
                 <div className="relative z-10 flex flex-col items-center gap-2">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                    normalModeEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
+                    normalModeEnabled && !fluidModeEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
                   }`}>
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
@@ -1352,14 +1448,14 @@ export default function LeftSidebar({
                   </div>
                   <span>Normal</span>
                 </div>
-                <span className={`pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent ${normalModeEnabled ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`} />
+                <span className={`pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent ${normalModeEnabled && !fluidModeEnabled ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`} />
               </button>
 
               {/* Glassmorphism */}
               <button
                 onClick={onToggleGlassmorphism}
                 className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
-                  glassmorphismEnabled
+                  glassmorphismEnabled && !fluidModeEnabled
                     ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg ring-2 ring-blue-400/50'
                     : isDarkMode
                       ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
@@ -1369,7 +1465,7 @@ export default function LeftSidebar({
               >
                 <div className="relative z-10 flex flex-col items-center gap-2">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                    glassmorphismEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
+                    glassmorphismEnabled && !fluidModeEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
                   }`}>
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M4 7h16M4 12h10M4 17h7" strokeLinecap="round" strokeLinejoin="round" />
@@ -1377,14 +1473,14 @@ export default function LeftSidebar({
                   </div>
                   <span>Glass</span>
                 </div>
-                <span className={`pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/10 blur-xl ${glassmorphismEnabled ? 'opacity-50' : 'opacity-0 group-hover:opacity-30'} transition-opacity`} />
+                <span className={`pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/10 blur-xl ${glassmorphismEnabled && !fluidModeEnabled ? 'opacity-50' : 'opacity-0 group-hover:opacity-30'} transition-opacity`} />
               </button>
 
               {/* Apple Liquid Glass */}
               <button
                 onClick={onToggleLiquidGlass}
                 className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
-                  liquidGlassEnabled
+                  liquidGlassEnabled && !fluidModeEnabled
                     ? 'bg-gradient-to-br from-cyan-400 via-blue-500 to-fuchsia-500 text-white shadow-lg ring-2 ring-cyan-300/50'
                     : isDarkMode
                       ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
@@ -1394,7 +1490,7 @@ export default function LeftSidebar({
               >
                 <div className="relative z-10 flex flex-col items-center gap-2">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                    liquidGlassEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
+                    liquidGlassEnabled && !fluidModeEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
                   }`}>
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2.5c5 5 7.5 8.4 7.5 11.5a7.5 7.5 0 11-15 0C4.5 10.9 7 7.5 12 2.5z" />
@@ -1402,9 +1498,58 @@ export default function LeftSidebar({
                   </div>
                   <span>Liquid</span>
                 </div>
-                <span className={`pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-white/20 blur-2xl ${liquidGlassEnabled ? 'opacity-60' : 'opacity-0 group-hover:opacity-40'} transition-opacity`} />
+                <span className={`pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-white/20 blur-2xl ${liquidGlassEnabled && !fluidModeEnabled ? 'opacity-60' : 'opacity-0 group-hover:opacity-40'} transition-opacity`} />
+              </button>
+
+              {/* Fluid Mode */}
+              <button
+                onClick={onToggleFluidMode}
+                className={`group relative w-full overflow-hidden rounded-2xl p-3 text-xs font-semibold transition-all duration-300 ${
+                  fluidModeEnabled
+                    ? 'bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 text-white shadow-lg ring-2 ring-purple-400/50'
+                    : isDarkMode
+                      ? 'bg-[#121212] text-gray-200 border border-white/10 hover:bg-[#1b1b1b]'
+                      : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 shadow-sm'
+                }`}
+                title="Toggle Fluid Mode"
+              >
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                    fluidModeEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'
+                  }`}>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                    </svg>
+                  </div>
+                  <span>Fluid</span>
+                </div>
+                <span className={`pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-400/30 via-pink-400/30 to-rose-400/30 ${fluidModeEnabled ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} transition-opacity`} />
               </button>
                   </div>
+                  
+                  {/* Fluid Theme Color Picker */}
+                  {fluidModeEnabled && (
+                    <div className={`mt-3 rounded-xl p-3 ${
+                      isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'
+                    }`}>
+                      <label className={`text-sm font-medium flex items-center gap-2 mb-2 ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                        </svg>
+                        Fluid Theme Color
+                      </label>
+                      <input
+                        type="color"
+                        value={fluidThemeColor || '#9333ea'}
+                        onChange={(e) => onSetFluidThemeColor && onSetFluidThemeColor(e.target.value)}
+                        className="w-full h-10 rounded-lg cursor-pointer"
+                        title="Choose fluid theme color"
+                      />
+                    </div>
+                  )}
+                  
                   {liquidGlassEnabled && (
                     <div className={`mt-3 rounded-xl p-3 ${
                       isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'
