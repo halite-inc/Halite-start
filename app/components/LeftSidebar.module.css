@@ -1,0 +1,44 @@
+/* LeftSidebar.module.css */
+
+/* Container with smooth fade-in */
+.panel {
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* Hover scaling for all action buttons */
+.actionBtn {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.actionBtn:hover {
+  transform: scale(1.05);
+  background-color: var(--hover-bg, rgba(255,255,255,0.1));
+}
+
+/* Toggle switch smooth thumb movement */
+.toggle {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.toggle span {
+  transition: transform 0.2s ease;
+}
+
+/* Card style for visual effect buttons */
+.effectBtn {
+  position: relative;
+  overflow: hidden;
+}
+.effectBtn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.effectBtn:hover::after {
+  opacity: 1;
+}

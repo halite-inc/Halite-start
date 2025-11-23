@@ -101,7 +101,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled, squareRoundedIconsEnabled, monochromeIcons, onContextMenu }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean; squareRoundedIconsEnabled: boolean; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full' }) {
   const {
     attributes,
     listeners,
@@ -123,8 +123,8 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
     } catch { return false; }
   })();
 
-  const extraClasses = autofulIconsEnabled && isYouTube ? ' bg-[#FF0037]' : '';
-  const iconBgClass = autofulIconsEnabled && isYouTube ? 'bg-[#FF0037]' : 'bg-white';
+  const extraClasses = isYouTube ? ' bg-[#FF0037]' : '';
+  const iconBgClass = isYouTube ? 'bg-[#FF0037]' : 'bg-white';
 
   const hoverClass = animateIconsEnabled
     ? hoverAnimationStyle === 'tilt'
@@ -155,23 +155,18 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
       {/* App Card */}
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${fullRoundedIconsEnabled ? 'rounded-full' : squareRoundedIconsEnabled ? 'rounded-lg' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface liquid-pressable'
-            : liquidGlassEnabled
+        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${appCardBorderRadius === 'small' ? 'rounded-lg' : appCardBorderRadius === 'full' ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+          } ${liquidGlassEnabled
             ? 'liquid-surface liquid-pressable'
             : glassmorphismEnabled
-              ? (isDark 
-                  ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
-                  : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]')
-              : (isDark 
-                  ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]' 
-                  : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}${extraClasses} ${hoverClass}`}
+              ? (isDark
+                ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
+                : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]')
+              : (isDark
+                ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]'
+                : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}${extraClasses} ${hoverClass}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={(e) => {
           if (!isEditModalOpen) {
@@ -191,16 +186,16 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
           }
         }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && (
+        {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-2xl" />
         )}
         {/* App Icon */}
         <div>
           {app.icon ? (
-            <img 
-              src={app.icon} 
+            <img
+              src={app.icon}
               alt={`${app.title} icon`}
-              className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm ${iconBgClass} ${monochromeIcons ? 'grayscale' : ''}`}
+              className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm ${iconBgClass} ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
               onError={(e) => {
                 // Show a fallback icon if the image fails to load
                 e.currentTarget.style.display = 'none';
@@ -209,27 +204,25 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
             />
           ) : null}
           {/* Fallback icon if no image or image fails to load */}
-          <div className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm flex items-center justify-center text-lg ${iconBgClass} ${app.icon ? 'hidden' : ''} ${
-            isDark ? 'text-gray-600' : 'text-gray-600'
-          }`}>
+          <div className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm flex items-center justify-center text-lg ${iconBgClass} ${app.icon ? 'hidden' : ''} ${isDark ? 'text-gray-600' : 'text-gray-600'
+            }`}>
             🔗
           </div>
         </div>
       </div>
-      
+
       {/* App Title - Below the card */}
       {showAppTitles && (
         <div className="mt-2 text-center w-full">
-          <span className={`truncate text-xs font-medium ${
-            appTitleColor === 'auto' 
-              ? (isDark ? 'text-white' : 'text-gray-800')
-              : appTitleColor === 'black' 
-                ? 'text-black' 
-                : 'text-white'
-          }`}>{app.title}</span>
+          <span className={`truncate text-xs font-medium ${appTitleColor === 'auto'
+            ? (isDark ? 'text-white' : 'text-gray-800')
+            : appTitleColor === 'black'
+              ? 'text-black'
+              : 'text-white'
+            }`}>{app.title}</span>
         </div>
       )}
-      
+
       {/* Delete Button - Only show when edit modal is open */}
       {isEditModalOpen && (
         <button
@@ -244,7 +237,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
   );
 }
 
-function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, appTitleColor, isEditModalOpen, jiggleIndex, autofulIconsEnabled, animateIconsEnabled, hoverAnimationStyle, fullRoundedIconsEnabled, squareRoundedIconsEnabled, monochromeIcons, onContextMenu }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; autofulIconsEnabled: boolean; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; fullRoundedIconsEnabled: boolean; squareRoundedIconsEnabled: boolean; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void }) {
+function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full' }) {
   const {
     attributes,
     listeners,
@@ -300,23 +293,18 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
       {/* Halite Card */}
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${fullRoundedIconsEnabled ? 'rounded-full' : squareRoundedIconsEnabled ? 'rounded-lg' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface liquid-pressable'
-            : liquidGlassEnabled
+        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${appCardBorderRadius === 'small' ? 'rounded-lg' : appCardBorderRadius === 'full' ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+          } ${liquidGlassEnabled
             ? 'liquid-surface liquid-pressable'
             : glassmorphismEnabled
-              ? (isDark 
-                  ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
-                  : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]')
-              : (isDark 
-                  ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]' 
-                  : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${hoverClass}`}
+              ? (isDark
+                ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
+                : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]')
+              : (isDark
+                ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]'
+                : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${hoverClass}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={handleClick}
         onContextMenu={(e) => {
@@ -325,7 +313,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
           }
         }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && (
+        {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-2xl" />
         )}
         {/* Dynamic Grid of Mini Icons (2x2 diagonal, 3x1, or 2x2) */}
@@ -338,7 +326,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
                   <img
                     src={haliteIcons[0]}
                     alt={`${app.title} 1`}
-                    className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale' : ''}`}
+                    className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                       const parent = e.currentTarget.parentElement;
@@ -365,7 +353,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
                   <img
                     src={haliteIcons[1]}
                     alt={`${app.title} 2`}
-                    className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale' : ''}`}
+                    className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                       const parent = e.currentTarget.parentElement;
@@ -387,10 +375,9 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
             </div>
           </div>
         ) : (
-          <div className={`w-full h-full p-1 grid gap-0.5 ${
-            haliteUrls.length === 3 ? 'grid-cols-3 grid-rows-1' :
+          <div className={`w-full h-full p-1 grid gap-0.5 ${haliteUrls.length === 3 ? 'grid-cols-3 grid-rows-1' :
             'grid-cols-2 grid-rows-2'
-          }`}>
+            }`}>
             {haliteUrls.map((url, index) => {
               const hasIcon = haliteIcons[index] && haliteIcons[index].trim() !== '';
               return (
@@ -400,7 +387,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
                       <img
                         src={haliteIcons[index]}
                         alt={`${app.title} ${index + 1}`}
-                        className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale' : ''}`}
+                        className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           const parent = e.currentTarget.parentElement;
@@ -425,20 +412,19 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
           </div>
         )}
       </div>
-      
+
       {/* App Title - Below the card (shown for halite if name is set) */}
       {showAppTitles && app.haliteName && (
         <div className="mt-2 text-center w-full">
-          <span className={`truncate text-xs font-medium ${
-            appTitleColor === 'auto' 
-              ? (isDark ? 'text-white' : 'text-gray-800')
-              : appTitleColor === 'black' 
-                ? 'text-black' 
-                : 'text-white'
-          }`}>{app.haliteName}</span>
+          <span className={`truncate text-xs font-medium ${appTitleColor === 'auto'
+            ? (isDark ? 'text-white' : 'text-gray-800')
+            : appTitleColor === 'black'
+              ? 'text-black'
+              : 'text-white'
+            }`}>{app.haliteName}</span>
         </div>
       )}
-      
+
       {/* Delete Button - Only show when edit modal is open */}
       {isEditModalOpen && (
         <button
@@ -453,7 +439,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
   );
 }
 
-function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Add loading flag
@@ -511,23 +497,18 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          } ${liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
-            ? (isDark 
-                  ? 'bg-white/10 backdrop-blur-xl backdrop-saturate-150 text-white ring-1 ring-white/15 shadow-[0_10px_28px_rgba(0,0,0,0.30)]'
-                  : 'bg-white/55 backdrop-blur-xl backdrop-saturate-150 text-gray-900 ring-1 ring-white/40 shadow-[0_10px_28px_rgba(0,0,0,0.12)]')
-              : (isDark 
-                  ? 'bg-white/12 backdrop-blur-xl text-white ring-1 ring-white/10 shadow-[0_10px_26px_rgba(0,0,0,0.35)]' 
-                  : 'bg-white/80 backdrop-blur-xl text-gray-900 ring-1 ring-white/50 shadow-[0_10px_26px_rgba(0,0,0,0.10)]')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+              ? (isDark
+                ? 'bg-white/10 backdrop-blur-xl backdrop-saturate-150 text-white ring-1 ring-white/15 shadow-[0_10px_28px_rgba(0,0,0,0.30)]'
+                : 'bg-white/55 backdrop-blur-xl backdrop-saturate-150 text-gray-900 ring-1 ring-white/40 shadow-[0_10px_28px_rgba(0,0,0,0.12)]')
+              : (isDark
+                ? 'bg-white/12 backdrop-blur-xl text-white ring-1 ring-white/10 shadow-[0_10px_26px_rgba(0,0,0,0.35)]'
+                : 'bg-white/80 backdrop-blur-xl text-gray-900 ring-1 ring-white/50 shadow-[0_10px_26px_rgba(0,0,0,0.10)]')
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
         {/* iOS-like sheen and soft highlights */}
@@ -535,33 +516,30 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
         <div className="pointer-events-none absolute -bottom-12 -right-14 w-36 h-36 rounded-full bg-white/40 blur-3xl opacity-60" />
         <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.45)_0%,rgba(255,255,255,0.0)_45%)] opacity-70" />
         <div className="pointer-events-none absolute inset-0 rounded-3xl shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]" />
-        
+
         <div className="text-center flex flex-col justify-center items-center h-full relative z-10">
-          <div suppressHydrationWarning className={`text-3xl sm:text-4xl font-semibold leading-tight tracking-tight font-sans ${
-            widgetTextColor === 'auto' 
-              ? (isDark ? 'text-white' : 'text-gray-800')
-              : widgetTextColor === 'black' 
-                ? 'text-black' 
-                : 'text-white'
-          }`}>
+          <div suppressHydrationWarning className={`text-3xl sm:text-4xl font-semibold leading-tight tracking-tight font-sans ${widgetTextColor === 'auto'
+            ? (isDark ? 'text-white' : 'text-gray-800')
+            : widgetTextColor === 'black'
+              ? 'text-black'
+              : 'text-white'
+            }`}>
             {mounted ? time.toLocaleTimeString('en-US', { hour12: false, hour: 'numeric', minute: '2-digit' }) : '00:00'}
           </div>
           <div className="mt-1">
-            <span suppressHydrationWarning className={`px-2 py-0.5 rounded-full uppercase tracking-widest font-semibold text-[10px] sm:text-xs ${
-              isDark ? 'bg-white/15' : 'bg-white/60'
-            } ${
-              widgetTextColor === 'auto' 
+            <span suppressHydrationWarning className={`px-2 py-0.5 rounded-full uppercase tracking-widest font-semibold text-[10px] sm:text-xs ${isDark ? 'bg-white/15' : 'bg-white/60'
+              } ${widgetTextColor === 'auto'
                 ? (isDark ? 'text-white' : 'text-gray-800')
-                : widgetTextColor === 'black' 
-                  ? 'text-black' 
+                : widgetTextColor === 'black'
+                  ? 'text-black'
                   : 'text-white'
-            }`}>
+              }`}>
               {mounted ? time.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' }).split(' ')[1] : 'AM'}
             </span>
           </div>
         </div>
       </div>
-      
+
       {/* Delete Button - Only show when edit modal is open */}
       {isEditModalOpen && (
         <button
@@ -576,7 +554,7 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
   );
 }
 
-function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [weather, setWeather] = useState({ temp: '22°', condition: 'Sunny', location: 'Loading...' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -595,12 +573,12 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
       try {
         setLoading(true);
         setError(false);
-        
+
         // Check if we're in browser environment
         if (typeof window === 'undefined') {
           throw new Error('Not in browser environment');
         }
-        
+
         // Check if geolocation is supported
         if (!navigator.geolocation) {
           throw new Error('Geolocation not supported');
@@ -616,23 +594,23 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         });
 
         const { latitude, longitude } = position.coords;
-        
+
         // Fetch location name using reverse geocoding
         const locationResponse = await fetch(
           `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
         );
-        
+
         if (!locationResponse.ok) {
           throw new Error('Failed to fetch location data');
         }
-        
+
         const locationData = await locationResponse.json();
-        
+
         // For demo purposes, using mock weather data since we need an API key
         // In a real app, you would use a weather API like OpenWeatherMap or WeatherAPI
         const mockConditions = ['Sunny', 'Cloudy', 'Rainy', 'Partly Cloudy', 'Clear'];
         const mockCondition = mockConditions[Math.floor(Math.random() * mockConditions.length)];
-        
+
         setWeather({
           temp: `${Math.round(15 + Math.random() * 20)}°`, // More realistic temperature range
           condition: mockCondition,
@@ -690,26 +668,21 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-start justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-start justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          } ${liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
-            ? (isDark 
-                  ? 'bg-blue-400/20 backdrop-blur-md text-black border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                  : 'bg-blue-300/20 backdrop-blur-md text-black border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-              : (isDark 
-                  ? 'bg-gradient-to-br from-blue-400 via-gray-300 to-blue-400 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
-                  : 'bg-gradient-to-br from-blue-300 via-gray-200 to-blue-300 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+              ? (isDark
+                ? 'bg-blue-400/20 backdrop-blur-md text-black border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                : 'bg-blue-300/20 backdrop-blur-md text-black border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark
+                ? 'bg-gradient-to-br from-blue-400 via-gray-300 to-blue-400 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm'
+                : 'bg-gradient-to-br from-blue-300 via-gray-200 to-blue-300 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm')
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && (
+        {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         {/* Rain droplet effect */}
@@ -721,53 +694,49 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
           <div className="absolute top-10 left-4 w-0.5 h-0.5 bg-white rounded-full"></div>
           <div className="absolute top-12 right-6 w-0.5 h-0.5 bg-white rounded-full"></div>
         </div>
-        
+
         <div className="flex flex-col justify-center items-start h-full px-4 pl-6 relative z-10">
-          <div suppressHydrationWarning className={`text-xs sm:text-sm font-bold leading-none mb-1 ${
-            isDark ? 'text-black' : 'text-black'
-          }`}>
+          <div suppressHydrationWarning className={`text-xs sm:text-sm font-bold leading-none mb-1 ${isDark ? 'text-black' : 'text-black'
+            }`}>
             {mounted ? (loading ? 'Loading...' : error ? 'Location unavailable' : weather.location) : 'Loading...'}
           </div>
           <div className="flex items-center gap-1 mb-1">
             <div className="text-xs">
-              {mounted ? (loading ? '⏳' : error ? '⚠️' : 
+              {mounted ? (loading ? '⏳' : error ? '⚠️' :
                 weather.condition === 'Sunny' ? '☀️' :
-                weather.condition === 'Cloudy' ? '☁️' :
-                weather.condition === 'Rainy' ? '🌧️' :
-                weather.condition === 'Partly Cloudy' ? '⛅' :
-                weather.condition === 'Clear' ? '🌙' : '⚡') : '⏳'}
+                  weather.condition === 'Cloudy' ? '☁️' :
+                    weather.condition === 'Rainy' ? '🌧️' :
+                      weather.condition === 'Partly Cloudy' ? '⛅' :
+                        weather.condition === 'Clear' ? '🌙' : '⚡') : '⏳'}
             </div>
-            <div suppressHydrationWarning className={`text-xs leading-none ${
-              widgetTextColor === 'auto' 
-                ? (isDark ? 'text-black' : 'text-black')
-                : widgetTextColor === 'black' 
-                  ? 'text-black' 
-                  : 'text-white'
-            }`}>
+            <div suppressHydrationWarning className={`text-xs leading-none ${widgetTextColor === 'auto'
+              ? (isDark ? 'text-black' : 'text-black')
+              : widgetTextColor === 'black'
+                ? 'text-black'
+                : 'text-white'
+              }`}>
               {mounted ? (loading ? 'Getting weather...' : error ? 'Check permissions' : weather.condition) : 'Getting weather...'}
             </div>
           </div>
-          <div suppressHydrationWarning className={`text-xs leading-none mb-2 ${
-            widgetTextColor === 'auto' 
-              ? (isDark ? 'text-black/80' : 'text-black/80')
-              : widgetTextColor === 'black' 
-                ? 'text-black/80' 
-                : 'text-white/80'
-          }`}>
+          <div suppressHydrationWarning className={`text-xs leading-none mb-2 ${widgetTextColor === 'auto'
+            ? (isDark ? 'text-black/80' : 'text-black/80')
+            : widgetTextColor === 'black'
+              ? 'text-black/80'
+              : 'text-white/80'
+            }`}>
             {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }) : ''}
           </div>
-          <div className={`text-2xl sm:text-3xl font-bold leading-none ${
-            widgetTextColor === 'auto' 
-              ? (isDark ? 'text-blue-800' : 'text-blue-800')
-              : widgetTextColor === 'black' 
-                ? 'text-black' 
-                : 'text-white'
-          }`}>
+          <div className={`text-2xl sm:text-3xl font-bold leading-none ${widgetTextColor === 'auto'
+            ? (isDark ? 'text-blue-800' : 'text-blue-800')
+            : widgetTextColor === 'black'
+              ? 'text-black'
+              : 'text-white'
+            }`}>
             {loading ? '...' : weather.temp}
           </div>
         </div>
       </div>
-      
+
       {/* Delete Button - Only show when edit modal is open */}
       {isEditModalOpen && (
         <button
@@ -782,7 +751,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
   );
 }
 
-function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [date, setDate] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const {
@@ -802,7 +771,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
     // Adjust so Monday is the start; handle Sunday gracefully
     const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
     weekStart.setDate(today.getDate() + diffToMonday);
-    
+
     const weekDates = [] as Date[];
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart);
@@ -855,26 +824,21 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          } ${liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
-            ? (isDark 
-                  ? 'bg-gray-800/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                  : 'bg-white/20 backdrop-blur-md text-gray-800 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-              : (isDark 
-                  ? 'bg-gray-800/90 text-white shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-gray-700/30' 
-                  : 'bg-white/95 text-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-sm border border-gray-200/50')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+              ? (isDark
+                ? 'bg-gray-800/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                : 'bg-white/20 backdrop-blur-md text-gray-800 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark
+                ? 'bg-gray-800/90 text-white shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-gray-700/30'
+                : 'bg-white/95 text-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-sm border border-gray-200/50')
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && (
+        {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         {/* Subtle accent */}
@@ -882,36 +846,34 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
 
         {/* Center current day number overlay with top margin */}
         <div className="absolute inset-0 flex justify-center items-start z-0 pointer-events-none">
-          <div className={`mt-[43.5px] sm:mt-[51.5px] text-5xl sm:text-6xl font-extrabold tracking-tight ${
-            (liquidGlassEnabled || fluidModeEnabled)
-              ? (isDark ? 'text-white/25' : 'text-gray-900/25')
-              : glassmorphismEnabled
-                ? (isDark ? 'text-white/20' : 'text-gray-900/20')
-                : (isDark ? 'text-white/12' : 'text-gray-900/12')
-          }`}>
+          <div className={`mt-[43.5px] sm:mt-[51.5px] text-5xl sm:text-6xl font-extrabold tracking-tight ${liquidGlassEnabled
+            ? (isDark ? 'text-white/25' : 'text-gray-900/25')
+            : glassmorphismEnabled
+              ? (isDark ? 'text-white/20' : 'text-gray-900/20')
+              : (isDark ? 'text-white/12' : 'text-gray-900/12')
+            }`}>
             {currentDate}
           </div>
         </div>
-        
+
 
         <div className="flex flex-col justify-start items-start h-full p-3 pt-6 relative z-10">
           {/* Current Date Display */}
           <div className="flex items-center justify-center w-full mt-[12px] mb-3">
-            <div suppressHydrationWarning className={`text-[13px] sm:text-sm font-semibold leading-none ${
-              widgetTextColor === 'auto' 
-                ? (isDark ? 'text-white' : 'text-gray-900')
-                : widgetTextColor === 'black' 
-                  ? 'text-black' 
-                  : 'text-white'
-            }`}>
+            <div suppressHydrationWarning className={`text-[13px] sm:text-sm font-semibold leading-none ${widgetTextColor === 'auto'
+              ? (isDark ? 'text-white' : 'text-gray-900')
+              : widgetTextColor === 'black'
+                ? 'text-black'
+                : 'text-white'
+              }`}>
               {currentMonth}
             </div>
           </div>
-          
+
           {/* Week View removed for minimal look */}
         </div>
       </div>
-      
+
       {/* Delete Button - Only show when edit modal is open */}
       {isEditModalOpen && (
         <button
@@ -926,7 +888,7 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   );
 }
 
-function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [waterIntake, setWaterIntake] = useState(() => {
     // Initialize with saved value or 0
     if (typeof window !== 'undefined') {
@@ -956,7 +918,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
   useEffect(() => {
     // Check for daily reset
     const today = new Date().toDateString();
-    
+
     if (today !== lastResetDateRef.current) {
       // Reset for new day
       setWaterIntake(0);
@@ -1011,42 +973,36 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          } ${liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
-            ? (isDark 
-                  ? 'bg-blue-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                  : 'bg-blue-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-              : (isDark 
-                  ? 'bg-gradient-to-br from-blue-400 via-cyan-300 to-blue-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-sm' 
-                  : 'bg-gradient-to-br from-blue-300 via-cyan-200 to-blue-400 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-blue-200')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+              ? (isDark
+                ? 'bg-blue-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                : 'bg-blue-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark
+                ? 'bg-gradient-to-br from-blue-400 via-cyan-300 to-blue-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-sm'
+                : 'bg-gradient-to-br from-blue-300 via-cyan-200 to-blue-400 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-blue-200')
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && (
+        {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         <div className="text-center flex flex-col justify-center items-center h-full relative px-2 py-3">
           {/* Animated water droplets background */}
           <div className="absolute inset-0 opacity-20 overflow-hidden">
             <div className="absolute top-2 left-3 w-1 h-1 bg-white rounded-full animate-pulse"></div>
-            <div className="absolute top-4 right-4 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-            <div className="absolute top-6 left-6 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-            <div className="absolute top-8 right-2 w-1 h-1 bg-white rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
+            <div className="absolute top-4 right-4 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="absolute top-6 left-6 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-8 right-2 w-1 h-1 bg-white rounded-full animate-pulse" style={{ animationDelay: '1.5s' }}></div>
           </div>
-          
+
           {/* Main water icon with enhanced styling */}
           <div className="relative mb-2">
-            <div className={`text-2xl p-2 rounded-full border-2 border-white/40 bg-white/15 backdrop-blur-sm shadow-lg transition-all duration-300 ${
-              waterIntake > 0 ? 'scale-110 border-white/60 bg-white/20' : ''
-            }`}>
+            <div className={`text-2xl p-2 rounded-full border-2 border-white/40 bg-white/15 backdrop-blur-sm shadow-lg transition-all duration-300 ${waterIntake > 0 ? 'scale-110 border-white/60 bg-white/20' : ''
+              }`}>
               💧
             </div>
             {/* Glow effect - only when water is added */}
@@ -1054,54 +1010,50 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
               <div className="absolute inset-0 rounded-full bg-blue-400/20 blur-md scale-110 opacity-100 transition-opacity duration-300"></div>
             )}
           </div>
-          
+
           {/* Water intake display with better typography */}
-          <div className={`text-sm font-bold mb-2 leading-none tracking-wide ${
-            widgetTextColor === 'auto' 
-              ? (isDark ? 'text-white drop-shadow-sm' : 'text-white drop-shadow-sm')
-              : widgetTextColor === 'black' 
-                ? 'text-black drop-shadow-sm' 
-                : 'text-white drop-shadow-sm'
-          }`}>
+          <div className={`text-sm font-bold mb-2 leading-none tracking-wide ${widgetTextColor === 'auto'
+            ? (isDark ? 'text-white drop-shadow-sm' : 'text-white drop-shadow-sm')
+            : widgetTextColor === 'black'
+              ? 'text-black drop-shadow-sm'
+              : 'text-white drop-shadow-sm'
+            }`}>
             {waterIntake}ml
           </div>
-          
+
           {/* Progress indicator */}
           <div className="w-14 h-1 bg-white/20 rounded-full mb-2 overflow-hidden">
-            <div 
+            <div
               className="h-full bg-white/60 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${Math.min((waterIntake / 2000) * 100, 100)}%` }}
             ></div>
           </div>
-          
+
           {/* Enhanced buttons with better UX */}
           <div className="flex gap-2 items-center">
             <button
               onClick={removeWater}
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg z-10 ${
-                isDark 
-                  ? 'bg-red-500/80 hover:bg-red-400 text-white border border-red-400/50' 
-                  : 'bg-red-400 hover:bg-red-300 text-white border border-red-300/50'
-              }`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg z-10 ${isDark
+                ? 'bg-red-500/80 hover:bg-red-400 text-white border border-red-400/50'
+                : 'bg-red-400 hover:bg-red-300 text-white border border-red-300/50'
+                }`}
               title="Remove 250ml"
             >
               -
             </button>
-            
+
             {/* Center indicator */}
-            <div className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-              isDark ? 'bg-white/10 text-white/80' : 'bg-white/20 text-white/90'
-            }`}>
+            <div className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${isDark ? 'bg-white/10 text-white/80' : 'bg-white/20 text-white/90'
+              }`}>
               {Math.ceil(waterIntake / 250)}
             </div>
-            
+
             <button
               onClick={addWater}
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg z-10 ${
-                isDark 
-                  ? 'bg-blue-500/80 hover:bg-blue-400 text-white border border-blue-400/50' 
-                  : 'bg-blue-400 hover:bg-blue-300 text-white border border-blue-300/50'
-              }`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg z-10 ${isDark
+                ? 'bg-blue-500/80 hover:bg-blue-400 text-white border border-blue-400/50'
+                : 'bg-blue-400 hover:bg-blue-300 text-white border border-blue-300/50'
+                }`}
               title="Add 250ml"
             >
               +
@@ -1109,7 +1061,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
           </div>
         </div>
       </div>
-      
+
       {/* Delete Button - Only show when edit modal is open */}
       {isEditModalOpen && (
         <button
@@ -1124,7 +1076,7 @@ function WaterTrackerWidget({ widget, isDark, onRemove, isEditModalOpen, backgro
   );
 }
 
-function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [notes, setNotes] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`notes_${widget.id}`);
@@ -1171,26 +1123,21 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          } ${liquidGlassEnabled
             ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
             : glassmorphismEnabled
-            ? (isDark 
-                  ? 'bg-yellow-500/15 backdrop-blur-md text-yellow-100 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                  : 'bg-yellow-400/15 backdrop-blur-md text-yellow-50 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-              : (isDark 
-                  ? 'bg-gradient-to-br from-orange-600 via-yellow-600 to-orange-700 text-yellow-100 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm border border-orange-500/30' 
-                  : 'bg-gradient-to-br from-orange-500 via-yellow-500 to-orange-600 text-yellow-50 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-sm border border-orange-400/30')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+              ? (isDark
+                ? 'bg-yellow-500/15 backdrop-blur-md text-yellow-100 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                : 'bg-yellow-400/15 backdrop-blur-md text-yellow-50 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark
+                ? 'bg-gradient-to-br from-orange-600 via-yellow-600 to-orange-700 text-yellow-100 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm border border-orange-500/30'
+                : 'bg-gradient-to-br from-orange-500 via-yellow-500 to-orange-600 text-yellow-50 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-sm border border-orange-400/30')
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && (
+        {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
         )}
         {/* Subtle texture overlay */}
@@ -1199,21 +1146,20 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
           <div className="absolute top-4 right-3 w-0.5 h-0.5 bg-yellow-300 rounded-full"></div>
           <div className="absolute bottom-3 left-4 w-0.5 h-0.5 bg-yellow-300 rounded-full"></div>
         </div>
-        
+
         <div className="flex flex-col justify-start items-start h-full p-3 relative z-10">
           <div className="w-full h-full">
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="New note..."
-              className={`w-full h-full bg-transparent border-none outline-none resize-none text-xs leading-tight placeholder-yellow-200/70 ${
-                widgetTextColor === 'auto' 
-                  ? (isDark ? 'text-yellow-100' : 'text-yellow-50')
-                  : widgetTextColor === 'black' 
-                    ? 'text-black' 
-                    : 'text-white'
-              }`}
-              style={{ 
+              className={`w-full h-full bg-transparent border-none outline-none resize-none text-xs leading-tight placeholder-yellow-200/70 ${widgetTextColor === 'auto'
+                ? (isDark ? 'text-yellow-100' : 'text-yellow-50')
+                : widgetTextColor === 'black'
+                  ? 'text-black'
+                  : 'text-white'
+                }`}
+              style={{
                 fontFamily: 'inherit',
                 lineHeight: '1.2'
               }}
@@ -1222,7 +1168,7 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
           </div>
         </div>
       </div>
-      
+
       {/* Delete Button - Only show when edit modal is open */}
       {isEditModalOpen && (
         <button
@@ -1239,7 +1185,7 @@ function QuickNotesWidget({ widget, isDark, onRemove, isEditModalOpen, backgroun
 
 
 
-function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const {
     attributes,
@@ -1259,7 +1205,7 @@ function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImag
           setPhotoUrl(url);
           revokedUrl = url;
         }
-      } catch {}
+      } catch { }
     })();
     return () => {
       if (revokedUrl) URL.revokeObjectURL(revokedUrl);
@@ -1291,20 +1237,16 @@ function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImag
     <div ref={setNodeRef} style={style} className={`relative group ${isDragging ? 'z-50' : ''}`}>
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center overflow-hidden transition-all duration-300 ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center overflow-hidden transition-all duration-300 ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${liquidGlassEnabled
             ? 'bg-white/10 backdrop-blur-xl ring-1 ring-white/20'
             : glassmorphismEnabled
               ? (isDark ? 'bg-white/10 ring-1 ring-white/15' : 'bg-white/70 ring-1 ring-white/40')
               : (isDark ? 'bg-[#111] ring-1 ring-white/10' : 'bg-white ring-1 ring-gray-200')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && (
+        {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl" />
         )}
         {photoUrl ? (
@@ -1325,7 +1267,7 @@ function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImag
                       await saveImageBlob(`photo_${widget.id}`, file);
                       const url = await getImageObjectUrl(`photo_${widget.id}`);
                       if (url) setPhotoUrl(url);
-                    } catch {}
+                    } catch { }
                   }}
                 />
                 Upload
@@ -1347,7 +1289,7 @@ function PhotoWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImag
     </div>
   );
 }
-function FidgetSpinnerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function FidgetSpinnerWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const {
     attributes,
     listeners,
@@ -1464,19 +1406,14 @@ function FidgetSpinnerWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
     <div ref={setNodeRef} style={style} className={`relative group ${isDragging ? 'z-50' : ''}`}>
       <div
         {...dragProps}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+          } ${liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
               ? (isDark ? 'bg-white/10 ring-1 ring-white/15' : 'bg-white/60 ring-1 ring-white/40')
               : (isDark ? 'bg-[#111] ring-1 ring-white/10' : 'bg-white ring-1 ring-gray-200')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={() => {
           if (!isEditModalOpen) {
@@ -1510,12 +1447,10 @@ function FidgetSpinnerWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
             ))}
             {[0, 120, 240].map((deg, idx) => (
               <div key={deg} className="absolute top-1/2 left-1/2" style={{ transform: `rotate(${deg}deg) translateY(-112%)` }}>
-                <div className={`relative w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-[0_6px_14px_rgba(0,0,0,0.25)] ${
-                  idx === 0 ? (isDark ? 'bg-fuchsia-400' : 'bg-fuchsia-500') : idx === 1 ? (isDark ? 'bg-cyan-300' : 'bg-cyan-400') : (isDark ? 'bg-amber-300' : 'bg-amber-400')
-                }`}>
-                  <div className={`absolute inset-0 rounded-full blur-md opacity-60 ${
-                    idx === 0 ? 'bg-fuchsia-500' : idx === 1 ? 'bg-cyan-400' : 'bg-amber-400'
-                  }`} />
+                <div className={`relative w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-[0_6px_14px_rgba(0,0,0,0.25)] ${idx === 0 ? (isDark ? 'bg-fuchsia-400' : 'bg-fuchsia-500') : idx === 1 ? (isDark ? 'bg-cyan-300' : 'bg-cyan-400') : (isDark ? 'bg-amber-300' : 'bg-amber-400')
+                  }`}>
+                  <div className={`absolute inset-0 rounded-full blur-md opacity-60 ${idx === 0 ? 'bg-fuchsia-500' : idx === 1 ? 'bg-cyan-400' : 'bg-amber-400'
+                    }`} />
                   <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${isDark ? 'bg-gray-900' : 'bg-white'}`} />
                 </div>
               </div>
@@ -1580,15 +1515,12 @@ function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateI
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
-        } ${
-          isEditModalOpen
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          } ${isEditModalOpen
             ? (isDark ? 'border-2 border-dashed border-white/30' : 'border-2 border-dashed border-gray-400')
             : 'border-0'
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
         {isEditModalOpen && (
@@ -1611,7 +1543,7 @@ function SpacerWidget({ widget, onRemove, isEditModalOpen, jiggleIndex, animateI
 
 // StickyNoteWidget removed
 
-function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [time, setTime] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const {
@@ -1639,13 +1571,13 @@ function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
     ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
       hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
-      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
-      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
-      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
-      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
-      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
-      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-red-400/50' :
-      'hover:scale-110 hover:-translate-y-0.5'
+        hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
+          hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
+            hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
+              hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
+                hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
+                  hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-red-400/50' :
+                    'hover:scale-110 hover:-translate-y-0.5'
     : '';
 
   return (
@@ -1653,26 +1585,21 @@ function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         onClick={() => !isEditModalOpen && setIsRunning(!isRunning)}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+          } ${liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
-            ? (isDark 
-                ? 'bg-red-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+              ? (isDark
+                ? 'bg-red-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
                 : 'bg-red-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-            : (isDark 
-                ? 'bg-gradient-to-br from-red-500 via-orange-500 to-red-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+              : (isDark
+                ? 'bg-gradient-to-br from-red-500 via-orange-500 to-red-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm'
                 : 'bg-gradient-to-br from-red-400 via-orange-400 to-red-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-red-200')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
         <div className="absolute inset-0 rounded-3xl" style={{ background: `conic-gradient(from 0deg, rgba(255,255,255,0.3) ${progress * 360}deg, transparent ${progress * 360}deg)` }} />
         <div className={`text-lg sm:text-xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
           {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
@@ -1687,7 +1614,7 @@ function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
 }
 
 
-function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [value, setValue] = useState(1);
   const [rolling, setRolling] = useState(false);
   const {
@@ -1712,13 +1639,13 @@ function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage
   const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
     ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
       hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
-      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
-      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
-      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
-      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
-      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
-      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-green-400/50' :
-      'hover:scale-110 hover:-translate-y-0.5'
+        hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
+          hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
+            hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
+              hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
+                hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
+                  hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-green-400/50' :
+                    'hover:scale-110 hover:-translate-y-0.5'
     : '';
 
   return (
@@ -1726,26 +1653,21 @@ function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         onClick={() => !isEditModalOpen && roll()}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+          } ${liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
-            ? (isDark 
-                ? 'bg-green-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+              ? (isDark
+                ? 'bg-green-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
                 : 'bg-green-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-            : (isDark 
-                ? 'bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+              : (isDark
+                ? 'bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm'
                 : 'bg-gradient-to-br from-green-400 via-emerald-400 to-green-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-green-200')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${rolling ? 'animate-spin' : ''}`}
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${rolling ? 'animate-spin' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
         <div className={`text-3xl sm:text-4xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
           {value}
         </div>
@@ -1757,7 +1679,7 @@ function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage
   );
 }
 
-function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
+function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
   const [side, setSide] = useState<'H' | 'T'>('H');
   const [flipping, setFlipping] = useState(false);
   const {
@@ -1781,13 +1703,13 @@ function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
     ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
       hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
-      hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
-      hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
-      hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
-      hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
-      hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
-      hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-yellow-400/50' :
-      'hover:scale-110 hover:-translate-y-0.5'
+        hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
+          hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
+            hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
+              hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
+                hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
+                  hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-yellow-400/50' :
+                    'hover:scale-110 hover:-translate-y-0.5'
     : '';
 
   return (
@@ -1795,26 +1717,21 @@ function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         onClick={() => !isEditModalOpen && flip()}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+          } ${liquidGlassEnabled
             ? 'liquid-surface'
             : glassmorphismEnabled
-            ? (isDark 
-                ? 'bg-yellow-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+              ? (isDark
+                ? 'bg-yellow-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
                 : 'bg-yellow-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-            : (isDark 
-                ? 'bg-gradient-to-br from-yellow-500 via-amber-500 to-yellow-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm' 
+              : (isDark
+                ? 'bg-gradient-to-br from-yellow-500 via-amber-500 to-yellow-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm'
                 : 'bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-yellow-200')
-        } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${flipping ? 'animate-spin' : ''}`}
+          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${flipping ? 'animate-spin' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
+        {liquidGlassEnabled && <div className="pointer-events-none absolute inset-0 rounded-3xl" />}
         <div className={`text-2xl sm:text-3xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
           {side}
         </div>
@@ -1826,7 +1743,7 @@ function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
   );
 }
 
-function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, fluidModeEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; fluidModeEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
+function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, widgetTextColor, jiggleIndex }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number }) {
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const {
@@ -1856,7 +1773,7 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
   const seconds = mounted ? time.getSeconds() : 0;
   const minutes = mounted ? time.getMinutes() : 0;
   const hours = mounted ? (time.getHours() % 12) : 0;
-  
+
   const secondDegrees = (seconds / 60) * 360;
   const minuteDegrees = ((minutes + seconds / 60) / 60) * 360;
   const hourDegrees = ((hours + minutes / 60) / 12) * 360;
@@ -1869,51 +1786,42 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
     >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${
-          isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-        } ${
-          isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
-        } ${
-          fluidModeEnabled
-            ? 'fluid-surface'
-            : liquidGlassEnabled
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+          } ${liquidGlassEnabled
             ? 'bg-white/10 backdrop-blur-2xl border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
             : glassmorphismEnabled
-            ? (isDark 
-                  ? 'bg-gray-900/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                  : 'bg-white/20 backdrop-blur-md text-black border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-              : (isDark 
-                  ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-sm' 
-                  : 'bg-gradient-to-br from-white via-gray-50 to-white text-black shadow-[0_12px_40px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-gray-100')
-        }`}
+              ? (isDark
+                ? 'bg-gray-900/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                : 'bg-white/20 backdrop-blur-md text-black border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+              : (isDark
+                ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-sm'
+                : 'bg-gradient-to-br from-white via-gray-50 to-white text-black shadow-[0_12px_40px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-gray-100')
+          }`}
       >
-        {(liquidGlassEnabled || fluidModeEnabled) && (
+        {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-white/40 to-transparent opacity-20" />
         )}
         <div className="relative w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 lg:w-26 lg:h-26 xl:w-28 xl:h-28">
           {/* Clock face */}
           <div className={`w-full h-full rounded-full ${isDark ? 'bg-black' : 'bg-white'} shadow-[inset_0_1px_4px_rgba(0,0,0,0.08)] flex items-center justify-center relative p-2`}>
             {/* Roman numerals for cardinal hours */}
-            <div className={`absolute top-2 left-1/2 transform -translate-x-1/2 text-xs font-medium ${
-              isDark ? 'text-white' : 'text-gray-800'
-            }`}>XII</div>
-            <div className={`absolute top-1/2 right-2 transform -translate-y-1/2 text-xs font-medium ${
-              isDark ? 'text-white' : 'text-gray-800'
-            }`}>III</div>
-            <div className={`absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs font-medium ${
-              isDark ? 'text-white' : 'text-gray-800'
-            }`}>VI</div>
-            <div className={`absolute top-1/2 left-2 transform -translate-y-1/2 text-xs font-medium ${
-              isDark ? 'text-white' : 'text-gray-800'
-            }`}>IX</div>
-            
+            <div className={`absolute top-2 left-1/2 transform -translate-x-1/2 text-xs font-medium ${isDark ? 'text-white' : 'text-gray-800'
+              }`}>XII</div>
+            <div className={`absolute top-1/2 right-2 transform -translate-y-1/2 text-xs font-medium ${isDark ? 'text-white' : 'text-gray-800'
+              }`}>III</div>
+            <div className={`absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs font-medium ${isDark ? 'text-white' : 'text-gray-800'
+              }`}>VI</div>
+            <div className={`absolute top-1/2 left-2 transform -translate-y-1/2 text-xs font-medium ${isDark ? 'text-white' : 'text-gray-800'
+              }`}>IX</div>
+
             {/* Hour markers (small dashes) */}
             {[1, 2, 4, 5, 7, 8, 10, 11].map((hour) => {
               const angle = (hour / 12) * 360;
               const radius = 3; // Adjusted for padding
               const x = Math.cos((angle - 90) * Math.PI / 180) * radius;
               const y = Math.sin((angle - 90) * Math.PI / 180) * radius;
-              
+
               return (
                 <div
                   key={hour}
@@ -1926,29 +1834,29 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
                 />
               );
             })}
-            
+
             {/* Clock center dot */}
             <div className="absolute w-1.5 h-1.5 rounded-full bg-red-500 z-10 shadow-sm"></div>
           </div>
-          
+
           {/* Hour hand */}
-          <div 
+          <div
             className="absolute top-1/2 left-1/2 w-1 h-8 origin-bottom bg-gray-800 rounded-full"
             style={{
               transform: `translateX(-50%) translateY(-100%) rotate(${hourDegrees}deg)`
             }}
           ></div>
-          
+
           {/* Minute hand */}
-          <div 
+          <div
             className="absolute top-1/2 left-1/2 w-0.5 h-10 origin-bottom bg-gray-800 rounded-full"
             style={{
               transform: `translateX(-50%) translateY(-100%) rotate(${minuteDegrees}deg)`
             }}
           ></div>
-          
+
           {/* Second hand */}
-          <div 
+          <div
             className="absolute top-1/2 left-1/2 w-0.5 h-11 origin-bottom bg-red-500 rounded-full"
             style={{
               transform: `translateX(-50%) translateY(-100%) rotate(${secondDegrees}deg)`
@@ -1956,7 +1864,7 @@ function AnalogClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgrou
           ></div>
         </div>
       </div>
-      
+
       {/* Delete Button - Only show when edit modal is open */}
       {isEditModalOpen && (
         <button
@@ -1980,10 +1888,10 @@ export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [showAppTitles, setShowAppTitles] = useState(true);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
-  const [searchBarCompact, setSearchBarCompact] = useState<boolean>(false);
   const [searchBarWidth, setSearchBarWidth] = useState<'narrow' | 'medium' | 'wide'>('medium');
-  const [fluidThemeColor, setFluidThemeColor] = useState<string>('#9333ea'); // Default purple
+
   const [monochromeIcons, setMonochromeIcons] = useState<boolean>(false);
+  const [appCardBorderRadius, setAppCardBorderRadius] = useState<'small' | 'medium' | 'full'>('medium');
   const [youtubeSearchMode, setYoutubeSearchMode] = useState<boolean>(false);
   const [haliteFolderName, setHaliteFolderName] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -1996,18 +1904,18 @@ export default function Home() {
   const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>('auto');
   const [liquidGlassEnabled, setLiquidGlassEnabled] = useState<boolean>(false);
   const [normalModeEnabled, setNormalModeEnabled] = useState<boolean>(true);
-  
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Add loading flag
   const [isResetting, setIsResetting] = useState(false); // Add reset flag
-  const [autofulIconsEnabled, setAutofulIconsEnabled] = useState<boolean>(false);
+
   const [animateIconsEnabled, setAnimateIconsEnabled] = useState<boolean>(false);
   const [hoverAnimationStyle, setHoverAnimationStyle] = useState<'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'>('scale');
   const [animateWidgetsEnabled, setAnimateWidgetsEnabled] = useState<boolean>(false);
   const [centerAppsGroup, setCenterAppsGroup] = useState<boolean>(false);
-  const [centerWidgetsGroup, setCenterWidgetsGroup] = useState<boolean>(false);
+
   const [fullRoundedIconsEnabled, setFullRoundedIconsEnabled] = useState<boolean>(false);
-  const [squareRoundedIconsEnabled, setSquareRoundedIconsEnabled] = useState<boolean>(false);
+
   const [showBookmarks, setShowBookmarks] = useState<boolean>(true);
   const [bookmarkStyle, setBookmarkStyle] = useState<'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern'>('cards');
   const [showBookmarksTitle, setShowBookmarksTitle] = useState<boolean>(true);
@@ -2023,20 +1931,20 @@ export default function Home() {
   const [haliteUrls, setHaliteUrls] = useState<string[]>(['', '', '', '']);
   const [appGroupMarginTop, setAppGroupMarginTop] = useState<number>(240);
   const [liquidReflectionColor, setLiquidReflectionColor] = useState<string>('#ffffff');
-  const [fluidModeEnabled, setFluidModeEnabled] = useState<boolean>(false);
+
   const [userName, setUserName] = useState<string>('user');
   const [greetingStyle, setGreetingStyle] = useState<'hi' | 'welcome' | 'time-based'>('hi');
   const [isNameEditorOpen, setIsNameEditorOpen] = useState<boolean>(false);
   const [nameInput, setNameInput] = useState<string>('user');
   const nameEditorRef = useRef<HTMLDivElement | null>(null);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
-  const [showBookmarksParagraph, setShowBookmarksParagraph] = useState<boolean>(true);
+
   const [showTopTime, setShowTopTime] = useState<boolean>(false);
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
-  const fluidThemeRgb = hexToRgb(fluidThemeColor).join(', ');
+
   const displayName = userName.trim() || 'user';
   const topClockLabel = topClockTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -2073,14 +1981,9 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
-  
+
   // Update fluid theme color CSS variable when color changes
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const rgb = hexToRgb(fluidThemeColor).join(', ');
-      document.documentElement.style.setProperty('--fluid-color-rgb', rgb);
-    }
-  }, [fluidThemeColor]);
+
 
   useEffect(() => {
     if (!isNameEditorOpen) return;
@@ -2107,7 +2010,7 @@ export default function Home() {
   // Close context menu on outside click or Escape key
   useEffect(() => {
     if (!contextMenu) return;
-    
+
     const handleClick = (e: MouseEvent) => {
       // Don't close if clicking inside the context menu
       const target = e.target as HTMLElement;
@@ -2115,7 +2018,7 @@ export default function Home() {
         setContextMenu(null);
       }
     };
-    
+
     const handleContextMenu = (e: MouseEvent) => {
       // Close when right-clicking elsewhere
       const target = e.target as HTMLElement;
@@ -2123,20 +2026,20 @@ export default function Home() {
         setContextMenu(null);
       }
     };
-    
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setContextMenu(null);
       }
     };
-    
+
     // Add a small delay to avoid closing immediately when opening
     const timer = setTimeout(() => {
       document.addEventListener('click', handleClick, true);
       document.addEventListener('contextmenu', handleContextMenu, true);
       document.addEventListener('keydown', handleKeyDown);
     }, 100);
-    
+
     return () => {
       clearTimeout(timer);
       document.removeEventListener('click', handleClick, true);
@@ -2159,10 +2062,10 @@ export default function Home() {
   // Load saved state on mount to avoid hydration mismatch
   useEffect(() => {
     if (!mounted || typeof window === 'undefined') return;
-    
+
     console.log('🔄 Loading saved state from localStorage...');
     setIsLoading(true); // Set loading to true before loading
-    
+
     try {
       // Load apps
       const savedApps = localStorage.getItem('favoriteApps');
@@ -2196,7 +2099,7 @@ export default function Home() {
         } else {
           setBookmarks(defaultBookmarks);
         }
-      } catch {}
+      } catch { }
 
       // Load bookmarks toggle
       try {
@@ -2208,7 +2111,7 @@ export default function Home() {
         if (savedCenterBm != null) setCenterBookmarksGroup(savedCenterBm === 'true');
         const savedBmStyle = localStorage.getItem('bookmarkStyle');
         if (savedBmStyle === 'chips' || savedBmStyle === 'cards') setBookmarkStyle(savedBmStyle);
-      } catch {}
+      } catch { }
 
       // Load theme
       const savedTheme = localStorage.getItem('theme');
@@ -2216,7 +2119,7 @@ export default function Home() {
         const isDark = savedTheme === 'dark';
         setIsDarkMode(isDark);
         console.log('✅ Theme loaded from localStorage:', savedTheme);
-        
+
         // Apply theme to document immediately
         if (isDark) {
           document.documentElement.classList.add('dark');
@@ -2228,7 +2131,7 @@ export default function Home() {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         setIsDarkMode(prefersDark);
         console.log('🌐 Using system preference:', prefersDark ? 'dark' : 'light');
-        
+
         // Apply system preference to document
         if (prefersDark) {
           document.documentElement.classList.add('dark');
@@ -2248,46 +2151,26 @@ export default function Home() {
         setShowSearchBar(savedShowSearchBar === 'true');
         console.log('✅ Show search bar loaded:', savedShowSearchBar === 'true');
       }
-      const savedSearchBarCompact = localStorage.getItem('searchBarCompact');
-      if (savedSearchBarCompact !== null) {
-        const compactValue = savedSearchBarCompact === 'true';
-        setSearchBarCompact(compactValue);
-        console.log('✅ Search bar compact loaded:', compactValue);
-      }
+
       const savedSearchBarWidth = localStorage.getItem('searchBarWidth');
       if (savedSearchBarWidth && (savedSearchBarWidth === 'narrow' || savedSearchBarWidth === 'medium' || savedSearchBarWidth === 'wide')) {
         setSearchBarWidth(savedSearchBarWidth as 'narrow' | 'medium' | 'wide');
         console.log('✅ Search bar width loaded:', savedSearchBarWidth);
       }
-      const savedFluidThemeColor = localStorage.getItem('fluidThemeColor');
-      if (savedFluidThemeColor) {
-        setFluidThemeColor(savedFluidThemeColor);
-        console.log('✅ Fluid theme color loaded:', savedFluidThemeColor);
-      }
+
       const savedMonochromeIcons = localStorage.getItem('monochromeIcons');
       if (savedMonochromeIcons !== null) {
         setMonochromeIcons(savedMonochromeIcons === 'true');
         console.log('✅ Monochrome icons loaded:', savedMonochromeIcons === 'true');
       }
-      const savedFullRounded = localStorage.getItem('fullRoundedIconsEnabled');
-      if (savedFullRounded !== null) {
-        setFullRoundedIconsEnabled(savedFullRounded === 'true');
-      }
-      const savedSquareRounded = localStorage.getItem('squareRoundedIconsEnabled');
-      if (savedSquareRounded !== null) {
-        setSquareRoundedIconsEnabled(savedSquareRounded === 'true');
-        console.log('✅ Square rounded icons loaded:', savedSquareRounded === 'true');
-      }
+
+
       const savedCenterAppsGroup = localStorage.getItem('centerAppsGroup');
       if (savedCenterAppsGroup !== null) {
         setCenterAppsGroup(savedCenterAppsGroup === 'true');
         console.log('✅ Center apps group loaded:', savedCenterAppsGroup === 'true');
       }
-      const savedCenterWidgetsGroup = localStorage.getItem('centerWidgetsGroup');
-      if (savedCenterWidgetsGroup !== null) {
-        setCenterWidgetsGroup(savedCenterWidgetsGroup === 'true');
-        console.log('✅ Center widgets group loaded:', savedCenterWidgetsGroup === 'true');
-      }
+
       // Always start with an empty search term on load
 
       // Load background image, prefer IndexedDB
@@ -2301,7 +2184,7 @@ export default function Home() {
             console.log('✅ Background image loaded from IndexedDB');
             return;
           }
-        } catch {}
+        } catch { }
         const savedBackgroundImage = localStorage.getItem('backgroundImage');
         if (savedBackgroundImage) {
           setBackgroundImage(savedBackgroundImage);
@@ -2325,12 +2208,7 @@ export default function Home() {
         console.log('✅ Widget text color loaded:', savedWidgetTextColor);
       }
 
-      // Load autoful icons toggle
-      const savedAutoful = localStorage.getItem('autofulIconsEnabled');
-      if (savedAutoful !== null) {
-        setAutofulIconsEnabled(savedAutoful === 'true');
-        console.log('✅ Autoful icons loaded:', savedAutoful === 'true');
-      }
+
 
       // Load animate icons toggle
       const savedAnimate = localStorage.getItem('animateIconsEnabled');
@@ -2379,11 +2257,7 @@ export default function Home() {
         console.log('✅ User name loaded:', savedUserName);
       }
 
-      const savedBookmarksParagraph = localStorage.getItem('showBookmarksParagraph');
-      if (savedBookmarksParagraph !== null) {
-        setShowBookmarksParagraph(savedBookmarksParagraph === 'true');
-        console.log('✅ Bookmarks paragraph visibility loaded:', savedBookmarksParagraph);
-      }
+
 
       const savedTopTime = localStorage.getItem('showTopTime');
       if (savedTopTime !== null) {
@@ -2395,61 +2269,62 @@ export default function Home() {
       const savedNormal = localStorage.getItem('normalModeEnabled');
       const savedGlass = localStorage.getItem('glassmorphismEnabled');
       const savedLiquid = localStorage.getItem('liquidGlassEnabled');
-      const savedFluid = localStorage.getItem('fluidModeEnabled');
-      
-      
-      console.log('🔍 Mode settings found in localStorage:', { 
-        normal: savedNormal, 
-        glass: savedGlass, 
-        liquid: savedLiquid,
-        fluid: savedFluid
+
+
+
+      console.log('🔍 Mode settings found in localStorage:', {
+        normal: savedNormal,
+        glass: savedGlass,
+        liquid: savedLiquid
       });
-      
+
       // Set modes based on saved values, ensuring only one is active
-      if (savedFluid === 'true') {
-        setNormalModeEnabled(false);
-        setGlassmorphismEnabled(false);
-        setLiquidGlassEnabled(false);
-        setFluidModeEnabled(true);
-        console.log('✅ Fluid mode restored from localStorage');
-      } else if (savedNormal === 'true') {
+      if (savedNormal === 'true') {
         setNormalModeEnabled(true);
         setGlassmorphismEnabled(false);
         setLiquidGlassEnabled(false);
-        setFluidModeEnabled(false);
         console.log('✅ Normal mode restored from localStorage');
       } else if (savedGlass === 'true') {
         setNormalModeEnabled(false);
         setGlassmorphismEnabled(true);
         setLiquidGlassEnabled(false);
-        setFluidModeEnabled(false);
         console.log('✅ Glassmorphism mode restored from localStorage');
       } else if (savedLiquid === 'true') {
         setNormalModeEnabled(false);
         setGlassmorphismEnabled(false);
         setLiquidGlassEnabled(true);
-        setFluidModeEnabled(false);
         console.log('✅ Liquid glass mode restored from localStorage');
       } else {
         // No modes saved, default to normal
         setNormalModeEnabled(true);
         setGlassmorphismEnabled(false);
         setLiquidGlassEnabled(false);
-        setFluidModeEnabled(false);
         console.log('🔄 No modes saved, defaulting to normal mode');
       }
-      
+
+      // Load app card border radius
+      const savedFullRounded = localStorage.getItem('fullRoundedIconsEnabled');
+      const savedAppCardBorderRadius = localStorage.getItem('appCardBorderRadius');
+
+      if (savedFullRounded === 'true') {
+        setAppCardBorderRadius('full');
+      } else if (savedAppCardBorderRadius === 'small' || savedAppCardBorderRadius === 'medium' || savedAppCardBorderRadius === 'full') {
+        setAppCardBorderRadius(savedAppCardBorderRadius as 'small' | 'medium' | 'full');
+      } else if (savedAppCardBorderRadius === 'large') {
+        setAppCardBorderRadius('full');
+      }
+
       // Load greeting style
       const savedGreetingStyle = localStorage.getItem('greetingStyle');
       if (savedGreetingStyle === 'hi' || savedGreetingStyle === 'welcome' || savedGreetingStyle === 'time-based') {
         setGreetingStyle(savedGreetingStyle);
         console.log('✅ Greeting style loaded:', savedGreetingStyle);
       }
-      
+
       console.log('✅ All settings loaded successfully');
       setIsLoading(false); // Mark loading as complete
       console.log('🚀 Loading complete - save effect now enabled');
-      
+
     } catch (error) {
       console.error('❌ Error loading settings:', error);
       // Fallback to defaults on error
@@ -2491,7 +2366,7 @@ export default function Home() {
         setIsResetting(false);
         console.log('🔄 Reset complete - localStorage is now read-only until user makes changes');
       }, 200);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isResetting, apps, widgets]);
@@ -2505,74 +2380,48 @@ export default function Home() {
         theme: isDarkMode ? 'dark' : 'light',
         showAppTitles,
         showSearchBar,
-        searchBarCompact,
+
         searchBarWidth,
-        fluidThemeColor,
-        // searchTerm intentionally not persisted so it starts empty on reload
-        backgroundImage,
-        normalModeEnabled,
-        glassmorphismEnabled,
-        liquidGlassEnabled,
-        fluidModeEnabled,
-        appTitleColor,
-        widgetTextColor,
-        autofulIconsEnabled,
-        animateIconsEnabled,
-        animateWidgetsEnabled,
-        hoverAnimationStyle,
-        fullRoundedIconsEnabled,
-        appGroupMarginTop,
-        liquidReflectionColor,
-        userName,
-        greetingStyle,
-        showBookmarksParagraph,
         showTopTime
       });
 
       // Save theme
       localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-      
+
       // Save show app titles
       localStorage.setItem('showAppTitles', showAppTitles.toString());
       localStorage.setItem('showSearchBar', showSearchBar.toString());
-      localStorage.setItem('searchBarCompact', searchBarCompact.toString());
       localStorage.setItem('searchBarWidth', searchBarWidth);
-      localStorage.setItem('fluidThemeColor', fluidThemeColor);
       localStorage.setItem('monochromeIcons', monochromeIcons.toString());
       localStorage.setItem('centerAppsGroup', centerAppsGroup.toString());
-      localStorage.setItem('centerWidgetsGroup', centerWidgetsGroup.toString());
       localStorage.setItem('showBookmarks', showBookmarks.toString());
       localStorage.setItem('showBookmarksTitle', showBookmarksTitle.toString());
       localStorage.setItem('centerBookmarksGroup', centerBookmarksGroup.toString());
       // searchTerm not saved by design
-      
+
       // Save background image only if it's a data URL or remote URL.
       // For IndexedDB case we use object URL at runtime and don't persist the blob in localStorage.
       if (!backgroundImage.startsWith('blob:')) {
         localStorage.setItem('backgroundImage', backgroundImage);
       }
-      
+
       // Save visual modes
       localStorage.setItem('normalModeEnabled', normalModeEnabled.toString());
       localStorage.setItem('glassmorphismEnabled', glassmorphismEnabled.toString());
       localStorage.setItem('liquidGlassEnabled', liquidGlassEnabled.toString());
-      localStorage.setItem('fluidModeEnabled', fluidModeEnabled.toString());
-      
+
       // Save colors
       localStorage.setItem('appTitleColor', appTitleColor);
       localStorage.setItem('widgetTextColor', widgetTextColor);
-      localStorage.setItem('autofulIconsEnabled', autofulIconsEnabled.toString());
       localStorage.setItem('animateIconsEnabled', animateIconsEnabled.toString());
       localStorage.setItem('animateWidgetsEnabled', animateWidgetsEnabled.toString());
       localStorage.setItem('hoverAnimationStyle', hoverAnimationStyle);
-      localStorage.setItem('fullRoundedIconsEnabled', fullRoundedIconsEnabled.toString());
-      localStorage.setItem('squareRoundedIconsEnabled', squareRoundedIconsEnabled.toString());
+      localStorage.setItem('appCardBorderRadius', appCardBorderRadius);
       localStorage.setItem('bookmarkStyle', bookmarkStyle);
       localStorage.setItem('appGroupMarginTop', appGroupMarginTop.toString());
       localStorage.setItem('liquidReflectionColor', liquidReflectionColor);
       localStorage.setItem('userName', userName);
       localStorage.setItem('greetingStyle', greetingStyle);
-      localStorage.setItem('showBookmarksParagraph', showBookmarksParagraph.toString());
       localStorage.setItem('showTopTime', showTopTime.toString());
 
       // Apply theme to document
@@ -2598,30 +2447,25 @@ export default function Home() {
       console.log('✅ All settings saved to localStorage successfully');
     }
   }, [
-    isDarkMode, 
-    showAppTitles, 
+    isDarkMode,
+    showAppTitles,
     showSearchBar,
-    searchBarCompact,
+
     searchBarWidth,
-    backgroundImage, 
-    normalModeEnabled, 
-    glassmorphismEnabled, 
-    liquidGlassEnabled, 
-    fluidModeEnabled,
-    fluidThemeColor,
+    backgroundImage,
+    normalModeEnabled,
+    glassmorphismEnabled,
+    liquidGlassEnabled,
     monochromeIcons,
-    appTitleColor, 
+    appTitleColor,
     widgetTextColor,
-    autofulIconsEnabled,
     animateIconsEnabled,
     animateWidgetsEnabled,
     hoverAnimationStyle,
-    fullRoundedIconsEnabled,
+    appCardBorderRadius,
     bookmarkStyle,
     centerAppsGroup,
-    centerWidgetsGroup,
     showBookmarks,
-    showBookmarksParagraph,
     showBookmarksTitle,
     centerBookmarksGroup,
     appGroupMarginTop,
@@ -2690,16 +2534,16 @@ export default function Home() {
   const resetSettings = () => {
     setShowResetModal(true);
     return;
-    
+
     console.log('🔄 Resetting all settings to defaults...');
-    
+
     // Set reset flag to prevent useEffect from overwriting localStorage
     setIsResetting(true);
-    
+
     // Clear localStorage first and ensure it's completely empty
     if (typeof window !== 'undefined') {
       localStorage.clear();
-      
+
       // Double-check that localStorage is actually cleared
       if (localStorage.length > 0) {
         console.warn('⚠️ localStorage not fully cleared, forcing removal of remaining items');
@@ -2708,10 +2552,10 @@ export default function Home() {
           localStorage.removeItem(key);
         });
       }
-      
+
       console.log('🗑️ localStorage cleared, length:', localStorage.length);
     }
-    
+
     // Reset visual settings to defaults
     setIsDarkMode(false);
     setShowAppTitles(true);
@@ -2722,26 +2566,12 @@ export default function Home() {
     setNormalModeEnabled(true);
     setAppTitleColor('auto');
     setWidgetTextColor('auto');
-    setAutofulIconsEnabled(false);
-    setAnimateIconsEnabled(false);
-    setAnimateWidgetsEnabled(false);
-    setHoverAnimationStyle('scale');
-    setAppGroupMarginTop(240);
-    setLiquidReflectionColor('#ffffff');
-    setUserName('user');
-    setNameInput('user');
-    setShowBookmarksParagraph(true);
-    setShowTopTime(false);
-    setSearchBarCompact(false);
-    setSearchBarWidth('medium');
-    setFluidThemeColor('#9333ea');
     setMonochromeIcons(false);
-    setFluidModeEnabled(false);
-    
+
     // Restore default apps and widgets
     setApps(defaultApps);
     setWidgets(defaultWidgets);
-    
+
     // Set default values in localStorage immediately after clearing
     if (typeof window !== 'undefined') {
       try {
@@ -2753,10 +2583,9 @@ export default function Home() {
         localStorage.setItem('glassmorphismEnabled', 'false');
         localStorage.setItem('liquidGlassEnabled', 'false');
         localStorage.setItem('fluidModeEnabled', 'false');
-        
+
         localStorage.setItem('appTitleColor', 'auto');
         localStorage.setItem('widgetTextColor', 'auto');
-        localStorage.setItem('autofulIconsEnabled', 'false');
         localStorage.setItem('animateIconsEnabled', 'false');
         localStorage.setItem('animateWidgetsEnabled', 'false');
         localStorage.setItem('hoverAnimationStyle', 'scale');
@@ -2764,42 +2593,33 @@ export default function Home() {
         localStorage.setItem('liquidReflectionColor', '#ffffff');
         localStorage.setItem('userName', 'user');
         localStorage.setItem('greetingStyle', 'hi');
-        localStorage.setItem('showBookmarksParagraph', 'true');
         localStorage.setItem('showTopTime', 'false');
-        localStorage.setItem('searchBarCompact', 'false');
         localStorage.setItem('searchBarWidth', 'medium');
-        localStorage.setItem('fluidThemeColor', '#9333ea');
         localStorage.setItem('monochromeIcons', 'false');
-        
-        // Reset CSS variable
-        if (typeof document !== 'undefined') {
-          const defaultRgb = hexToRgb('#9333ea').join(', ');
-          document.documentElement.style.setProperty('--fluid-color-rgb', defaultRgb);
-        }
-        
+
         // Save apps and widgets with explicit stringification
         const appsJson = JSON.stringify(defaultApps);
         const widgetsJson = JSON.stringify(defaultWidgets);
-        
+
         localStorage.setItem('favoriteApps', appsJson);
         localStorage.setItem('widgets', widgetsJson);
-        
+
         // Add timestamp for reset tracking
         localStorage.setItem('lastResetDate', new Date().toDateString());
-        
+
         // Simple verification that save was successful
         if (localStorage.getItem('favoriteApps') === appsJson && localStorage.getItem('widgets') === widgetsJson) {
           console.log('✅ Default apps and widgets saved to localStorage successfully');
         } else {
           console.warn('⚠️ localStorage save verification failed, but continuing...');
         }
-        
+
         // Verify the save was successful
         const savedApps = localStorage.getItem('favoriteApps') || '[]';
         const savedWidgets = localStorage.getItem('widgets') || '[]';
         console.log('🔍 Verification - saved apps:', JSON.parse(savedApps).length);
         console.log('🔍 Verification - saved widgets:', JSON.parse(savedWidgets).length);
-        
+
         // Simple verification that save was successful
         if (savedApps === appsJson && savedWidgets === widgetsJson) {
           console.log('✅ All settings reset to defaults and saved to localStorage successfully');
@@ -2810,7 +2630,7 @@ export default function Home() {
         console.error('❌ Error saving to localStorage during reset:', error);
       }
     }
-    
+
     // Apply theme to document
     if (typeof document !== 'undefined') {
       document.documentElement.classList.remove('dark');
@@ -2818,7 +2638,7 @@ export default function Home() {
       document.documentElement.classList.remove('has-app-bg');
       document.documentElement.style.setProperty('--liquid-reflection-rgb', '255,255,255');
     }
-    
+
     // Note: isResetting will be set to false by a useEffect when the state updates complete
   };
 
@@ -2843,7 +2663,6 @@ export default function Home() {
     setNormalModeEnabled(true);
     setAppTitleColor('auto');
     setWidgetTextColor('auto');
-    setAutofulIconsEnabled(false);
     setAnimateIconsEnabled(false);
     setAnimateWidgetsEnabled(false);
     setHoverAnimationStyle('scale');
@@ -2851,7 +2670,6 @@ export default function Home() {
     setLiquidReflectionColor('#ffffff');
     setUserName('user');
     setNameInput('user');
-    setShowBookmarksParagraph(true);
     setShowTopTime(false);
     setApps(defaultApps);
     setWidgets(defaultWidgets);
@@ -2865,21 +2683,19 @@ export default function Home() {
         localStorage.setItem('liquidGlassEnabled', 'false');
         localStorage.setItem('appTitleColor', 'auto');
         localStorage.setItem('widgetTextColor', 'auto');
-        localStorage.setItem('autofulIconsEnabled', 'false');
         localStorage.setItem('animateIconsEnabled', 'false');
         localStorage.setItem('animateWidgetsEnabled', 'false');
         localStorage.setItem('hoverAnimationStyle', 'scale');
         localStorage.setItem('appGroupMarginTop', '240');
         localStorage.setItem('liquidReflectionColor', '#ffffff');
         localStorage.setItem('userName', 'user');
-        localStorage.setItem('showBookmarksParagraph', 'true');
         localStorage.setItem('showTopTime', 'false');
         const appsJson = JSON.stringify(defaultApps);
         const widgetsJson = JSON.stringify(defaultWidgets);
         localStorage.setItem('favoriteApps', appsJson);
         localStorage.setItem('widgets', widgetsJson);
         localStorage.setItem('lastResetDate', new Date().toDateString());
-      } catch {}
+      } catch { }
     }
     if (typeof document !== 'undefined') {
       document.documentElement.classList.remove('dark');
@@ -2952,13 +2768,13 @@ export default function Home() {
   const handleContextMenu = (e: React.MouseEvent, appId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Calculate position with viewport bounds checking
     const menuWidth = 160;
     const menuHeight = 50;
     const x = Math.min(e.clientX, window.innerWidth - menuWidth - 10);
     const y = Math.min(e.clientY, window.innerHeight - menuHeight - 10);
-    
+
     setContextMenu({
       x: Math.max(10, x),
       y: Math.max(10, y),
@@ -2989,7 +2805,7 @@ export default function Home() {
       // Handle app reordering
       const activeApp = apps.find(app => app.id === active.id);
       const overApp = apps.find(app => app.id === over?.id);
-      
+
       if (activeApp && overApp) {
         setApps((items) => {
           const oldIndex = items.findIndex((item) => item.id === active.id);
@@ -2997,11 +2813,11 @@ export default function Home() {
           return arrayMove(items, oldIndex, newIndex);
         });
       }
-      
+
       // Handle widget reordering
       const activeWidget = widgets.find(widget => widget.id === active.id);
       const overWidget = widgets.find(widget => widget.id === over?.id);
-      
+
       if (activeWidget && overWidget) {
         setWidgets((items) => {
           const oldIndex = items.findIndex((item) => item.id === active.id);
@@ -3009,7 +2825,7 @@ export default function Home() {
           return arrayMove(items, oldIndex, newIndex);
         });
       }
-      
+
       // Handle cross-type reordering (app to widget position or vice versa)
       if (activeApp && overWidget) {
         // Move app to widget position
@@ -3019,7 +2835,7 @@ export default function Home() {
           return arrayMove(appItems, oldIndex, newIndex);
         });
       }
-      
+
       if (activeWidget && overApp) {
         // Move widget to app position
         setWidgets((widgetItems) => {
@@ -3045,7 +2861,7 @@ export default function Home() {
         const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
         window.history.replaceState(null, '', newUrl);
       }
-    } catch {}
+    } catch { }
   }, [mounted]);
 
   // Handle Ctrl+Y to toggle YouTube search mode
@@ -3073,17 +2889,16 @@ export default function Home() {
 
   return (
     <main suppressHydrationWarning
-      className={`min-h-screen px-4 py-8 transition-all duration-300 ${
-        backgroundImage || (!isDarkMode && !backgroundImage) ? 'bg-cover bg-center bg-no-repeat' : ''
-      } ${isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white'}`}
+      className={`min-h-screen px-4 py-8 transition-all duration-300 ${backgroundImage || (!isDarkMode && !backgroundImage) ? 'bg-cover bg-center bg-no-repeat' : ''
+        } ${isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white'}`}
       style={{
         backgroundImage: backgroundImage
           ? `url(${backgroundImage})`
           : (
-              isDarkMode
-                ? 'radial-gradient(600px circle at 100% 0, rgba(59,130,246,0.12), transparent 40%), radial-gradient(800px circle at 0 100%, rgba(236,72,153,0.10), transparent 40%), linear-gradient(180deg, #0a0a0a 0%, #0f1115 100%)'
-                : 'url(/walp.png)'
-            ),
+            isDarkMode
+              ? 'radial-gradient(600px circle at 100% 0, rgba(59,130,246,0.12), transparent 40%), radial-gradient(800px circle at 0 100%, rgba(236,72,153,0.10), transparent 40%), linear-gradient(180deg, #0a0a0a 0%, #0f1115 100%)'
+              : 'url(/walp.png)'
+          ),
         backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff',
         backgroundRepeat: 'no-repeat',
         '--liquid-reflection-rgb': liquidReflectionRgb,
@@ -3111,11 +2926,10 @@ export default function Home() {
       {showTopTime && (
         <div className="fixed top-4 left-4 z-40">
           <span
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 ${
-              isDarkMode
-                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl'
-                : 'bg-gray-900 text-white ring-gray-900/10'
-            }`}
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 ${isDarkMode
+              ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl'
+              : 'bg-gray-900 text-white ring-gray-900/10'
+              }`}
             aria-live="polite"
           >
             {topClockLabel}
@@ -3131,11 +2945,10 @@ export default function Home() {
               setIsNameEditorOpen(prev => !prev);
               setNameInput(userName);
             }}
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
-              isDarkMode
-                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15'
-                : 'bg-gray-900 text-white ring-gray-900/10 hover:bg-gray-800'
-            }`}
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${isDarkMode
+              ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15'
+              : 'bg-gray-900 text-white ring-gray-900/10 hover:bg-gray-800'
+              }`}
             title="Click to personalise your greeting"
             aria-expanded={isNameEditorOpen}
             aria-controls="greeting-name-editor"
@@ -3145,11 +2958,10 @@ export default function Home() {
           {isNameEditorOpen && (
             <div
               id="greeting-name-editor"
-              className={`absolute right-0 mt-2 w-60 rounded-2xl shadow-xl ring-1 p-4 flex flex-col gap-3 ${
-                isDarkMode
-                  ? 'bg-[#141414] text-white ring-white/10'
-                  : 'bg-white text-gray-900 ring-gray-200'
-              }`}
+              className={`absolute right-0 mt-2 w-60 rounded-2xl shadow-xl ring-1 p-4 flex flex-col gap-3 ${isDarkMode
+                ? 'bg-[#141414] text-white ring-white/10'
+                : 'bg-white text-gray-900 ring-gray-200'
+                }`}
             >
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Update greeting</span>
@@ -3168,9 +2980,8 @@ export default function Home() {
                       handleCancelGreetingEdit();
                     }
                   }}
-                  className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${
-                    isDarkMode ? 'bg-white/10 text-white placeholder-white/40' : 'bg-gray-50 text-gray-900 placeholder-gray-400'
-                  }`}
+                  className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/70 ${isDarkMode ? 'bg-white/10 text-white placeholder-white/40' : 'bg-gray-50 text-gray-900 placeholder-gray-400'
+                    }`}
                   placeholder="Enter your name"
                 />
               </div>
@@ -3178,9 +2989,8 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleCancelGreetingEdit}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                    isDarkMode ? 'text-white/70 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${isDarkMode ? 'text-white/70 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+                    }`}
                 >
                   Cancel
                 </button>
@@ -3196,9 +3006,9 @@ export default function Home() {
           )}
         </div>
       </div>
-        <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
+      <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
 
-          {/* Apps Grid with Drag and Drop */}
+        {/* Apps Grid with Drag and Drop */}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -3206,11 +3016,10 @@ export default function Home() {
         >
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
             <div className="mb-6" style={{ marginTop: appGroupMarginTop }}>
-              <div className={`${
-                centerAppsGroup
-                  ? 'grid w-fit mx-auto [grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]'
-                  : 'grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'
-              } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px] ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0.5 sm:gap-x-0.5 lg:gap-x-0.5'}` }>
+              <div className={`${centerAppsGroup
+                ? 'grid w-fit mx-auto [grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]'
+                : 'grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'
+                } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px] ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0.5 sm:gap-x-0.5 lg:gap-x-0.5'}`}>
                 {apps.map((app, index) => (
                   app.type === 'halite' ? (
                     <HaliteCard
@@ -3223,15 +3032,12 @@ export default function Home() {
                       glassmorphismEnabled={glassmorphismEnabled}
                       appTitleColor={appTitleColor}
                       liquidGlassEnabled={liquidGlassEnabled}
-                      fluidModeEnabled={fluidModeEnabled}
                       isEditModalOpen={isEditModalOpen}
                       jiggleIndex={index}
-                      autofulIconsEnabled={autofulIconsEnabled}
                       animateIconsEnabled={animateIconsEnabled}
                       hoverAnimationStyle={hoverAnimationStyle}
-                      fullRoundedIconsEnabled={fullRoundedIconsEnabled}
-                      squareRoundedIconsEnabled={squareRoundedIconsEnabled}
                       monochromeIcons={monochromeIcons}
+                      appCardBorderRadius={appCardBorderRadius}
                       onContextMenu={handleContextMenu}
                     />
                   ) : (
@@ -3245,15 +3051,12 @@ export default function Home() {
                       glassmorphismEnabled={glassmorphismEnabled}
                       appTitleColor={appTitleColor}
                       liquidGlassEnabled={liquidGlassEnabled}
-                      fluidModeEnabled={fluidModeEnabled}
                       isEditModalOpen={isEditModalOpen}
                       jiggleIndex={index}
-                      autofulIconsEnabled={autofulIconsEnabled}
                       animateIconsEnabled={animateIconsEnabled}
                       hoverAnimationStyle={hoverAnimationStyle}
-                      fullRoundedIconsEnabled={fullRoundedIconsEnabled}
-                      squareRoundedIconsEnabled={squareRoundedIconsEnabled}
                       monochromeIcons={monochromeIcons}
+                      appCardBorderRadius={appCardBorderRadius}
                       onContextMenu={handleContextMenu}
                     />
                   )
@@ -3272,11 +3075,10 @@ export default function Home() {
               onDragEnd={handleDragEnd}
             >
               <SortableContext items={widgets.map(widget => widget.id)} strategy={rectSortingStrategy}>
-                <div className={`${
-                  centerWidgetsGroup
-                    ? 'grid w-fit mx-auto [grid-template-columns:repeat(1,max-content)] sm:[grid-template-columns:repeat(2,max-content)] md:[grid-template-columns:repeat(3,max-content)] lg:[grid-template-columns:repeat(4,max-content)] xl:[grid-template-columns:repeat(5,max-content)] 2xl:[grid-template-columns:repeat(6,max-content)] 3xl:[grid-template-columns:repeat(7,max-content)]'
-                    : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7'
-                } gap-y-4 sm:gap-y-5 ${centerWidgetsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0 sm:gap-x-1 lg:gap-x-2'}` }>
+                <div className={`${centerAppsGroup
+                  ? 'grid w-fit mx-auto [grid-template-columns:repeat(1,max-content)] sm:[grid-template-columns:repeat(2,max-content)] md:[grid-template-columns:repeat(3,max-content)] lg:[grid-template-columns:repeat(4,max-content)] xl:[grid-template-columns:repeat(5,max-content)] 2xl:[grid-template-columns:repeat(6,max-content)] 3xl:[grid-template-columns:repeat(7,max-content)]'
+                  : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7'
+                  } gap-y-4 sm:gap-y-5 ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0 sm:gap-x-1 lg:gap-x-2'}`}>
                   {widgets.map((widget, index) => (
                     widget.type === 'clock' ? (
                       <SortableClockWidget
@@ -3288,9 +3090,8 @@ export default function Home() {
                         }}
                         isEditModalOpen={isEditModalOpen}
                         backgroundImage={backgroundImage}
-                         glassmorphismEnabled={glassmorphismEnabled}
-                         liquidGlassEnabled={liquidGlassEnabled}
-                         fluidModeEnabled={fluidModeEnabled}
+                        glassmorphismEnabled={glassmorphismEnabled}
+                        liquidGlassEnabled={liquidGlassEnabled}
                         widgetTextColor={widgetTextColor}
                         jiggleIndex={index}
                         animateIconsEnabled={animateIconsEnabled}
@@ -3308,14 +3109,13 @@ export default function Home() {
                           }}
                           isEditModalOpen={isEditModalOpen}
                           backgroundImage={backgroundImage}
-                             glassmorphismEnabled={glassmorphismEnabled}
-                             liquidGlassEnabled={liquidGlassEnabled}
-                             fluidModeEnabled={fluidModeEnabled}
-                             widgetTextColor={widgetTextColor}
-                             jiggleIndex={index}
-                             animateIconsEnabled={animateIconsEnabled}
-                             animateWidgetsEnabled={animateWidgetsEnabled}
-                             hoverAnimationStyle={hoverAnimationStyle}
+                          glassmorphismEnabled={glassmorphismEnabled}
+                          liquidGlassEnabled={liquidGlassEnabled}
+                          widgetTextColor={widgetTextColor}
+                          jiggleIndex={index}
+                          animateIconsEnabled={animateIconsEnabled}
+                          animateWidgetsEnabled={animateWidgetsEnabled}
+                          hoverAnimationStyle={hoverAnimationStyle}
                         />
                       ) : (
                         widget.type === 'calendar' ? (
@@ -3328,9 +3128,8 @@ export default function Home() {
                             }}
                             isEditModalOpen={isEditModalOpen}
                             backgroundImage={backgroundImage}
-                               glassmorphismEnabled={glassmorphismEnabled}
-                               liquidGlassEnabled={liquidGlassEnabled}
-                               fluidModeEnabled={fluidModeEnabled}
+                            glassmorphismEnabled={glassmorphismEnabled}
+                            liquidGlassEnabled={liquidGlassEnabled}
                             widgetTextColor={widgetTextColor}
                             jiggleIndex={index}
                             animateIconsEnabled={animateIconsEnabled}
@@ -3348,9 +3147,8 @@ export default function Home() {
                               }}
                               isEditModalOpen={isEditModalOpen}
                               backgroundImage={backgroundImage}
-                               glassmorphismEnabled={glassmorphismEnabled}
-                               liquidGlassEnabled={liquidGlassEnabled}
-                               fluidModeEnabled={fluidModeEnabled}
+                              glassmorphismEnabled={glassmorphismEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3368,8 +3166,7 @@ export default function Home() {
                               isEditModalOpen={isEditModalOpen}
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
-                                liquidGlassEnabled={liquidGlassEnabled}
-                                fluidModeEnabled={fluidModeEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3402,7 +3199,6 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
-                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3421,7 +3217,6 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
-                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3440,7 +3235,6 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
-                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3459,7 +3253,6 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
-                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3478,7 +3271,6 @@ export default function Home() {
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
                               liquidGlassEnabled={liquidGlassEnabled}
-                              fluidModeEnabled={fluidModeEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                               animateIconsEnabled={animateIconsEnabled}
@@ -3496,8 +3288,7 @@ export default function Home() {
                               isEditModalOpen={isEditModalOpen}
                               backgroundImage={backgroundImage}
                               glassmorphismEnabled={glassmorphismEnabled}
-                               liquidGlassEnabled={liquidGlassEnabled}
-                               fluidModeEnabled={fluidModeEnabled}
+                              liquidGlassEnabled={liquidGlassEnabled}
                               widgetTextColor={widgetTextColor}
                               jiggleIndex={index}
                             />
@@ -3514,9 +3305,8 @@ export default function Home() {
 
         {/* Bookmarks Section */}
         {showBookmarks && (
-        <div className="mt-10">
-          <div className={`mb-3 flex items-center gap-3`}>
-            {(!centerBookmarksGroup || showBookmarksTitle || isEditModalOpen) && (
+          <div className="mt-10">
+            <div className={`mb-3 flex items-center gap-3`}>
               <button
                 type="button"
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ring-1 ${isDarkMode ? 'bg-white/10 text-white ring-white/15 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'}`}
@@ -3528,245 +3318,234 @@ export default function Home() {
               >
                 +
               </button>
-            )}
-            {showBookmarksTitle && (
-              <h3 className={`${isDarkMode ? 'text-white' : 'text-gray-900'} text-sm font-semibold tracking-wide`}>Bookmarks</h3>
+              {showBookmarksTitle && (
+                <h3 className={`${isDarkMode ? 'text-white' : 'text-gray-900'} text-sm font-semibold tracking-wide`}>Bookmarks</h3>
+              )}
+            </div>
+
+            {bookmarks.length === 0 ? (
+              showBookmarksTitle ? (
+                <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>No bookmarks yet. Click + to create one.</div>
+              ) : null
+            ) : (
+              <div className={`${centerBookmarksGroup ? 'flex justify-center' : ''
+                }`}>
+                <div className={`${bookmarkStyle === 'chips' ? 'flex flex-wrap gap-2' :
+                  bookmarkStyle === 'list' ? 'space-y-2' :
+                    bookmarkStyle === 'minimal' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3' :
+                      bookmarkStyle === 'compact' ? 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1.5' :
+                        bookmarkStyle === 'modern' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4' :
+                          'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3'
+                  }`}>
+                  {bookmarks.map((bm) => (
+                    bookmarkStyle === 'chips' ? (
+                      <a
+                        key={bm.id}
+                        href={bm.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                          } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                      >
+                        {bm.icon ? (
+                          <img src={bm.icon} alt="icon" className="w-3.5 h-3.5 rounded" />
+                        ) : (
+                          <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-3.5 h-3.5 rounded`} />
+                        )}
+                        <span className="truncate max-w-[160px]">{bm.title}</span>
+                        {isEditModalOpen && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                            className={`ml-1 w-4 h-4 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'}`}
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </a>
+                    ) : bookmarkStyle === 'list' ? (
+                      <a
+                        key={bm.id}
+                        href={bm.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`flex items-center gap-3 p-3 rounded-lg transition-all hover:scale-[1.02] ${liquidGlassEnabled
+                          ? 'bg-white/5 backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/10'
+                          : glassmorphismEnabled
+                            ? (isDarkMode ? 'bg-white/5 ring-1 ring-white/10 hover:bg-white/10' : 'bg-white/50 ring-1 ring-white/30 hover:bg-white/70')
+                            : (isDarkMode ? 'bg-[#0a0a0a] ring-1 ring-white/5 hover:bg-[#111]' : 'bg-gray-50 ring-1 ring-gray-100 hover:bg-white')
+                          } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                      >
+                        {bm.icon ? (
+                          <img src={bm.icon} alt="icon" className="w-5 h-5 rounded flex-shrink-0" />
+                        ) : (
+                          <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-5 h-5 rounded flex-shrink-0`} />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
+                          <div className={`text-xs truncate ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
+                        </div>
+                        {isEditModalOpen && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </a>
+                    ) : bookmarkStyle === 'minimal' ? (
+                      <a
+                        key={bm.id}
+                        href={bm.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`group relative p-4 rounded-lg border transition-all hover:shadow-sm ${isDarkMode
+                          ? 'bg-transparent border-white/10 hover:border-white/20 hover:bg-white/5'
+                          : 'bg-transparent border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {bm.icon ? (
+                            <img src={bm.icon} alt="icon" className="w-4 h-4 rounded" />
+                          ) : (
+                            <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-4 h-4 rounded`} />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
+                            <div className={`text-xs truncate ${isDarkMode ? 'text-white/50' : 'text-gray-400'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
+                          </div>
+                        </div>
+                        {isEditModalOpen && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                            className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </a>
+                    ) : bookmarkStyle === 'compact' ? (
+                      <a
+                        key={bm.id}
+                        href={bm.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`group relative p-2 rounded-lg transition-all hover:scale-105 ${liquidGlassEnabled
+                          ? 'bg-white/5 backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/10'
+                          : glassmorphismEnabled
+                            ? (isDarkMode ? 'bg-white/5 ring-1 ring-white/10 hover:bg-white/10' : 'bg-white/50 ring-1 ring-white/30 hover:bg-white/70')
+                            : (isDarkMode ? 'bg-[#0a0a0a] ring-1 ring-white/5 hover:bg-[#111]' : 'bg-gray-50 ring-1 ring-gray-100 hover:bg-white')
+                          } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                      >
+                        <div className="flex flex-col items-center gap-1.5">
+                          {bm.icon ? (
+                            <img src={bm.icon} alt="icon" className="w-6 h-6 rounded" />
+                          ) : (
+                            <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-6 h-6 rounded`} />
+                          )}
+                          <div className={`text-[10px] font-medium text-center leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{ lineHeight: '1.2' }}>
+                            {bm.title.length > 12 ? bm.title.substring(0, 12) + '...' : bm.title}
+                          </div>
+                        </div>
+                        {isEditModalOpen && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                            className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${isDarkMode ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-red-400 text-white hover:bg-red-500'}`}
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </a>
+                    ) : bookmarkStyle === 'modern' ? (
+                      <a
+                        key={bm.id}
+                        href={bm.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`group relative overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:scale-105 hover:-translate-y-1 ${isDarkMode
+                          ? 'bg-gradient-to-br from-white/10 to-white/5 ring-1 ring-white/20 hover:from-white/15 hover:to-white/10 hover:ring-white/30'
+                          : 'bg-gradient-to-br from-white to-gray-50 ring-1 ring-gray-200 hover:from-blue-50 hover:to-white hover:ring-blue-200'
+                          } shadow-lg hover:shadow-xl ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {bm.icon ? (
+                            <div className="relative">
+                              <img src={bm.icon} alt="icon" className="w-5 h-5 rounded-lg" />
+                              <div className={`absolute inset-0 rounded-lg ${isDarkMode ? 'bg-white/10' : 'bg-blue-500/10'} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                            </div>
+                          ) : (
+                            <div className={`w-5 h-5 rounded-lg ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
+                            <div className={`text-xs truncate ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
+                          </div>
+                        </div>
+                        <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isDarkMode ? 'bg-gradient-to-r from-transparent via-white/5 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-500/5 to-transparent'
+                          }`} />
+                        {isEditModalOpen && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
+                            className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${isDarkMode ? 'bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400' : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-600'
+                              }`}
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </a>
+                    ) : (
+                      <a
+                        key={bm.id}
+                        href={bm.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`group relative overflow-hidden rounded-2xl p-3 transition-all ${liquidGlassEnabled
+                          ? 'bg-white/10 backdrop-blur-xl ring-1 ring-white/15 hover:bg-white/15'
+                          : glassmorphismEnabled
+                            ? (isDarkMode ? 'bg-white/10 ring-1 ring-white/15 hover:bg-white/15' : 'bg-white/70 ring-1 ring-white/40 hover:bg-white')
+                            : (isDarkMode ? 'bg-[#111] ring-1 ring-white/10 hover:bg-[#151515]' : 'bg-white ring-1 ring-gray-200 hover:bg-gray-50')
+                          } shadow-sm hover:shadow-md ${isEditModalOpen ? 'ios-jiggle' : ''}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {bm.icon ? (
+                            <img src={bm.icon} alt="icon" className="w-4 h-4 rounded" />
+                          ) : (
+                            <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-100'} w-4 h-4 rounded`} />
+                          )}
+                          <div className={`truncate text-xs font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
+                        </div>
+                        <div className={`mt-2 truncate text-[10px] ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
+                        <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: isDarkMode ? 'inset 0 0 0 1px rgba(255,255,255,0.08)' : 'inset 0 0 0 1px rgba(0,0,0,0.06)' }} />
+                        {isEditModalOpen && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setBookmarks((prev) => prev.filter((x) => x.id !== bm.id));
+                            }}
+                            className={`absolute top-2 right-2 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            title="Remove bookmark"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </a>
+                    )
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-
-          {bookmarks.length === 0 ? (
-            showBookmarksParagraph ? (
-              <div className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs`}>No bookmarks yet. Click + to create one.</div>
-            ) : null
-          ) : (
-            <div className={`${
-              centerBookmarksGroup ? 'flex justify-center' : ''
-            }`}>
-              <div className={`${
-                bookmarkStyle === 'chips' ? 'flex flex-wrap gap-2' : 
-                bookmarkStyle === 'list' ? 'space-y-2' :
-                bookmarkStyle === 'minimal' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3' :
-                bookmarkStyle === 'compact' ? 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1.5' :
-                bookmarkStyle === 'modern' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4' :
-                'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3'
-              }`}>
-              {bookmarks.map((bm) => (
-                bookmarkStyle === 'chips' ? (
-                  <a
-                    key={bm.id}
-                    href={bm.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                      isDarkMode ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                    } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
-                  >
-                    {bm.icon ? (
-                      <img src={bm.icon} alt="icon" className="w-3.5 h-3.5 rounded" />
-                    ) : (
-                      <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-3.5 h-3.5 rounded`} />
-                    )}
-                    <span className="truncate max-w-[160px]">{bm.title}</span>
-                    {isEditModalOpen && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
-                      className={`ml-1 w-4 h-4 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'}`}
-                      title="Remove"
-                    >
-                      ×
-                    </button>
-                    )}
-                  </a>
-                ) : bookmarkStyle === 'list' ? (
-                  <a
-                    key={bm.id}
-                    href={bm.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-all hover:scale-[1.02] ${
-                      liquidGlassEnabled
-                        ? 'bg-white/5 backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/10'
-                        : glassmorphismEnabled
-                          ? (isDarkMode ? 'bg-white/5 ring-1 ring-white/10 hover:bg-white/10' : 'bg-white/50 ring-1 ring-white/30 hover:bg-white/70')
-                          : (isDarkMode ? 'bg-[#0a0a0a] ring-1 ring-white/5 hover:bg-[#111]' : 'bg-gray-50 ring-1 ring-gray-100 hover:bg-white')
-                    } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
-                  >
-                    {bm.icon ? (
-                      <img src={bm.icon} alt="icon" className="w-5 h-5 rounded flex-shrink-0" />
-                    ) : (
-                      <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-5 h-5 rounded flex-shrink-0`} />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
-                      <div className={`text-xs truncate ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
-                    </div>
-                    {isEditModalOpen && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                        title="Remove"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </a>
-                ) : bookmarkStyle === 'minimal' ? (
-                  <a
-                    key={bm.id}
-                    href={bm.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`group relative p-4 rounded-lg border transition-all hover:shadow-sm ${
-                      isDarkMode 
-                        ? 'bg-transparent border-white/10 hover:border-white/20 hover:bg-white/5' 
-                        : 'bg-transparent border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {bm.icon ? (
-                        <img src={bm.icon} alt="icon" className="w-4 h-4 rounded" />
-                      ) : (
-                        <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-4 h-4 rounded`} />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
-                        <div className={`text-xs truncate ${isDarkMode ? 'text-white/50' : 'text-gray-400'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
-                      </div>
-                    </div>
-                    {isEditModalOpen && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
-                        className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                        title="Remove"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </a>
-                ) : bookmarkStyle === 'compact' ? (
-                  <a
-                    key={bm.id}
-                    href={bm.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`group relative p-2 rounded-lg transition-all hover:scale-105 ${
-                      liquidGlassEnabled
-                        ? 'bg-white/5 backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/10'
-                        : glassmorphismEnabled
-                          ? (isDarkMode ? 'bg-white/5 ring-1 ring-white/10 hover:bg-white/10' : 'bg-white/50 ring-1 ring-white/30 hover:bg-white/70')
-                          : (isDarkMode ? 'bg-[#0a0a0a] ring-1 ring-white/5 hover:bg-[#111]' : 'bg-gray-50 ring-1 ring-gray-100 hover:bg-white')
-                    } ${isEditModalOpen ? 'ios-jiggle' : ''}`}
-                  >
-                    <div className="flex flex-col items-center gap-1.5">
-                      {bm.icon ? (
-                        <img src={bm.icon} alt="icon" className="w-6 h-6 rounded" />
-                      ) : (
-                        <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} w-6 h-6 rounded`} />
-                      )}
-                      <div className={`text-[10px] font-medium text-center leading-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{ lineHeight: '1.2' }}>
-                        {bm.title.length > 12 ? bm.title.substring(0, 12) + '...' : bm.title}
-                      </div>
-                    </div>
-                    {isEditModalOpen && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
-                        className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${isDarkMode ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-red-400 text-white hover:bg-red-500'}`}
-                        title="Remove"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </a>
-                ) : bookmarkStyle === 'modern' ? (
-                  <a
-                    key={bm.id}
-                    href={bm.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`group relative overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:scale-105 hover:-translate-y-1 ${
-                      isDarkMode
-                        ? 'bg-gradient-to-br from-white/10 to-white/5 ring-1 ring-white/20 hover:from-white/15 hover:to-white/10 hover:ring-white/30'
-                        : 'bg-gradient-to-br from-white to-gray-50 ring-1 ring-gray-200 hover:from-blue-50 hover:to-white hover:ring-blue-200'
-                    } shadow-lg hover:shadow-xl ${isEditModalOpen ? 'ios-jiggle' : ''}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {bm.icon ? (
-                        <div className="relative">
-                          <img src={bm.icon} alt="icon" className="w-5 h-5 rounded-lg" />
-                          <div className={`absolute inset-0 rounded-lg ${isDarkMode ? 'bg-white/10' : 'bg-blue-500/10'} opacity-0 group-hover:opacity-100 transition-opacity`} />
-                        </div>
-                      ) : (
-                        <div className={`w-5 h-5 rounded-lg ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
-                        <div className={`text-xs truncate ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
-                      </div>
-                    </div>
-                    <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-                      isDarkMode ? 'bg-gradient-to-r from-transparent via-white/5 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-500/5 to-transparent'
-                    }`} />
-                    {isEditModalOpen && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.preventDefault(); setBookmarks((prev) => prev.filter((x) => x.id !== bm.id)); }}
-                        className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                          isDarkMode ? 'bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400' : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-600'
-                        }`}
-                        title="Remove"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </a>
-                ) : (
-                  <a
-                    key={bm.id}
-                    href={bm.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`group relative overflow-hidden rounded-2xl p-3 transition-all ${
-                      liquidGlassEnabled
-                        ? 'bg-white/10 backdrop-blur-xl ring-1 ring-white/15 hover:bg-white/15'
-                        : glassmorphismEnabled
-                          ? (isDarkMode ? 'bg-white/10 ring-1 ring-white/15 hover:bg-white/15' : 'bg-white/70 ring-1 ring-white/40 hover:bg-white')
-                          : (isDarkMode ? 'bg-[#111] ring-1 ring-white/10 hover:bg-[#151515]' : 'bg-white ring-1 ring-gray-200 hover:bg-gray-50')
-                    } shadow-sm hover:shadow-md ${isEditModalOpen ? 'ios-jiggle' : ''}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {bm.icon ? (
-                        <img src={bm.icon} alt="icon" className="w-4 h-4 rounded" />
-                      ) : (
-                        <div className={`${isDarkMode ? 'bg-white/10' : 'bg-gray-100'} w-4 h-4 rounded`} />
-                      )}
-                      <div className={`truncate text-xs font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{bm.title}</div>
-                    </div>
-                    <div className={`mt-2 truncate text-[10px] ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>{bm.href.replace(/^https?:\/\//, '')}</div>
-                    <div className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: isDarkMode ? 'inset 0 0 0 1px rgba(255,255,255,0.08)' : 'inset 0 0 0 1px rgba(0,0,0,0.06)' }} />
-                    {isEditModalOpen && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setBookmarks((prev) => prev.filter((x) => x.id !== bm.id));
-                      }}
-                      className={`absolute top-2 right-2 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                      title="Remove bookmark"
-                    >
-                      ×
-                    </button>
-                    )}
-                  </a>
-                )
-              ))}
-              </div>
-            </div>
-          )}
-        </div>
         )}
 
         {/* Add Bookmark Modal */}
@@ -3817,7 +3596,7 @@ export default function Home() {
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/40" onClick={() => setIsQuickAppOpen(false)} />
             <div className="absolute bottom-20 right-4 z-10 flex gap-4">
-              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${fluidModeEnabled ? 'fluid-mode-elevated' : liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
                 <h4 className="text-sm font-semibold mb-3">Add Favorite App</h4>
                 <div className="space-y-2">
                   <input
@@ -3854,7 +3633,7 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              <div className={`w-64 rounded-2xl p-4 shadow-2xl max-h-96 overflow-y-auto custom-scrollbar ${fluidModeEnabled ? 'fluid-mode-elevated' : liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+              <div className={`w-64 rounded-2xl p-4 shadow-2xl max-h-96 overflow-y-auto custom-scrollbar ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
                 <h4 className="text-sm font-semibold mb-3">Popular Websites</h4>
                 <div className="space-y-2">
                   {[
@@ -3877,23 +3656,22 @@ export default function Home() {
                     <button
                       key={site.url}
                       onClick={() => {
-                        addApp({ 
-                          id: Date.now().toString(), 
-                          title: site.title, 
+                        addApp({
+                          id: Date.now().toString(),
+                          title: site.title,
                           href: `https://${site.url}`,
                           icon: getFaviconUrl(`https://${site.url}`)
                         });
                         setIsQuickAppOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${
-                        isDarkMode 
-                          ? 'bg-white/5 hover:bg-white/10 text-white' 
-                          : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
-                      }`}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${isDarkMode
+                        ? 'bg-white/5 hover:bg-white/10 text-white'
+                        : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
+                        }`}
                     >
-                      <img 
-                        src={getFaviconUrl(`https://${site.url}`)} 
-                        alt="" 
+                      <img
+                        src={getFaviconUrl(`https://${site.url}`)}
+                        alt=""
                         className="w-4 h-4"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
@@ -3913,7 +3691,7 @@ export default function Home() {
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/40" onClick={() => setIsHaliteModalOpen(false)} />
             <div className="absolute bottom-20 right-4 z-10">
-              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${fluidModeEnabled ? 'fluid-mode-elevated' : liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
                 <h4 className="text-sm font-semibold mb-3">Add Halite Folder</h4>
                 <p className={`text-xs mb-3 ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Add 2-4 URLs to create a folder that opens all sites</p>
                 <div className="space-y-2 mb-3">
@@ -3942,8 +3720,8 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="mt-3 flex justify-end gap-2">
-                  <button 
-                    onClick={() => setIsHaliteModalOpen(false)} 
+                  <button
+                    onClick={() => setIsHaliteModalOpen(false)}
                     className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}
                   >
                     Cancel
@@ -3983,87 +3761,76 @@ export default function Home() {
 
         {/* Search Bar under widget cards group */}
         {showSearchBar && (
-          <div className={`mt-6 mb-6 relative rounded-2xl ${
-            searchBarCompact ? 'p-1.5 sm:p-2' : 'p-2 sm:p-2.5'
-          } shadow-lg ${
-            searchBarWidth === 'narrow' ? 'max-w-md mx-auto' : searchBarWidth === 'wide' ? 'max-w-4xl mx-auto' : 'max-w-2xl mx-auto'
-          } ${
-            liquidGlassEnabled
+          <div className={`mt-6 mb-6 relative rounded-2xl p-1.5 sm:p-2 shadow-lg ${searchBarWidth === 'narrow' ? 'max-w-md mx-auto' : searchBarWidth === 'wide' ? 'max-w-4xl mx-auto' : 'max-w-2xl mx-auto'
+            } ${liquidGlassEnabled
               ? 'liquid-surface'
               : glassmorphismEnabled
                 ? (isDarkMode ? 'bg-black/20 backdrop-blur-md ring-1 ring-white/10' : 'bg-white/40 backdrop-blur-md ring-1 ring-white/30')
                 : (isDarkMode ? 'bg-[#0f1115] ring-1 ring-white/10' : 'bg-white ring-1 ring-gray-200')
-          }`}>
+            }`}>
             <div className="flex items-stretch gap-2">
               {youtubeSearchMode && (
                 <div className="flex items-center px-2">
                   <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                   </svg>
                 </div>
               )}
               <div className="relative flex-1">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => searchSuggestions.length > 0 && setIsSuggestOpen(true)}
-                onBlur={() => setTimeout(() => setIsSuggestOpen(false), 120)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const chosen = highlightIndex >= 0 ? searchSuggestions[highlightIndex] : searchTerm;
-                    submitSearch(chosen);
-                    setIsSuggestOpen(false);
-                    return;
-                  }
-                  if (!isSuggestOpen || searchSuggestions.length === 0) return;
-                  if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    setHighlightIndex((prev) => (prev + 1) % searchSuggestions.length);
-                  } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    setHighlightIndex((prev) => (prev - 1 + searchSuggestions.length) % searchSuggestions.length);
-                  }
-                }}
-                placeholder={youtubeSearchMode ? "Search YouTube..." : "Search apps..."}
-                className={`w-full ${
-                  searchBarCompact ? 'px-2 py-1.5 text-xs' : 'px-3 py-2 text-sm'
-                } rounded-full border-0 bg-transparent focus:outline-none focus:ring-0 transition-none ${
-                  isDarkMode
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onFocus={() => searchSuggestions.length > 0 && setIsSuggestOpen(true)}
+                  onBlur={() => setTimeout(() => setIsSuggestOpen(false), 120)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const chosen = highlightIndex >= 0 ? searchSuggestions[highlightIndex] : searchTerm;
+                      submitSearch(chosen);
+                      setIsSuggestOpen(false);
+                      return;
+                    }
+                    if (!isSuggestOpen || searchSuggestions.length === 0) return;
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setHighlightIndex((prev) => (prev + 1) % searchSuggestions.length);
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setHighlightIndex((prev) => (prev - 1 + searchSuggestions.length) % searchSuggestions.length);
+                    }
+                  }}
+                  placeholder={youtubeSearchMode ? "Search YouTube..." : "Search apps..."}
+                  className={`w-full px-2 py-1.5 text-xs rounded-full border-0 bg-transparent focus:outline-none focus:ring-0 transition-none ${isDarkMode
                     ? 'text-white placeholder-gray-400'
                     : 'text-gray-900 placeholder-gray-500'
-                }`}
-              />
+                    }`}
+                />
               </div>
               <button
                 type="button"
                 onClick={() => submitSearch(highlightIndex >= 0 ? searchSuggestions[highlightIndex] : searchTerm)}
-                className={`${
-                  searchBarCompact ? 'px-3 py-1.5' : 'px-4 py-2'
-                } rounded-full text-sm font-semibold bg-transparent ring-0 transition-none ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-800/80'
-                }`}
+                className={`px-3 py-1.5 rounded-full text-sm font-semibold bg-transparent ring-0 transition-none ${isDarkMode ? 'text-white/80' : 'text-gray-800/80'
+                  }`}
                 title="Search"
                 aria-label="Search"
               >
-                <svg className={`${searchBarCompact ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
                 </svg>
               </button>
             </div>
             {isSuggestOpen && searchSuggestions.length > 0 && (
-              <div role="listbox" aria-label="Search suggestions" className={`absolute left-0 right-0 top-full z-30 mt-2 rounded-2xl p-2 sm:p-2.5 shadow-lg max-h-60 custom-scrollbar overflow-y-auto ${
-                liquidGlassEnabled
-                  ? 'bg-white/12 backdrop-blur-[40px] backdrop-saturate-200 ring-1 ring-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                  : glassmorphismEnabled
-                    ? (isDarkMode
-                        ? 'bg-black/25 backdrop-blur-[28px] backdrop-saturate-200 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                        : 'bg-white/36 backdrop-blur-[28px] backdrop-saturate-200 ring-1 ring-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]')
-                    : (isDarkMode
-                        ? 'bg-[#0f1115] ring-1 ring-white/10'
-                        : 'bg-white ring-1 ring-gray-200')
-              }`}>
+              <div role="listbox" aria-label="Search suggestions" className={`absolute left-0 right-0 top-full z-30 mt-2 rounded-2xl p-2 sm:p-2.5 shadow-lg max-h-60 custom-scrollbar overflow-y-auto ${liquidGlassEnabled
+                ? 'bg-white/12 backdrop-blur-[40px] backdrop-saturate-200 ring-1 ring-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                : glassmorphismEnabled
+                  ? (isDarkMode
+                    ? 'bg-black/25 backdrop-blur-[28px] backdrop-saturate-200 ring-1 ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                    : 'bg-white/36 backdrop-blur-[28px] backdrop-saturate-200 ring-1 ring-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]')
+                  : (isDarkMode
+                    ? 'bg-[#0f1115] ring-1 ring-white/10'
+                    : 'bg-white ring-1 ring-gray-200')
+                }`}>
                 {searchSuggestions.map((s, i) => (
                   <button
                     key={`${s}-${i}`}
@@ -4077,13 +3844,12 @@ export default function Home() {
                     role="option"
                     aria-selected={i === highlightIndex}
                     aria-label={s}
-                    className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors duration-150 outline-none ${
-                      isDarkMode
-                        ? 'text-white font-medium hover:bg-white/10'
-                        : 'text-gray-900 font-medium hover:bg-gray-100'
-                    } ${i === highlightIndex
-                      ? (isDarkMode ? 'bg-white/10 ring-1 ring-white/20' : 'bg-gray-100 ring-1 ring-gray-200')
-                      : 'ring-0'} focus-visible:ring-2 focus-visible:ring-blue-500/40`}
+                    className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors duration-150 outline-none ${isDarkMode
+                      ? 'text-white font-medium hover:bg-white/10'
+                      : 'text-gray-900 font-medium hover:bg-gray-100'
+                      } ${i === highlightIndex
+                        ? (isDarkMode ? 'bg-white/10 ring-1 ring-white/20' : 'bg-gray-100 ring-1 ring-gray-200')
+                        : 'ring-0'} focus-visible:ring-2 focus-visible:ring-blue-500/40`}
                     title={s}
                   >
                     <span className="truncate block">{s}</span>
@@ -4095,9 +3861,8 @@ export default function Home() {
         )}
 
         {apps.length === 0 && (
-          <div className={`text-center mt-8 transition-colors duration-300 ${
-            isDarkMode ? 'text-gray-400' : 'text-gray-500'
-          }`}>
+          <div className={`text-center mt-8 transition-colors duration-300 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+            }`}>
             <p>No apps added yet. Click the + button to add your first app!</p>
           </div>
         )}
@@ -4105,34 +3870,28 @@ export default function Home() {
 
       {/* Floating Action Dock */}
       <div
-        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border px-1 py-1 sm:px-1.5 sm:py-1.5 flex items-center gap-1 z-30 ${
-          fluidModeEnabled
-            ? 'fluid-mode-elevated border-purple-400/30'
-            : liquidGlassEnabled
-            ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
-            : glassmorphismEnabled
-              ? (isDarkMode
-                  ? 'bg-black/25 border-white/10 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.35)]'
-                  : 'bg-white/60 border-white/30 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.12)]')
-              : (isDarkMode
-                  ? 'bg-[#0f1115] border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.45)]'
-                  : 'bg-white border-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.10)]')
-        }`}
+        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border px-1 py-1 sm:px-1.5 sm:py-1.5 flex items-center gap-1 z-30 ${liquidGlassEnabled
+          ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
+          : glassmorphismEnabled
+            ? (isDarkMode
+              ? 'bg-black/25 border-white/10 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.35)]'
+              : 'bg-white/60 border-white/30 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.12)]')
+            : (isDarkMode
+              ? 'bg-[#0f1115] border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.45)]'
+              : 'bg-white border-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.10)]')
+          }`}
       >
         {/* Edit Mode Button */}
         <button
           onClick={() => {
             setIsEditModalOpen(!isEditModalOpen);
           }}
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
-            fluidModeEnabled
-              ? 'bg-white/15 text-white ring-purple-400/30 hover:bg-white/20'
-              : liquidGlassEnabled
-              ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
-              : glassmorphismEnabled
-                ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
-                : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
-          } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
+            ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
+            : glassmorphismEnabled
+              ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+              : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+            } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
           title={isEditModalOpen ? "Exit Edit Mode" : "Enter Edit Mode"}
           aria-label={isEditModalOpen ? 'Exit Edit Mode' : 'Enter Edit Mode'}
         >
@@ -4151,15 +3910,12 @@ export default function Home() {
         <div className="relative">
           <button
             onClick={quickAddFavoriteApp}
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
-              fluidModeEnabled
-                ? 'bg-white/15 text-white ring-purple-400/30 hover:bg-white/20'
-                : liquidGlassEnabled
-                ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
-                : glassmorphismEnabled
-                  ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
-                  : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
-            } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
+            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
+              ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
+              : glassmorphismEnabled
+                ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+                : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+              } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
             title="Add Favorite App"
             aria-label="Add Favorite App"
           >
@@ -4182,21 +3938,18 @@ export default function Home() {
             </svg>
           </button>
         </div>
-        
+
         {/* Settings Button */}
         <button
           onClick={() => {
             setIsSidebarOpen(prev => !prev);
           }}
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${
-            fluidModeEnabled
-              ? 'bg-white/15 text-white ring-purple-400/30 hover:bg-white/20'
-              : liquidGlassEnabled
-              ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
-              : glassmorphismEnabled
-                ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
-                : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
-          } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
+            ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
+            : glassmorphismEnabled
+              ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+              : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+            } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
           title="Dashboard Settings"
           aria-label="Dashboard Settings"
         >
@@ -4223,7 +3976,7 @@ export default function Home() {
           });
         }}
         showAppTitles={showAppTitles}
-          showSearchBar={showSearchBar}
+        showSearchBar={showSearchBar}
         onToggleShowAppTitles={() => {
           setShowAppTitles(prev => {
             const next = !prev;
@@ -4231,18 +3984,18 @@ export default function Home() {
             return next;
           });
         }}
-          onToggleSearchBar={() => {
-            setShowSearchBar(prev => {
-              const next = !prev;
-              console.log('🔎 Show search bar toggled from', prev, 'to', next);
-              return next;
-            });
-          }}
+        onToggleSearchBar={() => {
+          setShowSearchBar(prev => {
+            const next = !prev;
+            console.log('🔎 Show search bar toggled from', prev, 'to', next);
+            return next;
+          });
+        }}
         backgroundImage={backgroundImage}
         onSetBackgroundImage={(url) => {
           console.log('🖼️ Background image changed to:', url);
           if (typeof window !== 'undefined' && url && !url.startsWith('blob:') && !url.startsWith('idb:')) {
-            try { localStorage.setItem('backgroundImage', url); } catch {}
+            try { localStorage.setItem('backgroundImage', url); } catch { }
           }
           setBackgroundImage(url);
           if (typeof window !== 'undefined' && url) {
@@ -4257,7 +4010,6 @@ export default function Home() {
             if (next) {
               setLiquidGlassEnabled(false);
               setNormalModeEnabled(false);
-              setFluidModeEnabled(false);
             }
             return next;
           });
@@ -4270,12 +4022,11 @@ export default function Home() {
             if (next) {
               setGlassmorphismEnabled(false);
               setNormalModeEnabled(false);
-              setFluidModeEnabled(false);
             }
             return next;
           });
         }}
-        
+
         normalModeEnabled={normalModeEnabled}
         onToggleNormalMode={() => {
           setNormalModeEnabled(prev => {
@@ -4284,15 +4035,12 @@ export default function Home() {
             if (next) {
               setGlassmorphismEnabled(false);
               setLiquidGlassEnabled(false);
-              setFluidModeEnabled(false);
             }
             return next;
           });
         }}
-        fullRoundedIconsEnabled={fullRoundedIconsEnabled}
-        onToggleFullRoundedIcons={() => setFullRoundedIconsEnabled(prev => !prev)}
-        squareRoundedIconsEnabled={squareRoundedIconsEnabled}
-        onToggleSquareRoundedIcons={() => setSquareRoundedIconsEnabled(prev => !prev)}
+
+
         appTitleColor={appTitleColor}
         onSetAppTitleColor={(color) => {
           console.log('🎨 App title color changed to:', color);
@@ -4305,8 +4053,7 @@ export default function Home() {
         }}
         addWidget={addWidget}
         onResetSettings={resetSettings}
-        autofulIconsEnabled={autofulIconsEnabled}
-        onToggleAutofulIcons={() => setAutofulIconsEnabled(prev => !prev)}
+
         animateIconsEnabled={animateIconsEnabled}
         onToggleAnimateIcons={() => setAnimateIconsEnabled(prev => !prev)}
         hoverAnimationStyle={hoverAnimationStyle}
@@ -4315,16 +4062,13 @@ export default function Home() {
         onToggleAnimateWidgets={() => setAnimateWidgetsEnabled(prev => !prev)}
         centerAppsGroup={centerAppsGroup}
         onToggleCenterAppsGroup={() => setCenterAppsGroup(prev => !prev)}
-        centerWidgetsGroup={centerWidgetsGroup}
-        onToggleCenterWidgetsGroup={() => setCenterWidgetsGroup(prev => !prev)}
         showBookmarks={showBookmarks}
         onToggleBookmarks={() => setShowBookmarks(prev => !prev)}
         bookmarkStyle={bookmarkStyle}
         onSetBookmarkStyle={setBookmarkStyle}
         showBookmarksTitle={showBookmarksTitle}
         onToggleBookmarksTitle={() => setShowBookmarksTitle(prev => !prev)}
-        showBookmarksParagraph={showBookmarksParagraph}
-        onToggleBookmarksParagraph={() => setShowBookmarksParagraph(prev => !prev)}
+
         centerBookmarksGroup={centerBookmarksGroup}
         onToggleCenterBookmarksGroup={() => setCenterBookmarksGroup(prev => !prev)}
         appGroupMarginTop={appGroupMarginTop}
@@ -4333,32 +4077,9 @@ export default function Home() {
         onSetLiquidReflectionColor={(value) => setLiquidReflectionColor(value)}
         showTopTime={showTopTime}
         onToggleTopTime={() => setShowTopTime(prev => !prev)}
-        fluidModeEnabled={fluidModeEnabled}
-        onToggleFluidMode={() => {
-          setFluidModeEnabled(prev => {
-            const next = !prev;
-            if (next) {
-              setGlassmorphismEnabled(false);
-              setLiquidGlassEnabled(false);
-              setNormalModeEnabled(false);
-            }
-            return next;
-          });
-        }}
+
         greetingStyle={greetingStyle}
         onSetGreetingStyle={(style) => setGreetingStyle(style)}
-        searchBarCompact={searchBarCompact}
-        onToggleSearchBarCompact={() => {
-          setSearchBarCompact(prev => {
-            const newValue = !prev;
-            // Save immediately
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('searchBarCompact', newValue.toString());
-              console.log('💾 Search bar compact saved immediately:', newValue);
-            }
-            return newValue;
-          });
-        }}
         searchBarWidth={searchBarWidth}
         onSetSearchBarWidth={(width) => {
           setSearchBarWidth(width);
@@ -4368,19 +4089,10 @@ export default function Home() {
             console.log('💾 Search bar width saved immediately:', width);
           }
         }}
-        fluidThemeColor={fluidThemeColor}
-        onSetFluidThemeColor={(color) => {
-          setFluidThemeColor(color);
-          // Save immediately
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('fluidThemeColor', color);
-            console.log('💾 Fluid theme color saved immediately:', color);
-            // Update CSS variable immediately
-            const rgb = hexToRgb(color).join(', ');
-            document.documentElement.style.setProperty('--fluid-color-rgb', rgb);
-          }
-        }}
+
         monochromeIcons={monochromeIcons}
+        appCardBorderRadius={appCardBorderRadius}
+        onSetAppCardBorderRadius={setAppCardBorderRadius}
         onToggleMonochromeIcons={() => {
           setMonochromeIcons(prev => {
             const newValue = !prev;
@@ -4410,30 +4122,28 @@ export default function Home() {
           }}
         >
           <div
-            className={`min-w-[160px] rounded-xl shadow-xl ring-1 overflow-hidden ${
-              isDarkMode
-                ? glassmorphismEnabled
-                  ? 'bg-[#2B2B2B]/90 backdrop-blur-md ring-white/20'
-                  : liquidGlassEnabled
-                    ? 'liquid-surface'
-                    : 'bg-[#1e1e1e] ring-white/10'
-                : glassmorphismEnabled
-                  ? 'bg-white/90 backdrop-blur-md ring-gray-200/40'
-                  : liquidGlassEnabled
-                    ? 'liquid-surface'
-                    : 'bg-white ring-gray-200'
-            }`}
+            className={`min-w-[160px] rounded-xl shadow-xl ring-1 overflow-hidden ${isDarkMode
+              ? glassmorphismEnabled
+                ? 'bg-[#2B2B2B]/90 backdrop-blur-md ring-white/20'
+                : liquidGlassEnabled
+                  ? 'liquid-surface'
+                  : 'bg-[#1e1e1e] ring-white/10'
+              : glassmorphismEnabled
+                ? 'bg-white/90 backdrop-blur-md ring-gray-200/40'
+                : liquidGlassEnabled
+                  ? 'liquid-surface'
+                  : 'bg-white ring-gray-200'
+              }`}
           >
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleOpenInNewTab();
               }}
-              className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
-                isDarkMode
-                  ? 'text-white hover:bg-white/10'
-                  : 'text-gray-800 hover:bg-gray-100'
-              }`}
+              className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
+                ? 'text-white hover:bg-white/10'
+                : 'text-gray-800 hover:bg-gray-100'
+                }`}
             >
               <svg
                 className="w-4 h-4"
