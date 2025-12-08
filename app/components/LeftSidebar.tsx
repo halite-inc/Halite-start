@@ -78,6 +78,12 @@ interface LeftSidebarProps {
   onToggleMonochromeIcons?: () => void;
   appCardBorderRadius?: 'small' | 'medium' | 'full';
   onSetAppCardBorderRadius?: (radius: 'small' | 'medium' | 'full') => void;
+  removeAppCardBorders?: boolean;
+  onToggleRemoveAppCardBorders?: () => void;
+  appCardSize?: 'small' | 'normal' | 'large';
+  onSetAppCardSize?: (size: 'small' | 'normal' | 'large') => void;
+  appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large';
+  onSetAppCardInnerShadow?: (shadow: 'none' | 'small' | 'medium' | 'large') => void;
 }
 
 interface ModernDropdownProps {
@@ -107,7 +113,7 @@ const ModernDropdown = ({ value, onChange, options, isDarkMode }: ModernDropdown
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`text-xs px-3 py-1.5 rounded-lg ring-1 transition-colors flex items-center gap-2 min-w-[100px] justify-between ${isDarkMode
+        className={`text-xs px-3 py-1.5 rounded-full ring-1 transition-colors flex items-center gap-2 min-w-[100px] justify-between ${isDarkMode
           ? 'bg-[#0f1115] text-white ring-white/10 hover:bg-white/5'
           : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'
           }`}
@@ -138,6 +144,45 @@ const ModernDropdown = ({ value, onChange, options, isDarkMode }: ModernDropdown
           ))}
         </div>
       )}
+    </div>
+  );
+};
+
+interface SegmentedControlProps<T extends string> {
+  value: T;
+  onChange: (value: T) => void;
+  options: { value: T; label: string }[];
+  isDarkMode: boolean;
+}
+
+const SegmentedControl = <T extends string>({ value, onChange, options, isDarkMode }: SegmentedControlProps<T>) => {
+  const activeIndex = options.findIndex((opt) => opt.value === value);
+  const count = options.length;
+
+  return (
+    <div
+      className={`relative grid p-1 rounded-full ${isDarkMode ? 'bg-gray-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]' : 'bg-gray-100 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]'}`}
+      style={{ gridTemplateColumns: `repeat(${count}, 1fr)` }}
+    >
+      <div
+        className={`absolute top-1 bottom-1 rounded-full shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] ${isDarkMode ? 'bg-gray-600' : 'bg-white'}`}
+        style={{
+          width: `calc((100% - 8px) / ${count})`,
+          left: `calc(4px + (100% - 8px) * ${activeIndex} / ${count})`,
+        }}
+      />
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          className={`relative z-10 px-3 py-1 text-xs font-medium rounded-full transition-colors duration-200 text-center ${value === opt.value
+            ? (isDarkMode ? 'text-white' : 'text-gray-900')
+            : (isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900')
+            }`}
+        >
+          {opt.label}
+        </button>
+      ))}
     </div>
   );
 };
@@ -212,6 +257,13 @@ export default function LeftSidebar({
   onToggleMonochromeIcons,
   appCardBorderRadius,
   onSetAppCardBorderRadius,
+
+  removeAppCardBorders,
+  onToggleRemoveAppCardBorders,
+  appCardSize,
+  onSetAppCardSize,
+  appCardInnerShadow,
+  onSetAppCardInnerShadow,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
@@ -501,7 +553,7 @@ export default function LeftSidebar({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed right-4 top-20 bottom-4 w-80 sm:w-96 rounded-2xl overflow-hidden transform transition-all duration-300 ease-in-out z-50 ${glassmorphismEnabled
+        className={`fixed right-4 top-20 bottom-4 w-96 sm:w-[32rem] rounded-2xl overflow-hidden transform transition-all duration-300 ease-in-out z-50 ${glassmorphismEnabled
           ? isDarkMode
             ? 'bg-[#2B2B2B]/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
             : 'bg-white/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
@@ -1004,20 +1056,16 @@ export default function LeftSidebar({
                           </svg>
                           Search Bar Width
                         </label>
-                        <div className={`flex items-center p-1 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                          {(['narrow', 'medium', 'wide'] as const).map((width) => (
-                            <button
-                              key={width}
-                              onClick={() => onSetSearchBarWidth && onSetSearchBarWidth(width)}
-                              className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${searchBarWidth === width
-                                ? (isDarkMode ? 'bg-gray-600 text-white shadow-sm' : 'bg-white text-gray-900 shadow-sm')
-                                : (isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900')
-                                }`}
-                            >
-                              {width.charAt(0).toUpperCase() + width.slice(1)}
-                            </button>
-                          ))}
-                        </div>
+                        <SegmentedControl
+                          value={searchBarWidth || 'medium'}
+                          onChange={(val) => onSetSearchBarWidth && onSetSearchBarWidth(val)}
+                          options={[
+                            { value: 'narrow', label: 'Narrow' },
+                            { value: 'medium', label: 'Medium' },
+                            { value: 'wide', label: 'Wide' },
+                          ]}
+                          isDarkMode={isDarkMode}
+                        />
                       </div>
                     )}
 
@@ -1029,20 +1077,79 @@ export default function LeftSidebar({
                         </svg>
                         App Card Radius
                       </label>
-                      <div className={`flex items-center p-1 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                        {(['small', 'medium', 'full'] as const).map((size) => (
-                          <button
-                            key={size}
-                            onClick={() => onSetAppCardBorderRadius && onSetAppCardBorderRadius(size as any)}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${appCardBorderRadius === size
-                              ? (isDarkMode ? 'bg-gray-600 text-white shadow-sm' : 'bg-white text-gray-900 shadow-sm')
-                              : (isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900')
-                              }`}
-                          >
-                            {size.charAt(0).toUpperCase() + size.slice(1)}
-                          </button>
-                        ))}
-                      </div>
+                      <SegmentedControl
+                        value={appCardBorderRadius || 'medium'}
+                        onChange={(val) => onSetAppCardBorderRadius && onSetAppCardBorderRadius(val)}
+                        options={[
+                          { value: 'small', label: 'Small' },
+                          { value: 'medium', label: 'Medium' },
+                          { value: 'full', label: 'Full' },
+                        ]}
+                        isDarkMode={isDarkMode}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
+                        App Card Size
+                      </label>
+                      <SegmentedControl
+                        value={appCardSize || 'normal'}
+                        onChange={(val) => onSetAppCardSize && onSetAppCardSize(val)}
+                        options={[
+                          { value: 'small', label: 'Small' },
+                          { value: 'normal', label: 'Normal' },
+                          { value: 'large', label: 'Large' },
+                        ]}
+                        isDarkMode={isDarkMode}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5zM16 8L2 22M17.5 15H9" />
+                        </svg>
+                        Inner Shadow
+                      </label>
+                      <SegmentedControl
+                        value={appCardInnerShadow || 'none'}
+                        onChange={(val) => onSetAppCardInnerShadow && onSetAppCardInnerShadow(val)}
+                        options={[
+                          { value: 'none', label: 'None' },
+                          { value: 'small', label: 'Sm' },
+                          { value: 'medium', label: 'Md' },
+                          { value: 'large', label: 'Lg' },
+                        ]}
+                        isDarkMode={isDarkMode}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="4 4" />
+                        </svg>
+                        Remove Borders
+                      </label>
+                      <button
+                        onClick={() => onToggleRemoveAppCardBorders && onToggleRemoveAppCardBorders()}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${removeAppCardBorders
+                          ? 'bg-blue-500'
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                          }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${removeAppCardBorders ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                        />
+                      </button>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -1066,27 +1173,7 @@ export default function LeftSidebar({
                         />
                       </button>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364 6.364l-2.121-2.121M8.757 8.757L6.636 6.636m0 10.728l2.121-2.121m8.486-8.486l2.121-2.121" />
-                        </svg>
-                        Show Time (Top Bar)
-                      </label>
-                      <button
-                        onClick={() => onToggleTopTime && onToggleTopTime()}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showTopTime
-                          ? 'bg-blue-500'
-                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                          }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showTopTime ? 'translate-x-6' : 'translate-x-1'
-                            }`}
-                        />
-                      </button>
-                    </div>
+
                   </div>
 
                   <div className="space-y-2">
@@ -1145,7 +1232,7 @@ export default function LeftSidebar({
                                   }`}
                                   role="listbox"
                                 >
-                                  {(['scale', 'tilt', 'skew', 'spin', 'bounce', 'pulse', 'float', 'slide', 'glow'] as const).map(opt => (
+                                  {(['scale', 'tilt', 'skew', 'spin', 'bounce'] as const).map(opt => (
                                     <button
                                       key={opt}
                                       type="button"

@@ -101,7 +101,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full' }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none' }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large' }) {
   const {
     attributes,
     listeners,
@@ -146,6 +146,23 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
                     : 'hover:scale-110 hover:-translate-y-0.5'
     : '';
 
+  /* App Card Size Classes */
+  const sizeClasses = {
+    small: 'w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] lg:w-[52px] lg:h-[52px]',
+    normal: 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]',
+    large: 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'
+  };
+  const currentSizeClass = sizeClasses[appCardSize] || sizeClasses.normal;
+
+  /* Inner Shadow Classes */
+  const innerShadowClasses = {
+    none: '',
+    small: 'shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]',
+    medium: 'shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]',
+    large: 'shadow-[inset_0_4px_8px_rgba(0,0,0,0.25)]'
+  };
+  const currentInnerShadowClass = innerShadowClasses[appCardInnerShadow] || '';
+
   return (
     <div
       ref={setNodeRef}
@@ -155,17 +172,17 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
       {/* App Card */}
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${appCardBorderRadius === 'small' ? 'rounded-lg' : appCardBorderRadius === 'full' ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        className={`${currentSizeClass} ${appCardBorderRadius === 'small' ? 'rounded-lg' : appCardBorderRadius === 'full' ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${(backgroundImage || removeAppCardBorders) ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border'} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
           } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
           } ${liquidGlassEnabled
             ? 'liquid-surface liquid-pressable'
             : glassmorphismEnabled
               ? (isDark
-                ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
-                : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]')
+                ? `bg-black/20 backdrop-blur-md text-white hover:bg-black/30 ${removeAppCardBorders ? '' : 'border-[1.5px] border-white/15 hover:border-white/25'} shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]`
+                : `bg-white/20 backdrop-blur-md text-black hover:bg-white/30 ${removeAppCardBorders ? '' : 'border-[1.5px] border-white/30 hover:border-white/40'} shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]`)
               : (isDark
-                ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]'
-                : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
+                ? `bg-black text-white hover:bg-gray-900 ${removeAppCardBorders ? '' : 'border border-[#2C2D2D]'} shadow-[inset_0_0_20px_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[inset_0_0_25px_rgba(255,255,255,0.2),0_2px_6px_rgba(0,0,0,0.4)]`
+                : `bg-white text-black hover:bg-gray-50 ${removeAppCardBorders ? '' : 'border-gray-200'} shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]`)
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}${extraClasses} ${hoverClass}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={(e) => {
@@ -188,6 +205,10 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
       >
         {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-2xl" />
+        )}
+        {/* Inner Shadow Overlay */}
+        {appCardInnerShadow !== 'none' && (
+          <div className={`pointer-events-none absolute inset-0 rounded-inherit ${currentInnerShadowClass}`} style={{ borderRadius: 'inherit' }} />
         )}
         {/* App Icon */}
         <div>
@@ -237,7 +258,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
   );
 }
 
-function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full' }) {
+function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none' }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large' }) {
   const {
     attributes,
     listeners,
@@ -284,6 +305,23 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
     }
   };
 
+  /* App Card Size Classes */
+  const sizeClasses = {
+    small: 'w-[36px] h-[36px] sm:w-[44px] sm:h-[44px] lg:w-[52px] lg:h-[52px]',
+    normal: 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]',
+    large: 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'
+  };
+  const currentSizeClass = sizeClasses[appCardSize] || sizeClasses.normal;
+
+  /* Inner Shadow Classes */
+  const innerShadowClasses = {
+    none: '',
+    small: 'shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]',
+    medium: 'shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]',
+    large: 'shadow-[inset_0_4px_8px_rgba(0,0,0,0.25)]'
+  };
+  const currentInnerShadowClass = innerShadowClasses[appCardInnerShadow] || '';
+
   return (
     <div
       ref={setNodeRef}
@@ -293,17 +331,17 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
       {/* Halite Card */}
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        className={`${showAppTitles ? 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]' : 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'} ${appCardBorderRadius === 'small' ? 'rounded-lg' : appCardBorderRadius === 'full' ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${backgroundImage ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border-2'} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+        className={`${currentSizeClass} ${appCardBorderRadius === 'small' ? 'rounded-lg' : appCardBorderRadius === 'full' ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${(backgroundImage || removeAppCardBorders) ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border'} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
           } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
           } ${liquidGlassEnabled
             ? 'liquid-surface liquid-pressable'
             : glassmorphismEnabled
               ? (isDark
-                ? 'bg-black/20 backdrop-blur-md text-white hover:bg-black/30 border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
-                : 'bg-white/20 backdrop-blur-md text-black hover:bg-white/30 border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]')
+                ? `bg-black/20 backdrop-blur-md text-white hover:bg-black/30 ${removeAppCardBorders ? '' : 'border-[1.5px] border-white/15 hover:border-white/25'} shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]`
+                : `bg-white/20 backdrop-blur-md text-black hover:bg-white/30 ${removeAppCardBorders ? '' : 'border-[1.5px] border-white/30 hover:border-white/40'} shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]`)
               : (isDark
-                ? 'bg-black text-white hover:bg-gray-900 border-[#2C2D2D] shadow-[0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.4)]'
-                : 'bg-white text-black hover:bg-gray-50 border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]')
+                ? `bg-black text-white hover:bg-gray-900 ${removeAppCardBorders ? '' : 'border border-[#2C2D2D]'} shadow-[inset_0_0_20px_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[inset_0_0_25px_rgba(255,255,255,0.2),0_2px_6px_rgba(0,0,0,0.4)]`
+                : `bg-white text-black hover:bg-gray-50 ${removeAppCardBorders ? '' : 'border-gray-200'} shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]`)
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${hoverClass}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={handleClick}
@@ -315,6 +353,10 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
       >
         {liquidGlassEnabled && (
           <div className="pointer-events-none absolute inset-0 rounded-2xl" />
+        )}
+        {/* Inner Shadow Overlay */}
+        {appCardInnerShadow !== 'none' && (
+          <div className={`pointer-events-none absolute inset-0 rounded-inherit ${currentInnerShadowClass}`} style={{ borderRadius: 'inherit' }} />
         )}
         {/* Dynamic Grid of Mini Icons (2x2 diagonal, 3x1, or 2x2) */}
         {haliteUrls.length === 2 ? (
@@ -1892,6 +1934,10 @@ export default function Home() {
 
   const [monochromeIcons, setMonochromeIcons] = useState<boolean>(false);
   const [appCardBorderRadius, setAppCardBorderRadius] = useState<'small' | 'medium' | 'full'>('medium');
+  const [removeAppCardBorders, setRemoveAppCardBorders] = useState<boolean>(false);
+  const [appCardSize, setAppCardSize] = useState<'small' | 'normal' | 'large'>('normal');
+  const [appCardInnerShadow, setAppCardInnerShadow] = useState<'none' | 'small' | 'medium' | 'large'>('none');
+
   const [youtubeSearchMode, setYoutubeSearchMode] = useState<boolean>(false);
   const [haliteFolderName, setHaliteFolderName] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -1939,7 +1985,7 @@ export default function Home() {
   const nameEditorRef = useRef<HTMLDivElement | null>(null);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [showTopTime, setShowTopTime] = useState<boolean>(false);
+  const [showTopTime, setShowTopTime] = useState<boolean>(true);
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
 
@@ -2259,11 +2305,7 @@ export default function Home() {
 
 
 
-      const savedTopTime = localStorage.getItem('showTopTime');
-      if (savedTopTime !== null) {
-        setShowTopTime(savedTopTime === 'true');
-        console.log('✅ Top time visibility loaded:', savedTopTime);
-      }
+
 
       // Load visual modes - this is critical for persistence
       const savedNormal = localStorage.getItem('normalModeEnabled');
@@ -2312,6 +2354,27 @@ export default function Home() {
         setAppCardBorderRadius(savedAppCardBorderRadius as 'small' | 'medium' | 'full');
       } else if (savedAppCardBorderRadius === 'large') {
         setAppCardBorderRadius('full');
+      }
+
+      // Load remove app card borders
+      const savedRemoveBorders = localStorage.getItem('removeAppCardBorders');
+      if (savedRemoveBorders !== null) {
+        setRemoveAppCardBorders(savedRemoveBorders === 'true');
+        console.log('✅ Remove borders loaded:', savedRemoveBorders === 'true');
+      }
+
+      // Load app card size
+      const savedAppCardSize = localStorage.getItem('appCardSize');
+      if (savedAppCardSize === 'small' || savedAppCardSize === 'normal' || savedAppCardSize === 'large') {
+        setAppCardSize(savedAppCardSize as 'small' | 'normal' | 'large');
+        console.log('✅ App card size loaded:', savedAppCardSize);
+      }
+
+      // Load inner shadow
+      const savedInnerShadow = localStorage.getItem('appCardInnerShadow');
+      if (savedInnerShadow === 'none' || savedInnerShadow === 'small' || savedInnerShadow === 'medium' || savedInnerShadow === 'large') {
+        setAppCardInnerShadow(savedInnerShadow as 'none' | 'small' | 'medium' | 'large');
+        console.log('✅ App card inner shadow loaded:', savedInnerShadow);
       }
 
       // Load greeting style
@@ -2417,6 +2480,9 @@ export default function Home() {
       localStorage.setItem('animateWidgetsEnabled', animateWidgetsEnabled.toString());
       localStorage.setItem('hoverAnimationStyle', hoverAnimationStyle);
       localStorage.setItem('appCardBorderRadius', appCardBorderRadius);
+      localStorage.setItem('removeAppCardBorders', removeAppCardBorders.toString());
+      localStorage.setItem('appCardSize', appCardSize);
+      localStorage.setItem('appCardInnerShadow', appCardInnerShadow);
       localStorage.setItem('bookmarkStyle', bookmarkStyle);
       localStorage.setItem('appGroupMarginTop', appGroupMarginTop.toString());
       localStorage.setItem('liquidReflectionColor', liquidReflectionColor);
@@ -2463,6 +2529,9 @@ export default function Home() {
     animateWidgetsEnabled,
     hoverAnimationStyle,
     appCardBorderRadius,
+    removeAppCardBorders,
+    appCardSize,
+    appCardInnerShadow,
     bookmarkStyle,
     centerAppsGroup,
     showBookmarks,
@@ -2596,6 +2665,10 @@ export default function Home() {
         localStorage.setItem('showTopTime', 'false');
         localStorage.setItem('searchBarWidth', 'medium');
         localStorage.setItem('monochromeIcons', 'false');
+        localStorage.setItem('removeAppCardBorders', 'false');
+        localStorage.setItem('appCardSize', 'normal');
+        localStorage.setItem('appCardInnerShadow', 'none');
+
 
         // Save apps and widgets with explicit stringification
         const appsJson = JSON.stringify(defaultApps);
@@ -2695,6 +2768,9 @@ export default function Home() {
         localStorage.setItem('favoriteApps', appsJson);
         localStorage.setItem('widgets', widgetsJson);
         localStorage.setItem('lastResetDate', new Date().toDateString());
+        localStorage.setItem('removeAppCardBorders', 'false');
+        localStorage.setItem('appCardSize', 'normal');
+        localStorage.setItem('appCardInnerShadow', 'none');
       } catch { }
     }
     if (typeof document !== 'undefined') {
@@ -3019,7 +3095,10 @@ export default function Home() {
               <div className={`${centerAppsGroup
                 ? 'grid w-fit mx-auto [grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]'
                 : 'grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'
-                } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px] ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0.5 sm:gap-x-0.5 lg:gap-x-0.5'}`}>
+                } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px] ${centerAppsGroup
+                  ? (appCardSize === 'small' ? 'gap-x-1 sm:gap-x-1.5 lg:gap-x-2' : 'gap-x-2 sm:gap-x-3 lg:gap-x-4')
+                  : (appCardSize === 'small' ? 'gap-x-0' : 'gap-x-0.5 sm:gap-x-0.5 lg:gap-x-0.5')
+                }`}>
                 {apps.map((app, index) => (
                   app.type === 'halite' ? (
                     <HaliteCard
@@ -3038,6 +3117,8 @@ export default function Home() {
                       hoverAnimationStyle={hoverAnimationStyle}
                       monochromeIcons={monochromeIcons}
                       appCardBorderRadius={appCardBorderRadius}
+                      removeAppCardBorders={removeAppCardBorders}
+                      appCardSize={appCardSize}
                       onContextMenu={handleContextMenu}
                     />
                   ) : (
@@ -3057,6 +3138,8 @@ export default function Home() {
                       hoverAnimationStyle={hoverAnimationStyle}
                       monochromeIcons={monochromeIcons}
                       appCardBorderRadius={appCardBorderRadius}
+                      removeAppCardBorders={removeAppCardBorders}
+                      appCardSize={appCardSize}
                       onContextMenu={handleContextMenu}
                     />
                   )
@@ -3307,17 +3390,19 @@ export default function Home() {
         {showBookmarks && (
           <div className="mt-10">
             <div className={`mb-3 flex items-center gap-3`}>
-              <button
-                type="button"
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ring-1 ${isDarkMode ? 'bg-white/10 text-white ring-white/15 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'}`}
-                onClick={() => {
-                  setBookmarkTitleInput('');
-                  setBookmarkUrlInput('');
-                  setIsAddBookmarkOpen(true);
-                }}
-              >
-                +
-              </button>
+              {(showBookmarksTitle || isEditModalOpen) && (
+                <button
+                  type="button"
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ring-1 ${isDarkMode ? 'bg-white/10 text-white ring-white/15 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'}`}
+                  onClick={() => {
+                    setBookmarkTitleInput('');
+                    setBookmarkUrlInput('');
+                    setIsAddBookmarkOpen(true);
+                  }}
+                >
+                  +
+                </button>
+              )}
               {showBookmarksTitle && (
                 <h3 className={`${isDarkMode ? 'text-white' : 'text-gray-900'} text-sm font-semibold tracking-wide`}>Bookmarks</h3>
               )}
@@ -4104,6 +4189,12 @@ export default function Home() {
             return newValue;
           });
         }}
+        removeAppCardBorders={removeAppCardBorders}
+        onToggleRemoveAppCardBorders={() => setRemoveAppCardBorders(prev => !prev)}
+        appCardSize={appCardSize}
+        onSetAppCardSize={setAppCardSize}
+        appCardInnerShadow={appCardInnerShadow}
+        onSetAppCardInnerShadow={setAppCardInnerShadow}
       />
 
       {/* Context Menu */}
