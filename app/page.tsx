@@ -101,7 +101,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none' }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large' }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none' }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large' }) {
   const {
     attributes,
     listeners,
@@ -182,7 +182,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
                 : `bg-white/20 backdrop-blur-md text-black hover:bg-white/30 ${removeAppCardBorders ? '' : 'border-[1.5px] border-white/30 hover:border-white/40'} shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]`)
               : (isDark
                 ? `bg-black text-white hover:bg-gray-900 ${removeAppCardBorders ? '' : 'border border-[#2C2D2D]'} shadow-[inset_0_0_20px_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[inset_0_0_25px_rgba(255,255,255,0.2),0_2px_6px_rgba(0,0,0,0.4)]`
-                : `bg-white text-black hover:bg-gray-50 ${removeAppCardBorders ? '' : 'border-gray-200'} shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]`)
+                : `bg-white text-black hover:bg-white ${removeAppCardBorders ? '' : 'border border-[#e0e0e0]'} shadow-[0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_4px_rgba(0,0,0,0.08)]`)
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}${extraClasses} ${hoverClass}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={(e) => {
@@ -234,7 +234,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
 
       {/* App Title - Below the card */}
       {showAppTitles && (
-        <div className="mt-2 text-center w-full">
+        <div className={`mt-2 text-center w-full ${hideAppTitleText ? 'invisible' : ''}`}>
           <span className={`truncate text-xs font-medium ${appTitleColor === 'auto'
             ? (isDark ? 'text-white' : 'text-gray-800')
             : appTitleColor === 'black'
@@ -258,7 +258,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, backgroundImag
   );
 }
 
-function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none' }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large' }) {
+function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none' }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large' }) {
   const {
     attributes,
     listeners,
@@ -341,7 +341,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
                 : `bg-white/20 backdrop-blur-md text-black hover:bg-white/30 ${removeAppCardBorders ? '' : 'border-[1.5px] border-white/30 hover:border-white/40'} shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.15)]`)
               : (isDark
                 ? `bg-black text-white hover:bg-gray-900 ${removeAppCardBorders ? '' : 'border border-[#2C2D2D]'} shadow-[inset_0_0_20px_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[inset_0_0_25px_rgba(255,255,255,0.2),0_2px_6px_rgba(0,0,0,0.4)]`
-                : `bg-white text-black hover:bg-gray-50 ${removeAppCardBorders ? '' : 'border-gray-200'} shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]`)
+                : `bg-white text-black hover:bg-white ${removeAppCardBorders ? '' : 'border border-[#e0e0e0]'} shadow-[0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_4px_rgba(0,0,0,0.08)]`)
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${hoverClass}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={handleClick}
@@ -417,9 +417,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
             </div>
           </div>
         ) : (
-          <div className={`w-full h-full p-1 grid gap-0.5 ${haliteUrls.length === 3 ? 'grid-cols-3 grid-rows-1' :
-            'grid-cols-2 grid-rows-2'
-            }`}>
+          <div className="w-full h-full p-1 grid gap-0.5 grid-cols-2 grid-rows-2">
             {haliteUrls.map((url, index) => {
               const hasIcon = haliteIcons[index] && haliteIcons[index].trim() !== '';
               return (
@@ -457,7 +455,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, backgroundImage, gla
 
       {/* App Title - Below the card (shown for halite if name is set) */}
       {showAppTitles && app.haliteName && (
-        <div className="mt-2 text-center w-full">
+        <div className={`mt-2 text-center w-full ${hideAppTitleText ? 'invisible' : ''}`}>
           <span className={`truncate text-xs font-medium ${appTitleColor === 'auto'
             ? (isDark ? 'text-white' : 'text-gray-800')
             : appTitleColor === 'black'
@@ -1929,6 +1927,7 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [showAppTitles, setShowAppTitles] = useState(true);
+  const [hideAppTitleText, setHideAppTitleText] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [searchBarWidth, setSearchBarWidth] = useState<'narrow' | 'medium' | 'wide'>('medium');
 
@@ -2192,6 +2191,11 @@ export default function Home() {
         setShowAppTitles(savedShowAppTitles === 'true');
         console.log('✅ Show app titles loaded:', savedShowAppTitles === 'true');
       }
+      const savedHideAppTitleText = localStorage.getItem('hideAppTitleText');
+      if (savedHideAppTitleText !== null) {
+        setHideAppTitleText(savedHideAppTitleText === 'true');
+        console.log('✅ Hide app title text loaded:', savedHideAppTitleText === 'true');
+      }
       const savedShowSearchBar = localStorage.getItem('showSearchBar');
       if (savedShowSearchBar !== null) {
         setShowSearchBar(savedShowSearchBar === 'true');
@@ -2219,26 +2223,28 @@ export default function Home() {
 
       // Always start with an empty search term on load
 
-      // Load background image, prefer IndexedDB
-      (async () => {
-        try {
-          const urlFromIdb = await getImageObjectUrl('backgroundImage');
-          if (urlFromIdb) {
-            setBackgroundImage(urlFromIdb);
-            document.documentElement.style.setProperty('--app-bg-image', `url(${urlFromIdb.replace(/'/g, "\\'")})`);
-            document.documentElement.classList.add('has-app-bg');
-            console.log('✅ Background image loaded from IndexedDB');
-            return;
+      // Load background image from IndexedDB if flag is set
+      const hasBackground = localStorage.getItem('hasBackgroundImage');
+      if (hasBackground === 'true') {
+        console.log('🔍 Loading background from IndexedDB...');
+        (async () => {
+          try {
+            const blobUrl = await getImageObjectUrl('backgroundImage');
+            if (blobUrl) {
+              setBackgroundImage(blobUrl);
+              console.log('✅ Background loaded from IndexedDB');
+            } else {
+              console.warn('⚠️ Flag set but no image in IndexedDB');
+              localStorage.removeItem('hasBackgroundImage');
+            }
+          } catch (err) {
+            console.error('❌ Failed to load from IndexedDB:', err);
+            localStorage.removeItem('hasBackgroundImage');
           }
-        } catch { }
-        const savedBackgroundImage = localStorage.getItem('backgroundImage');
-        if (savedBackgroundImage) {
-          setBackgroundImage(savedBackgroundImage);
-          document.documentElement.style.setProperty('--app-bg-image', `url(${savedBackgroundImage.replace(/'/g, "\\'")})`);
-          document.documentElement.classList.add('has-app-bg');
-          console.log('✅ Background image loaded from localStorage');
-        }
-      })();
+        })();
+      } else {
+        console.log('ℹ️ No background image');
+      }
 
       // Load app title color
       const savedAppTitleColor = localStorage.getItem('appTitleColor');
@@ -2442,6 +2448,7 @@ export default function Home() {
       console.log('💾 Saving user settings to localStorage:', {
         theme: isDarkMode ? 'dark' : 'light',
         showAppTitles,
+        hideAppTitleText,
         showSearchBar,
 
         searchBarWidth,
@@ -2453,6 +2460,7 @@ export default function Home() {
 
       // Save show app titles
       localStorage.setItem('showAppTitles', showAppTitles.toString());
+      localStorage.setItem('hideAppTitleText', hideAppTitleText.toString());
       localStorage.setItem('showSearchBar', showSearchBar.toString());
       localStorage.setItem('searchBarWidth', searchBarWidth);
       localStorage.setItem('monochromeIcons', monochromeIcons.toString());
@@ -2515,6 +2523,7 @@ export default function Home() {
   }, [
     isDarkMode,
     showAppTitles,
+    hideAppTitleText,
     showSearchBar,
 
     searchBarWidth,
@@ -2640,6 +2649,7 @@ export default function Home() {
     // Restore default apps and widgets
     setApps(defaultApps);
     setWidgets(defaultWidgets);
+    setHideAppTitleText(false);
 
     // Set default values in localStorage immediately after clearing
     if (typeof window !== 'undefined') {
@@ -2647,6 +2657,7 @@ export default function Home() {
         // Set default values in localStorage
         localStorage.setItem('theme', 'light');
         localStorage.setItem('showAppTitles', 'true');
+        localStorage.setItem('hideAppTitleText', 'false');
         localStorage.setItem('backgroundImage', '');
         localStorage.setItem('normalModeEnabled', 'true');
         localStorage.setItem('glassmorphismEnabled', 'false');
@@ -2750,6 +2761,7 @@ export default function Home() {
       try {
         localStorage.setItem('theme', 'light');
         localStorage.setItem('showAppTitles', 'true');
+        localStorage.setItem('hideAppTitleText', 'false');
         localStorage.setItem('backgroundImage', '');
         localStorage.setItem('normalModeEnabled', 'true');
         localStorage.setItem('glassmorphismEnabled', 'false');
@@ -2973,9 +2985,9 @@ export default function Home() {
           : (
             isDarkMode
               ? 'radial-gradient(600px circle at 100% 0, rgba(59,130,246,0.12), transparent 40%), radial-gradient(800px circle at 0 100%, rgba(236,72,153,0.10), transparent 40%), linear-gradient(180deg, #0a0a0a 0%, #0f1115 100%)'
-              : 'url(/walp.png)'
+              : 'none'
           ),
-        backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff',
+        backgroundColor: isDarkMode ? '#0a0a0a' : '#f5f5f5',
         backgroundRepeat: 'no-repeat',
         '--liquid-reflection-rgb': liquidReflectionRgb,
       } as React.CSSProperties}
@@ -3002,9 +3014,9 @@ export default function Home() {
       {showTopTime && (
         <div className="fixed top-4 left-4 z-40">
           <span
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 ${isDarkMode
-              ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl'
-              : 'bg-gray-900 text-white ring-gray-900/10'
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ring-1 ${isDarkMode
+              ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+              : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
               }`}
             aria-live="polite"
           >
@@ -3021,9 +3033,9 @@ export default function Home() {
               setIsNameEditorOpen(prev => !prev);
               setNameInput(userName);
             }}
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${isDarkMode
-              ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15'
-              : 'bg-gray-900 text-white ring-gray-900/10 hover:bg-gray-800'
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${isDarkMode
+              ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
+              : 'bg-white text-black ring-gray-200 hover:bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
               }`}
             title="Click to personalise your greeting"
             aria-expanded={isNameEditorOpen}
@@ -3107,6 +3119,7 @@ export default function Home() {
                       onRemove={removeApp}
                       isDark={isDarkMode}
                       showAppTitles={showAppTitles}
+                      hideAppTitleText={hideAppTitleText}
                       backgroundImage={backgroundImage}
                       glassmorphismEnabled={glassmorphismEnabled}
                       appTitleColor={appTitleColor}
@@ -3128,6 +3141,7 @@ export default function Home() {
                       onRemove={removeApp}
                       isDark={isDarkMode}
                       showAppTitles={showAppTitles}
+                      hideAppTitleText={hideAppTitleText}
                       backgroundImage={backgroundImage}
                       glassmorphismEnabled={glassmorphismEnabled}
                       appTitleColor={appTitleColor}
@@ -4008,21 +4022,27 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
-          {/* Shine button for Halite */}
-          <button
-            onClick={openHaliteModal}
-            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center z-10"
-            title="Add Halite Folder"
-            aria-label="Add Halite Folder"
-            style={{
-              boxShadow: '0 2px 8px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
-            }}
-          >
-            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          </button>
         </div>
+
+        {/* Halite Folder Button */}
+        <button
+          onClick={openHaliteModal}
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
+            ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50'
+            : glassmorphismEnabled
+              ? (isDarkMode ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50' : 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50')
+              : 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50'
+            } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
+          title="Add Halite Folder"
+          aria-label="Add Halite Folder"
+          style={{
+            boxShadow: '0 2px 8px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+          }}
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        </button>
 
         {/* Settings Button */}
         <button
@@ -4061,11 +4081,19 @@ export default function Home() {
           });
         }}
         showAppTitles={showAppTitles}
+        hideAppTitleText={hideAppTitleText}
         showSearchBar={showSearchBar}
         onToggleShowAppTitles={() => {
           setShowAppTitles(prev => {
             const next = !prev;
             console.log('📱 Show app titles toggled from', prev, 'to', next);
+            return next;
+          });
+        }}
+        onToggleHideAppTitleText={() => {
+          setHideAppTitleText(prev => {
+            const next = !prev;
+            console.log('📱 Hide app title text toggled from', prev, 'to', next);
             return next;
           });
         }}
@@ -4079,12 +4107,27 @@ export default function Home() {
         backgroundImage={backgroundImage}
         onSetBackgroundImage={(url) => {
           console.log('🖼️ Background image changed to:', url);
-          if (typeof window !== 'undefined' && url && !url.startsWith('blob:') && !url.startsWith('idb:')) {
-            try { localStorage.setItem('backgroundImage', url); } catch { }
-          }
-          setBackgroundImage(url);
-          if (typeof window !== 'undefined' && url) {
+          
+          if (url === 'reload-needed') {
+            // Image was saved to IndexedDB, reload to display it
             window.location.reload();
+            return;
+          }
+          
+          setBackgroundImage(url);
+          
+          // Save flag to localStorage
+          if (typeof window !== 'undefined') {
+            try {
+              if (url) {
+                localStorage.setItem('hasBackgroundImage', 'true');
+              } else {
+                localStorage.removeItem('hasBackgroundImage');
+              }
+              console.log('💾 Background state saved');
+            } catch (e) {
+              console.error('Failed to save state:', e);
+            }
           }
         }}
         glassmorphismEnabled={glassmorphismEnabled}

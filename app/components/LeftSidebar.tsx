@@ -24,8 +24,10 @@ interface LeftSidebarProps {
   isDarkMode: boolean;
   onToggleTheme: () => void;
   showAppTitles: boolean;
+  hideAppTitleText?: boolean;
   showSearchBar?: boolean;
   onToggleShowAppTitles: () => void;
+  onToggleHideAppTitleText?: () => void;
   onToggleSearchBar?: () => void;
   backgroundImage: string;
   onSetBackgroundImage: (url: string) => void;
@@ -195,8 +197,10 @@ export default function LeftSidebar({
   isDarkMode,
   onToggleTheme,
   showAppTitles,
+  hideAppTitleText,
   showSearchBar,
   onToggleShowAppTitles,
+  onToggleHideAppTitleText,
   onToggleSearchBar,
   backgroundImage,
   onSetBackgroundImage,
@@ -493,20 +497,23 @@ export default function LeftSidebar({
       }
 
       setSelectedFile(file);
+      setBgError(null);
+      
       try {
+        console.log('💾 Saving image to IndexedDB...');
         await saveImageBlob('backgroundImage', file);
-        onSetBackgroundImage('idb:backgroundImage');
+        console.log('✅ Image saved to IndexedDB');
+        
+        // Set a simple flag in localStorage to indicate we have a background
+        localStorage.setItem('hasBackgroundImage', 'true');
+        
+        // Trigger reload to load the image
+        onSetBackgroundImage('reload-needed');
         setSelectedFile(null);
       } catch (e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const result = ev.target?.result as string;
-          if (result) {
-            onSetBackgroundImage(result);
-            setSelectedFile(null);
-          }
-        };
-        reader.readAsDataURL(file);
+        console.error('❌ Failed to save image:', e);
+        setBgError('Failed to save image. Please try a smaller file.');
+        setSelectedFile(null);
       }
     } catch (err) {
       setBgError('Failed to load image. Please try a different file.');
@@ -968,6 +975,27 @@ export default function LeftSidebar({
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showAppTitles ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                        />
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                        }`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                        Hide App Title Text
+                      </label>
+                      <button
+                        onClick={() => onToggleHideAppTitleText && onToggleHideAppTitleText()}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hideAppTitleText
+                          ? 'bg-blue-500'
+                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                          }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideAppTitleText ? 'translate-x-6' : 'translate-x-1'
                             }`}
                         />
                       </button>
@@ -1510,7 +1538,13 @@ export default function LeftSidebar({
                             )}
                           </div>
                           <button
-                            onClick={() => {
+                            onClick={async () => {
+                              try {
+                                await deleteImageBlob('backgroundImage');
+                                console.log('🗑️ Deleted from IndexedDB');
+                              } catch (err) {
+                                console.error('Failed to delete from IndexedDB:', err);
+                              }
                               onSetBackgroundImage('');
                               setBgError(null);
                               setSelectedFile(null);
