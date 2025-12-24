@@ -31,6 +31,8 @@ interface LeftSidebarProps {
   onToggleSearchBar?: () => void;
   backgroundImage: string;
   onSetBackgroundImage: (url: string) => void;
+  backgroundBlur?: number;
+  onSetBackgroundBlur?: (value: number) => void;
   glassmorphismEnabled: boolean;
   onToggleGlassmorphism: () => void;
   liquidGlassEnabled: boolean;
@@ -74,6 +76,8 @@ interface LeftSidebarProps {
 
   searchBarWidth?: 'narrow' | 'medium' | 'wide';
   onSetSearchBarWidth?: (width: 'narrow' | 'medium' | 'wide') => void;
+  compactSearchBar?: boolean;
+  onToggleCompactSearchBar?: () => void;
   // fluidThemeColor removed
   // onSetFluidThemeColor removed
   monochromeIcons?: boolean;
@@ -189,6 +193,50 @@ const SegmentedControl = <T extends string>({ value, onChange, options, isDarkMo
   );
 };
 
+const NavButton = ({ label, icon, isActive, onClick, isDarkMode, iconColor }: { label: string; icon: React.ReactNode; isActive: boolean; onClick: () => void; isDarkMode: boolean; iconColor?: string }) => {
+  let colorName = 'gray';
+  if (iconColor) {
+     const match = iconColor.match(/text-(\w+)-/);
+     if (match) colorName = match[1];
+  }
+
+  // Explicit mapping to ensure Tailwind scans these class names
+  const bgColors: Record<string, string> = {
+    blue: isActive ? 'bg-blue-500/20' : 'bg-blue-500/10',
+    amber: isActive ? 'bg-amber-500/20' : 'bg-amber-500/10',
+    purple: isActive ? 'bg-purple-500/20' : 'bg-purple-500/10',
+    pink: isActive ? 'bg-pink-500/20' : 'bg-pink-500/10',
+    indigo: isActive ? 'bg-indigo-500/20' : 'bg-indigo-500/10',
+    green: isActive ? 'bg-green-500/20' : 'bg-green-500/10',
+    cyan: isActive ? 'bg-cyan-500/20' : 'bg-cyan-500/10',
+    orange: isActive ? 'bg-orange-500/20' : 'bg-orange-500/10',
+    emerald: isActive ? 'bg-emerald-500/20' : 'bg-emerald-500/10',
+    rose: isActive ? 'bg-rose-500/20' : 'bg-rose-500/10',
+    gray: isActive ? 'bg-gray-500/20' : 'bg-gray-500/10',
+  };
+
+  const bgClass = bgColors[colorName] || bgColors['gray'];
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+        ? isDarkMode
+          ? 'bg-blue-600/20 text-blue-400'
+          : 'bg-blue-50 text-blue-600'
+        : isDarkMode
+          ? 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+        }`}
+    >
+      <span className={`flex items-center justify-center w-7 h-7 rounded-lg ${bgClass} ${iconColor || 'text-gray-500'}`}>
+        {icon}
+      </span>
+      <span>{label}</span>
+    </button>
+  );
+};
+
 export default function LeftSidebar({
   isOpen,
   onClose,
@@ -204,6 +252,8 @@ export default function LeftSidebar({
   onToggleSearchBar,
   backgroundImage,
   onSetBackgroundImage,
+  backgroundBlur,
+  onSetBackgroundBlur,
   glassmorphismEnabled,
   onToggleGlassmorphism,
   liquidGlassEnabled,
@@ -255,6 +305,8 @@ export default function LeftSidebar({
 
   searchBarWidth,
   onSetSearchBarWidth,
+  compactSearchBar,
+  onToggleCompactSearchBar,
   // fluidThemeColor,
   // onSetFluidThemeColor,
   monochromeIcons,
@@ -278,8 +330,8 @@ export default function LeftSidebar({
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   const previewImageUrlRef = useRef<string>('');
 
-  // Single-open accordion for sections
-  const [openSection, setOpenSection] = useState<'widgets' | 'preferences' | 'background' | 'addApp' | 'advanced' | null>('preferences');
+  // Section Navigation
+  const [openSection, setOpenSection] = useState<'widgets' | 'background' | 'addApp' | 'bookmarks' | 'layout' | 'search' | 'customization' | 'accessibility' | 'typography' | 'animations' | null>('layout');
   const [isHoverDropdownOpen, setIsHoverDropdownOpen] = useState(false);
 
   // Removed top tabs; sections are independent toggles now
@@ -560,7 +612,7 @@ export default function LeftSidebar({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed right-4 top-20 bottom-4 w-96 sm:w-[32rem] rounded-2xl overflow-hidden transform transition-all duration-300 ease-in-out z-50 ${glassmorphismEnabled
+        className={`fixed right-4 top-40 bottom-32 w-96 sm:w-[42rem] rounded-2xl overflow-hidden transform transition-all duration-300 ease-in-out z-50 ${glassmorphismEnabled
           ? isDarkMode
             ? 'bg-[#2B2B2B]/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
             : 'bg-white/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
@@ -614,21 +666,333 @@ export default function LeftSidebar({
             </div>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+          {/* Content Layout */}
+          <div className="flex-1 flex overflow-hidden min-h-0">
+            {/* Side Navigation */}
+            <div className={`w-[170px] shrink-0 flex flex-col gap-1 p-2 border-r overflow-y-auto custom-scrollbar ${
+              isDarkMode ? 'border-white/10' : 'border-gray-200'
+            }`}>
+              <NavButton
+                label="App & Widget"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>}
+                isActive={openSection === 'layout'}
+                onClick={() => setOpenSection('layout')}
+                isDarkMode={isDarkMode}
+                iconColor="text-blue-500"
+              />
+              <NavButton
+                label="Bookmarks"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>}
+                isActive={openSection === 'bookmarks'}
+                onClick={() => setOpenSection('bookmarks')}
+                isDarkMode={isDarkMode}
+                iconColor="text-amber-500"
+              />
+              <NavButton
+                label="Search"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
+                isActive={openSection === 'search'}
+                onClick={() => setOpenSection('search')}
+                isDarkMode={isDarkMode}
+                iconColor="text-purple-500"
+              />
+              <NavButton
+                label="Customization"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>}
+                isActive={openSection === 'customization'}
+                onClick={() => setOpenSection('customization')}
+                isDarkMode={isDarkMode}
+                iconColor="text-pink-500"
+              />
+               <NavButton
+                label="Typography"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" /></svg>}
+                isActive={openSection === 'typography'}
+                onClick={() => setOpenSection('typography')}
+                isDarkMode={isDarkMode}
+                iconColor="text-indigo-500"
+              />
+              <NavButton
+                label="Animations"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                isActive={openSection === 'animations'}
+                onClick={() => setOpenSection('animations')}
+                isDarkMode={isDarkMode}
+                iconColor="text-green-500"
+              />
+               <NavButton
+                label="Accessibility"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>}
+                isActive={openSection === 'accessibility'}
+                onClick={() => setOpenSection('accessibility')}
+                isDarkMode={isDarkMode}
+                iconColor="text-cyan-500"
+              />
+              <div className={`my-2 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`} />
+              <NavButton
+                label="Widgets"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>}
+                isActive={openSection === 'widgets'}
+                onClick={() => setOpenSection('widgets')}
+                isDarkMode={isDarkMode}
+                iconColor="text-orange-500"
+              />
+              <NavButton
+                label="Background"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
+                isActive={openSection === 'background'}
+                onClick={() => setOpenSection('background')}
+                isDarkMode={isDarkMode}
+                iconColor="text-emerald-500"
+              />
+              <NavButton
+                label="Add App"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
+                isActive={openSection === 'addApp'}
+                onClick={() => setOpenSection('addApp')}
+                isDarkMode={isDarkMode}
+                iconColor="text-rose-500"
+              />
+            </div>
 
-            {/* Widgets Section */}
-            <button
-              onClick={() => setOpenSection(openSection === 'widgets' ? null : 'widgets')}
-              className={sectionHeaderClass}
-              title="Widgets"
-              aria-expanded={openSection === 'widgets'}
-            >
-              <span className="text-sm font-semibold">Widgets</span>
-              <svg className={`w-4 h-4 transition-transform ${openSection === 'widgets' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+            {/* Main Content Area */}
+            <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 ${
+              openSection === 'search' ? 'bg-transparent' : ''
+            }`}>
+              
+                {/* Bookmarks Section */}
+                {openSection === 'bookmarks' && (
+                  <div className={panelClass}>
+                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Bookmarks</h3>
+                     <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Show Bookmarks
+                          </label>
+                          <button onClick={() => onToggleBookmarks && onToggleBookmarks()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showBookmarks ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showBookmarks ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Show Bookmarks Title
+                          </label>
+                          <button onClick={() => onToggleBookmarksTitle && onToggleBookmarksTitle()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showBookmarksTitle ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showBookmarksTitle ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                         <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Center Bookmarks Group
+                          </label>
+                          <button onClick={() => onToggleCenterBookmarksGroup && onToggleCenterBookmarksGroup()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${centerBookmarksGroup ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${centerBookmarksGroup ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Bookmark Style</label>
+                          <ModernDropdown value={bookmarkStyle || 'cards'} onChange={(val) => onSetBookmarkStyle && onSetBookmarkStyle(val as 'cards' | 'chips')} options={[{ value: 'cards', label: 'Cards' }, { value: 'chips', label: 'Chips' }]} isDarkMode={isDarkMode} />
+                        </div>
+                     </div>
+                  </div>
+                )}
+                
+                {/* Layout (App & Widget) Section */}
+                {openSection === 'layout' && (
+                  <div className={panelClass}>
+                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>App &amp; Widget Layout</h3>
+                     <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show App Titles</label>
+                           <button onClick={onToggleShowAppTitles} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showAppTitles ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showAppTitles ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                         <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hide App Title Text</label>
+                           <button onClick={() => onToggleHideAppTitleText && onToggleHideAppTitleText()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hideAppTitleText ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideAppTitleText ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Center App Group</label>
+                           <button onClick={onToggleCenterAppsGroup} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${centerAppsGroup ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${centerAppsGroup ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                         <div>
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Group Margin Top</label>
+                          <div className="mt-2 flex items-center gap-3">
+                            <input type="range" min={0} max={800} step={1} value={appGroupMarginTop} onChange={(e) => onSetAppGroupMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500" />
+                            <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{appGroupMarginTop}px</span>
+                          </div>
+                        </div>
+                        {/* More Layout Props */}
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Size</label>
+                          <SegmentedControl value={appCardSize || 'normal'} onChange={(val) => onSetAppCardSize && onSetAppCardSize(val)} options={[{ value: 'small', label: 'Small' }, { value: 'normal', label: 'Normal' }, { value: 'large', label: 'Large' }]} isDarkMode={isDarkMode} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Radius</label>
+                          <SegmentedControl value={appCardBorderRadius || 'medium'} onChange={(val) => onSetAppCardBorderRadius && onSetAppCardBorderRadius(val)} options={[{ value: 'small', label: 'Small' }, { value: 'medium', label: 'Medium' }, { value: 'full', label: 'Full' }]} isDarkMode={isDarkMode} />
+                        </div>
+                         <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Inner Shadow</label>
+                          <SegmentedControl value={appCardInnerShadow || 'none'} onChange={(val) => onSetAppCardInnerShadow && onSetAppCardInnerShadow(val)} options={[{ value: 'none', label: 'None' }, { value: 'small', label: 'Sm' }, { value: 'medium', label: 'Md' }, { value: 'large', label: 'Lg' }]} isDarkMode={isDarkMode} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Remove Borders</label>
+                          <button onClick={() => onToggleRemoveAppCardBorders && onToggleRemoveAppCardBorders()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${removeAppCardBorders ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${removeAppCardBorders ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                     </div>
+                  </div>
+                )}
+
+                {/* Search Section */}
+                {openSection === 'search' && (
+                   <div className={panelClass}>
+                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Search Settings</h3>
+                     <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show Search Bar</label>
+                           <button onClick={() => onToggleSearchBar && onToggleSearchBar()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showSearchBar ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showSearchBar ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                        {showSearchBar && (
+                          <>
+                            <div className="flex items-center justify-between">
+                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Search Bar Width</label>
+                              <SegmentedControl value={searchBarWidth || 'medium'} onChange={(val) => onSetSearchBarWidth && onSetSearchBarWidth(val)} options={[{ value: 'narrow', label: 'Narrow' }, { value: 'medium', label: 'Medium' }, { value: 'wide', label: 'Wide' }]} isDarkMode={isDarkMode} />
+                            </div>
+                             <div className="flex items-center justify-between">
+                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Compact Search Bar</label>
+                               <button onClick={() => onToggleCompactSearchBar && onToggleCompactSearchBar()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${compactSearchBar ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${compactSearchBar ? 'translate-x-6' : 'translate-x-1'}`} />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                     </div>
+                   </div>
+                )}
+
+                {/* Customization Section */}
+                {openSection === 'customization' && (
+                  <div className={panelClass}>
+                    <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Customization</h3>
+                    <div className="space-y-6">
+                       {/* Visual Effects */}
+                       <div className="space-y-2">
+                        <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Visual Effects</h4>
+                         <div className="grid grid-cols-3 gap-2">
+                           <button onClick={onToggleNormalMode} className={`p-2 rounded-xl text-[10px] font-semibold transition-all ${normalModeEnabled ? 'bg-slate-700 text-white shadow-md' : isDarkMode ? 'bg-[#121212] text-gray-400 border border-white/10' : 'bg-white text-gray-600 border border-gray-200'}`}>Normal</button>
+                           <button onClick={onToggleGlassmorphism} className={`p-2 rounded-xl text-[10px] font-semibold transition-all ${glassmorphismEnabled ? 'bg-blue-600 text-white shadow-md' : isDarkMode ? 'bg-[#121212] text-gray-400 border border-white/10' : 'bg-white text-gray-600 border border-gray-200'}`}>Glass</button>
+                           <button onClick={onToggleLiquidGlass} className={`p-2 rounded-xl text-[10px] font-semibold transition-all ${liquidGlassEnabled ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md' : isDarkMode ? 'bg-[#121212] text-gray-400 border border-white/10' : 'bg-white text-gray-600 border border-gray-200'}`}>Liquid</button>
+                         </div>
+                       </div>
+                       {liquidGlassEnabled && (
+                          <div className={`rounded-xl p-3 ${isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
+                            <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Liquid Reflection Color</label>
+                             <div className="mt-3 flex items-center gap-3">
+                                <input type="color" value={liquidReflectionColor} onChange={(e) => onSetLiquidReflectionColor(e.target.value)} className="h-8 w-12 rounded cursor-pointer" />
+                                <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{liquidReflectionColor}</span>
+                             </div>
+                          </div>
+                       )}
+                       {/* Greeting */}
+                        <div className="space-y-2">
+                           <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Greeting</h4>
+                           <div className="flex items-center justify-between">
+                             <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Greeting Style</label>
+                             <ModernDropdown value={greetingStyle || 'hi'} onChange={(val) => onSetGreetingStyle && onSetGreetingStyle(val as any)} options={[{ value: 'hi', label: 'Hi' }, { value: 'welcome', label: 'Welcome' }, { value: 'time-based', label: 'Time Based' }]} isDarkMode={isDarkMode} />
+                           </div>
+                        </div>
+                        {/* Background Blur */}
+                        {backgroundImage && (
+                          <div className="space-y-2">
+                             <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Background Blur</h4>
+                              <div className="flex items-center justify-between">
+                                <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Blur Amount</label>
+                                <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{backgroundBlur || 0}px</span>
+                              </div>
+                              <input type="range" min="0" max="20" value={backgroundBlur || 0} onChange={(e) => onSetBackgroundBlur && onSetBackgroundBlur(Number(e.target.value))} className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Typography */}
+                {openSection === 'typography' && (
+                  <div className={panelClass}>
+                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Typography</h3>
+                     <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Text Color</label>
+                          <ModernDropdown value={appTitleColor} onChange={(val) => onSetAppTitleColor(val as any)} options={[{ value: 'auto', label: 'Auto' }, { value: 'black', label: 'Black' }, { value: 'white', label: 'White' }]} isDarkMode={isDarkMode} />
+                        </div>
+                         <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Widget Text Color</label>
+                          <ModernDropdown value={widgetTextColor} onChange={(val) => onSetWidgetTextColor(val as any)} options={[{ value: 'auto', label: 'Auto' }, { value: 'black', label: 'Black' }, { value: 'white', label: 'White' }]} isDarkMode={isDarkMode} />
+                        </div>
+                     </div>
+                  </div>
+                )}
+
+                {/* Animations */}
+                {openSection === 'animations' && (
+                  <div className={panelClass}>
+                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Animations</h3>
+                     <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Animate Icons</label>
+                           <button onClick={onToggleAnimateIcons} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${animateIconsEnabled ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${animateIconsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                        {animateIconsEnabled && (
+                           <>
+                             <div className="flex items-center justify-between">
+                                <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hover Animation</label>
+                                 <button onClick={() => setIsHoverDropdownOpen(!isHoverDropdownOpen)} className={`px-3 py-1.5 rounded-lg border text-xs capitalize ${isDarkMode ? 'border-white/20 text-white' : 'border-gray-300 text-gray-800'}`}>{hoverAnimationStyle}</button>
+                             </div>
+                             {isHoverDropdownOpen && (
+                              <div className={`grid grid-cols-2 gap-2 mt-2 p-2 rounded-lg border ${isDarkMode ? 'bg-[#121212] border-white/10' : 'bg-white border-gray-200'}`}>
+                                {(['scale', 'tilt', 'skew', 'spin', 'bounce', 'pulse', 'float', 'glow'] as const).map(style => (
+                                  <button key={style} onClick={() => {onSetHoverAnimationStyle(style); setIsHoverDropdownOpen(false)}} className={`text-xs p-1 rounded hover:bg-black/5 capitalize ${hoverAnimationStyle === style ? 'bg-blue-500/10 text-blue-500' : isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{style}</button>
+                                ))}
+                              </div>
+                             )}
+                              <div className="flex items-center justify-between">
+                                <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Apply to Widgets</label>
+                                <button onClick={onToggleAnimateWidgets} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${animateWidgetsEnabled ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${animateWidgetsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                                </button>
+                              </div>
+                           </>
+                        )}
+                     </div>
+                  </div>
+                )}
+                
+                {/* Accessibility */}
+                {openSection === 'accessibility' && (
+                  <div className={panelClass}>
+                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Accessibility</h3>
+                     <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Monochrome Icons (High Contrast)</label>
+                           <button onClick={() => onToggleMonochromeIcons && onToggleMonochromeIcons()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${monochromeIcons ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${monochromeIcons ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                     </div>
+                  </div>
+                )}
+
             {openSection === 'widgets' && (
               <div className={panelClass} >
                 <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'
@@ -638,6 +1002,8 @@ export default function LeftSidebar({
                   </svg>
                   Add Widgets
                 </h3>
+...
+
                 <div className={`space-y-3 ${isDarkMode ? 'text-white' : 'text-gray-800'
                   }`}>
                   <p className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
@@ -855,19 +1221,8 @@ export default function LeftSidebar({
               </div>
             )}
 
-            {/* Preferences */}
-            <button
-              onClick={() => setOpenSection(openSection === 'preferences' ? null : 'preferences')}
-              className={sectionHeaderClass}
-              title="Preferences"
-              aria-expanded={openSection === 'preferences'}
-            >
-              <span className="text-sm font-semibold">Preferences</span>
-              <svg className={`w-4 h-4 transition-transform ${openSection === 'preferences' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {openSection === 'preferences' && (
+
+            {false && ( /* Deprecated Preferences Block - Content moved to new sections */
               <div className={panelClass} >
                 <h3 className="sr-only">Preferences</h3>
                 <div className="space-y-3">
@@ -1093,6 +1448,63 @@ export default function LeftSidebar({
                             { value: 'wide', label: 'Wide' },
                           ]}
                           isDarkMode={isDarkMode}
+                        />
+                      </div>
+                    )}
+
+                    {/* Compact Search Bar Toggle */}
+                    {showSearchBar && (
+                      <div className="flex items-center justify-between">
+                        <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                          </svg>
+                          Compact Search Bar
+                        </label>
+                        <button
+                          onClick={() => onToggleCompactSearchBar && onToggleCompactSearchBar()}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${compactSearchBar
+                            ? 'bg-blue-500'
+                            : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                            }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${compactSearchBar ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                          />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Background Blur Slider */}
+                    {backgroundImage && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                            }`}>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Background Blur
+                          </label>
+                          <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {backgroundBlur || 0}px
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="20"
+                          value={backgroundBlur || 0}
+                          onChange={(e) => onSetBackgroundBlur && onSetBackgroundBlur(parseInt(e.target.value, 10))}
+                          className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${
+                            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                          }`}
+                          style={{
+                            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((backgroundBlur || 0) / 20) * 100}%, ${isDarkMode ? '#374151' : '#e5e7eb'} ${((backgroundBlur || 0) / 20) * 100}%, ${isDarkMode ? '#374151' : '#e5e7eb'} 100%)`
+                          }}
                         />
                       </div>
                     )}
@@ -1476,18 +1888,7 @@ export default function LeftSidebar({
               </div>
             )}
 
-            {/* Background Section */}
-            <button
-              onClick={() => setOpenSection(openSection === 'background' ? null : 'background')}
-              className={sectionHeaderClass}
-              title="Background"
-              aria-expanded={openSection === 'background'}
-            >
-              <span className="text-sm font-semibold">Background</span>
-              <svg className={`w-4 h-4 transition-transform ${openSection === 'background' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+
             {openSection === 'background' && (
               <div className={panelClass}>
                 <h3 className="sr-only">Background</h3>
@@ -1563,6 +1964,59 @@ export default function LeftSidebar({
                 </div>
               </div>
             )}
+              {/* Add App Section (New) */}
+              {openSection === 'addApp' && (
+                <div className={panelClass}>
+                  <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    Add New App
+                  </h3>
+                   <div className="space-y-4">
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Name</label>
+                      <input
+                        type="text"
+                        value={newApp.title}
+                        onChange={(e) => setNewApp({ ...newApp, title: e.target.value })}
+                        onKeyDown={handleKeyPress}
+                        placeholder="e.g. YouTube"
+                        className={`w-full px-3 py-2 rounded-lg text-sm border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                          isDarkMode
+                            ? 'bg-[#121212] border-white/10 text-white placeholder-gray-600 focus:border-blue-500/50'
+                            : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>URL</label>
+                      <input
+                        type="text"
+                        value={newApp.href}
+                        onChange={(e) => setNewApp({ ...newApp, href: e.target.value })}
+                        onKeyDown={handleKeyPress}
+                        placeholder="e.g. youtube.com"
+                        className={`w-full px-3 py-2 rounded-lg text-sm border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                          isDarkMode
+                            ? 'bg-[#121212] border-white/10 text-white placeholder-gray-600 focus:border-blue-500/50'
+                            : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50'
+                        }`}
+                      />
+                    </div>
+                    <button
+                      onClick={handleAddApp}
+                      disabled={!newApp.title || !newApp.href}
+                      className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+                        !newApp.title || !newApp.href
+                          ? isDarkMode ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20'
+                      }`}
+                    >
+                      Add Application
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

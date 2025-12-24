@@ -22,6 +22,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import LeftSidebar from './components/LeftSidebar';
+import CommandPalette from './components/CommandPalette';
+import UsageStatistics from './components/UsageStatistics';
 import { getImageObjectUrl, deleteImageBlob, saveImageBlob } from './lib/idb';
 import React from 'react';
 
@@ -101,7 +103,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none' }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large' }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none', onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; onAppClick?: (appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -187,6 +189,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
         onClick={(e) => {
           if (!isEditModalOpen) {
+            onAppClick?.(app.id);
             if (e.shiftKey) {
               e.preventDefault();
               e.stopPropagation();
@@ -258,7 +261,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
   );
 }
 
-function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none' }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large' }) {
+function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none', onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; onAppClick?: (appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -298,6 +301,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
 
   const handleClick = (e: React.MouseEvent) => {
     if (!isEditModalOpen && haliteUrls.length > 0) {
+      onAppClick?.(app.id);
       // Always open all URLs in new tabs to keep dashboard open
       haliteUrls.forEach((url) => {
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -1930,6 +1934,7 @@ export default function Home() {
   const [hideAppTitleText, setHideAppTitleText] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState<boolean>(false);
   const [searchBarWidth, setSearchBarWidth] = useState<'narrow' | 'medium' | 'wide'>('medium');
+  const [compactSearchBar, setCompactSearchBar] = useState<boolean>(false);
 
   const [monochromeIcons, setMonochromeIcons] = useState<boolean>(false);
   const [appCardBorderRadius, setAppCardBorderRadius] = useState<'small' | 'medium' | 'full'>('medium');
@@ -1944,6 +1949,7 @@ export default function Home() {
   const [isSuggestOpen, setIsSuggestOpen] = useState<boolean>(false);
   const [highlightIndex, setHighlightIndex] = useState<number>(-1);
   const [backgroundImage, setBackgroundImage] = useState<string>('');
+  const [backgroundBlur, setBackgroundBlur] = useState<number>(0);
   const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(false);
   const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>('auto');
   const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>('auto');
@@ -1980,9 +1986,20 @@ export default function Home() {
   const [userName, setUserName] = useState<string>('user');
   const [greetingStyle, setGreetingStyle] = useState<'hi' | 'welcome' | 'time-based'>('hi');
   const [isNameEditorOpen, setIsNameEditorOpen] = useState<boolean>(false);
+  const [isGreetingDropdownOpen, setIsGreetingDropdownOpen] = useState<boolean>(false);
   const [nameInput, setNameInput] = useState<string>('user');
   const nameEditorRef = useRef<HTMLDivElement | null>(null);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
+  const greetingDropdownRef = useRef<HTMLDivElement | null>(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
+  const [isStatisticsOpen, setIsStatisticsOpen] = useState<boolean>(false);
+
+  // Usage statistics
+  const [appClickCounts, setAppClickCounts] = useState<Record<string, number>>({});
+  const [appLastClicked, setAppLastClicked] = useState<Record<string, number>>({});
+  const [totalTimeSpent, setTotalTimeSpent] = useState<number>(0); // in seconds (cumulative)
+  const [previousTimeSpent, setPreviousTimeSpent] = useState<number>(0); // time from previous sessions
+  const [sessionStartTime] = useState<number>(Date.now());
 
   const [showTopTime, setShowTopTime] = useState<boolean>(true);
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
@@ -2092,6 +2109,66 @@ export default function Home() {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [contextMenu]);
+
+  // Close greeting dropdown on outside click
+  useEffect(() => {
+    if (!isGreetingDropdownOpen) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (greetingDropdownRef.current && !greetingDropdownRef.current.contains(target)) {
+        setIsGreetingDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsGreetingDropdownOpen(false);
+      }
+    };
+
+    // Add a small delay to avoid closing immediately when opening
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleClick, true);
+      document.addEventListener('keydown', handleKeyDown);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isGreetingDropdownOpen]);
+
+  // Close name editor on outside click
+  useEffect(() => {
+    if (!isNameEditorOpen) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (nameEditorRef.current && !nameEditorRef.current.contains(target)) {
+        setIsNameEditorOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsNameEditorOpen(false);
+      }
+    };
+
+    // Add a small delay to avoid closing immediately when opening
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleClick, true);
+      document.addEventListener('keydown', handleKeyDown);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isNameEditorOpen]);
 
   useEffect(() => {
     if (!showTopTime) return;
@@ -2208,6 +2285,12 @@ export default function Home() {
         console.log('✅ Search bar width loaded:', savedSearchBarWidth);
       }
 
+      const savedCompactSearchBar = localStorage.getItem('compactSearchBar');
+      if (savedCompactSearchBar !== null) {
+        setCompactSearchBar(savedCompactSearchBar === 'true');
+        console.log('✅ Compact search bar loaded:', savedCompactSearchBar === 'true');
+      }
+
       const savedMonochromeIcons = localStorage.getItem('monochromeIcons');
       if (savedMonochromeIcons !== null) {
         setMonochromeIcons(savedMonochromeIcons === 'true');
@@ -2244,6 +2327,14 @@ export default function Home() {
         })();
       } else {
         console.log('ℹ️ No background image');
+      }
+
+      // Load background blur
+      const savedBackgroundBlur = localStorage.getItem('backgroundBlur');
+      if (savedBackgroundBlur !== null) {
+        const blurValue = parseInt(savedBackgroundBlur, 10);
+        setBackgroundBlur(isNaN(blurValue) ? 0 : blurValue);
+        console.log('✅ Background blur loaded:', blurValue);
       }
 
       // Load app title color
@@ -2440,6 +2531,50 @@ export default function Home() {
     }
   }, [isResetting, apps, widgets]);
 
+  // Load usage statistics
+  useEffect(() => {
+    if (typeof window !== 'undefined' && mounted) {
+      try {
+        const savedClickCounts = localStorage.getItem('appClickCounts');
+        const savedLastClicked = localStorage.getItem('appLastClicked');
+        const savedTotalTime = localStorage.getItem('totalTimeSpent');
+
+        if (savedClickCounts) {
+          setAppClickCounts(JSON.parse(savedClickCounts));
+        }
+        if (savedLastClicked) {
+          setAppLastClicked(JSON.parse(savedLastClicked));
+        }
+        if (savedTotalTime) {
+          const savedTime = parseInt(savedTotalTime, 10);
+          setPreviousTimeSpent(savedTime);
+          setTotalTimeSpent(savedTime);
+        }
+      } catch (error) {
+        console.error('Failed to load usage statistics:', error);
+      }
+    }
+  }, [mounted]);
+
+  // Save usage statistics
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isLoading) {
+      localStorage.setItem('appClickCounts', JSON.stringify(appClickCounts));
+      localStorage.setItem('appLastClicked', JSON.stringify(appLastClicked));
+      localStorage.setItem('totalTimeSpent', totalTimeSpent.toString());
+    }
+  }, [appClickCounts, appLastClicked, totalTimeSpent, isLoading]);
+
+  // Track total time spent (accumulate with previous sessions)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentSessionTime = Math.floor((Date.now() - sessionStartTime) / 1000);
+      setTotalTimeSpent(previousTimeSpent + currentSessionTime);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [sessionStartTime, previousTimeSpent]);
+
 
 
   // Comprehensive save effect for all settings - only save on user changes, not during load/reset
@@ -2463,6 +2598,7 @@ export default function Home() {
       localStorage.setItem('hideAppTitleText', hideAppTitleText.toString());
       localStorage.setItem('showSearchBar', showSearchBar.toString());
       localStorage.setItem('searchBarWidth', searchBarWidth);
+      localStorage.setItem('compactSearchBar', compactSearchBar.toString());
       localStorage.setItem('monochromeIcons', monochromeIcons.toString());
       localStorage.setItem('centerAppsGroup', centerAppsGroup.toString());
       localStorage.setItem('showBookmarks', showBookmarks.toString());
@@ -2475,6 +2611,7 @@ export default function Home() {
       if (!backgroundImage.startsWith('blob:')) {
         localStorage.setItem('backgroundImage', backgroundImage);
       }
+      localStorage.setItem('backgroundBlur', backgroundBlur.toString());
 
       // Save visual modes
       localStorage.setItem('normalModeEnabled', normalModeEnabled.toString());
@@ -2528,6 +2665,7 @@ export default function Home() {
 
     searchBarWidth,
     backgroundImage,
+    backgroundBlur,
     normalModeEnabled,
     glassmorphismEnabled,
     liquidGlassEnabled,
@@ -2551,6 +2689,8 @@ export default function Home() {
     userName,
     greetingStyle,
     showTopTime,
+    searchBarWidth,
+    compactSearchBar,
     isLoading,
     isResetting
   ]);
@@ -2609,6 +2749,18 @@ export default function Home() {
     setNameInput(userName);
   };
 
+  // Track app click for usage statistics
+  const trackAppClick = (appId: string) => {
+    setAppClickCounts(prev => ({
+      ...prev,
+      [appId]: (prev[appId] || 0) + 1
+    }));
+    setAppLastClicked(prev => ({
+      ...prev,
+      [appId]: Date.now()
+    }));
+  };
+
   const resetSettings = () => {
     setShowResetModal(true);
     return;
@@ -2638,7 +2790,10 @@ export default function Home() {
     setIsDarkMode(false);
     setShowAppTitles(true);
     setShowSearchBar(false);
+    setSearchBarWidth('medium');
+    setCompactSearchBar(false);
     setBackgroundImage('');
+    setBackgroundBlur(0);
     setGlassmorphismEnabled(false);
     setLiquidGlassEnabled(false);
     setNormalModeEnabled(true);
@@ -2675,6 +2830,7 @@ export default function Home() {
         localStorage.setItem('greetingStyle', 'hi');
         localStorage.setItem('showTopTime', 'false');
         localStorage.setItem('searchBarWidth', 'medium');
+        localStorage.setItem('compactSearchBar', 'false');
         localStorage.setItem('monochromeIcons', 'false');
         localStorage.setItem('removeAppCardBorders', 'false');
         localStorage.setItem('appCardSize', 'normal');
@@ -2742,6 +2898,7 @@ export default function Home() {
     setShowAppTitles(true);
     setShowSearchBar(false);
     setBackgroundImage('');
+    setBackgroundBlur(0);
     setGlassmorphismEnabled(false);
     setLiquidGlassEnabled(false);
     setNormalModeEnabled(true);
@@ -2964,6 +3121,18 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Handle Cmd/Ctrl+K to open command palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
@@ -2978,7 +3147,7 @@ export default function Home() {
   return (
     <main suppressHydrationWarning
       className={`min-h-screen px-4 py-8 transition-all duration-300 ${backgroundImage || (!isDarkMode && !backgroundImage) ? 'bg-cover bg-center bg-no-repeat' : ''
-        } ${isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white'}`}
+        } ${isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white'} ${backgroundBlur && backgroundImage ? 'relative' : ''}`}
       style={{
         backgroundImage: backgroundImage
           ? `url(${backgroundImage})`
@@ -2992,6 +3161,16 @@ export default function Home() {
         '--liquid-reflection-rgb': liquidReflectionRgb,
       } as React.CSSProperties}
     >
+      {/* Background blur overlay */}
+      {backgroundBlur > 0 && backgroundImage && (
+        <div 
+          className="fixed inset-0 pointer-events-none z-0"
+          style={{
+            backdropFilter: `blur(${backgroundBlur}px)`,
+            WebkitBackdropFilter: `blur(${backgroundBlur}px)`,
+          }}
+        />
+      )}
       {/* StickyNoteLayer removed */}
       {/* Global keyframes for iOS-style jiggle */}
       <style>{`
@@ -3014,9 +3193,12 @@ export default function Home() {
       {showTopTime && (
         <div className="fixed top-4 left-4 z-40">
           <span
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ring-1 ${isDarkMode
-              ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
-              : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ring-1 ${
+              backgroundImage
+                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+                : isDarkMode
+                  ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+                  : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
               }`}
             aria-live="polite"
           >
@@ -3025,26 +3207,74 @@ export default function Home() {
         </div>
       )}
       {/* Greetings pill - top right */}
-      <div ref={nameEditorRef} className="fixed top-4 right-4 z-40 flex flex-col items-end gap-2">
+      <div ref={greetingDropdownRef} className="fixed top-4 right-4 z-40 flex flex-col items-end gap-2">
         <div className="relative">
           <button
             type="button"
             onClick={() => {
-              setIsNameEditorOpen(prev => !prev);
-              setNameInput(userName);
+              setIsGreetingDropdownOpen(prev => !prev);
+              setIsNameEditorOpen(false);
             }}
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${isDarkMode
-              ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
-              : 'bg-white text-black ring-gray-200 hover:bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
+              backgroundImage
+                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
+                : isDarkMode
+                  ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
+                  : 'bg-white text-black ring-gray-200 hover:bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
               }`}
-            title="Click to personalise your greeting"
-            aria-expanded={isNameEditorOpen}
-            aria-controls="greeting-name-editor"
+            title="Click to see options"
+            aria-expanded={isGreetingDropdownOpen}
+            aria-controls="greeting-dropdown-menu"
           >
             {getGreeting()}
           </button>
+          {isGreetingDropdownOpen && (
+            <div
+              id="greeting-dropdown-menu"
+              className={`absolute right-0 mt-2 w-48 rounded-2xl shadow-xl ring-1 overflow-hidden ${isDarkMode
+                ? 'bg-[#141414] text-white ring-white/10'
+                : 'bg-white text-gray-900 ring-gray-200'
+                }`}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGreetingDropdownOpen(false);
+                  setIsSidebarOpen(true);
+                }}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-3 ${isDarkMode
+                  ? 'hover:bg-white/10 text-white'
+                  : 'hover:bg-gray-50 text-gray-900'
+                  }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Settings
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGreetingDropdownOpen(false);
+                  setIsNameEditorOpen(true);
+                  setNameInput(userName);
+                }}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-3 ${isDarkMode
+                  ? 'hover:bg-white/10 text-white'
+                  : 'hover:bg-gray-50 text-gray-900'
+                  }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Name
+              </button>
+            </div>
+          )}
           {isNameEditorOpen && (
             <div
+              ref={nameEditorRef}
               id="greeting-name-editor"
               className={`absolute right-0 mt-2 w-60 rounded-2xl shadow-xl ring-1 p-4 flex flex-col gap-3 ${isDarkMode
                 ? 'bg-[#141414] text-white ring-white/10'
@@ -3133,6 +3363,7 @@ export default function Home() {
                       removeAppCardBorders={removeAppCardBorders}
                       appCardSize={appCardSize}
                       onContextMenu={handleContextMenu}
+                      onAppClick={trackAppClick}
                     />
                   ) : (
                     <SortableLinkCard
@@ -3155,6 +3386,7 @@ export default function Home() {
                       removeAppCardBorders={removeAppCardBorders}
                       appCardSize={appCardSize}
                       onContextMenu={handleContextMenu}
+                      onAppClick={trackAppClick}
                     />
                   )
                 ))}
@@ -3860,7 +4092,7 @@ export default function Home() {
 
         {/* Search Bar under widget cards group */}
         {showSearchBar && (
-          <div className={`mt-6 mb-6 relative rounded-2xl p-1.5 sm:p-2 shadow-lg ${searchBarWidth === 'narrow' ? 'max-w-md mx-auto' : searchBarWidth === 'wide' ? 'max-w-4xl mx-auto' : 'max-w-2xl mx-auto'
+          <div className={`mt-6 mb-6 relative rounded-2xl shadow-lg ${compactSearchBar ? 'p-1' : 'p-1.5 sm:p-2'} ${searchBarWidth === 'narrow' ? 'max-w-md mx-auto' : searchBarWidth === 'wide' ? 'max-w-4xl mx-auto' : 'max-w-2xl mx-auto'
             } ${liquidGlassEnabled
               ? 'liquid-surface'
               : glassmorphismEnabled
@@ -3900,7 +4132,7 @@ export default function Home() {
                     }
                   }}
                   placeholder={youtubeSearchMode ? "Search YouTube..." : "Search apps..."}
-                  className={`w-full px-2 py-1.5 text-xs rounded-full border-0 bg-transparent focus:outline-none focus:ring-0 transition-none ${isDarkMode
+                  className={`w-full ${compactSearchBar ? 'px-2 py-1 text-xs' : 'px-2 py-1.5 text-xs'} rounded-full border-0 bg-transparent focus:outline-none focus:ring-0 transition-none ${isDarkMode
                     ? 'text-white placeholder-gray-400'
                     : 'text-gray-900 placeholder-gray-500'
                     }`}
@@ -3909,12 +4141,12 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => submitSearch(highlightIndex >= 0 ? searchSuggestions[highlightIndex] : searchTerm)}
-                className={`px-3 py-1.5 rounded-full text-sm font-semibold bg-transparent ring-0 transition-none ${isDarkMode ? 'text-white/80' : 'text-gray-800/80'
+                className={`${compactSearchBar ? 'px-2 py-1' : 'px-3 py-1.5'} rounded-full text-sm font-semibold bg-transparent ring-0 transition-none ${isDarkMode ? 'text-white/80' : 'text-gray-800/80'
                   }`}
                 title="Search"
                 aria-label="Search"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`${compactSearchBar ? 'w-3 h-3' : 'w-3.5 h-3.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
                 </svg>
               </button>
@@ -4006,6 +4238,7 @@ export default function Home() {
         </button>
 
         {/* Quick Add Favorite App Button (left of Settings) */}
+        {isEditModalOpen && (
         <div className="relative">
           <button
             onClick={quickAddFavoriteApp}
@@ -4023,8 +4256,10 @@ export default function Home() {
             </svg>
           </button>
         </div>
+        )}
 
         {/* Halite Folder Button */}
+        {isEditModalOpen && (
         <button
           onClick={openHaliteModal}
           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
@@ -4043,20 +4278,19 @@ export default function Home() {
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         </button>
+        )}
 
         {/* Settings Button */}
         <button
-          onClick={() => {
-            setIsSidebarOpen(prev => !prev);
-          }}
+          onClick={() => setIsSidebarOpen(true)}
           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
             : glassmorphismEnabled
               ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
               : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
             } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
-          title="Dashboard Settings"
-          aria-label="Dashboard Settings"
+          title="Settings"
+          aria-label="Settings"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -4130,6 +4364,8 @@ export default function Home() {
             }
           }
         }}
+        backgroundBlur={backgroundBlur}
+        onSetBackgroundBlur={(value: number) => setBackgroundBlur(value)}
         glassmorphismEnabled={glassmorphismEnabled}
         onToggleGlassmorphism={() => {
           setGlassmorphismEnabled(prev => {
@@ -4217,6 +4453,8 @@ export default function Home() {
             console.log('💾 Search bar width saved immediately:', width);
           }
         }}
+        compactSearchBar={compactSearchBar}
+        onToggleCompactSearchBar={() => setCompactSearchBar(prev => !prev)}
 
         monochromeIcons={monochromeIcons}
         appCardBorderRadius={appCardBorderRadius}
@@ -4297,6 +4535,33 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        apps={apps}
+        isDarkMode={isDarkMode}
+        onOpenApp={(app) => {
+          if (typeof window !== 'undefined') {
+            window.open(app.href, '_blank');
+          }
+        }}
+        onOpenSettings={() => setIsSidebarOpen(true)}
+        onToggleTheme={() => setIsDarkMode(prev => !prev)}
+        onOpenStatistics={() => setIsStatisticsOpen(true)}
+      />
+
+      {/* Usage Statistics */}
+      <UsageStatistics
+        isOpen={isStatisticsOpen}
+        onClose={() => setIsStatisticsOpen(false)}
+        apps={apps}
+        appClickCounts={appClickCounts}
+        appLastClicked={appLastClicked}
+        totalTimeSpent={totalTimeSpent}
+        isDarkMode={isDarkMode}
+      />
 
     </main>
   );
