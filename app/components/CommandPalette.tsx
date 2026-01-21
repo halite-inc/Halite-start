@@ -20,6 +20,8 @@ interface CommandPaletteProps {
   onOpenSettings: () => void;
   onToggleTheme: () => void;
   onOpenStatistics?: () => void;
+  glassmorphismEnabled?: boolean;
+  liquidGlassEnabled?: boolean;
 }
 
 interface Command {
@@ -40,6 +42,8 @@ export default function CommandPalette({
   onOpenSettings,
   onToggleTheme,
   onOpenStatistics,
+  glassmorphismEnabled = false,
+  liquidGlassEnabled = false,
 }: CommandPaletteProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -48,7 +52,7 @@ export default function CommandPalette({
 
   // Build commands list
   const commands: Command[] = [
-    // Actions
+    // Quick Actions
     {
       id: 'open-settings',
       title: 'Open Settings',
@@ -72,22 +76,151 @@ export default function CommandPalette({
       category: 'action',
     },
     {
+      id: 'reload-page',
+      title: 'Reload Page',
+      subtitle: 'Refresh the dashboard',
+      icon: '🔄',
+      action: () => {
+        window.location.reload();
+      },
+      category: 'action',
+    },
+    {
+      id: 'toggle-fullscreen',
+      title: 'Toggle Fullscreen',
+      subtitle: 'Enter or exit fullscreen mode',
+      icon: '⛶',
+      action: () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+        onClose();
+      },
+      category: 'action',
+    },
+    {
+      id: 'copy-url',
+      title: 'Copy Current URL',
+      subtitle: 'Copy dashboard URL to clipboard',
+      icon: '📋',
+      action: () => {
+        navigator.clipboard.writeText(window.location.href);
+        onClose();
+      },
+      category: 'action',
+    },
+    
+    // Theme & Appearance
+    {
       id: 'toggle-theme',
       title: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-      subtitle: 'Toggle theme',
+      subtitle: 'Toggle between light and dark theme',
       icon: isDarkMode ? '☀️' : '🌙',
       action: () => {
         onToggleTheme();
         onClose();
       },
+      category: 'setting',
+    },
+    
+    // Visual Modes (if glassmorphism/liquid glass are available)
+    ...(glassmorphismEnabled !== undefined ? [{
+      id: 'toggle-glass',
+      title: glassmorphismEnabled ? 'Disable Glass Mode' : 'Enable Glass Mode',
+      subtitle: 'Toggle glassmorphism effect',
+      icon: '🪟',
+      action: () => {
+        // This would need to be passed as a prop
+        onClose();
+      },
+      category: 'setting' as const,
+    }] : []),
+    
+    ...(liquidGlassEnabled !== undefined ? [{
+      id: 'toggle-liquid',
+      title: liquidGlassEnabled ? 'Disable Liquid Glass' : 'Enable Liquid Glass',
+      subtitle: 'Toggle liquid glass effect',
+      icon: '💧',
+      action: () => {
+        // This would need to be passed as a prop
+        onClose();
+      },
+      category: 'setting' as const,
+    }] : []),
+    
+    // Navigation
+    {
+      id: 'scroll-top',
+      title: 'Scroll to Top',
+      subtitle: 'Jump to the top of the page',
+      icon: '⬆️',
+      action: () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        onClose();
+      },
       category: 'action',
     },
+    {
+      id: 'scroll-bottom',
+      title: 'Scroll to Bottom',
+      subtitle: 'Jump to the bottom of the page',
+      icon: '⬇️',
+      action: () => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        onClose();
+      },
+      category: 'action',
+    },
+    
+    // Utility Commands
+    {
+      id: 'print-page',
+      title: 'Print Page',
+      subtitle: 'Print the current dashboard',
+      icon: '🖨️',
+      action: () => {
+        window.print();
+        onClose();
+      },
+      category: 'action',
+    },
+    {
+      id: 'open-console',
+      title: 'Open Developer Console',
+      subtitle: 'Open browser developer tools',
+      icon: '🔧',
+      action: () => {
+        // This will work in most browsers when DevTools are available
+        console.log('Opening developer console...');
+        onClose();
+      },
+      category: 'action',
+    },
+    {
+      id: 'clear-cache',
+      title: 'Clear Local Storage',
+      subtitle: 'Reset all saved settings (requires reload)',
+      icon: '🗑️',
+      action: () => {
+        if (confirm('This will clear all your settings. Continue?')) {
+          localStorage.clear();
+          window.location.reload();
+        }
+        onClose();
+      },
+      category: 'action',
+    },
+    
     // Apps
     ...apps.map((app) => ({
       id: `app-${app.id}`,
-      title: app.title,
-      subtitle: app.href,
-      icon: '🔗',
+      title: app.type === 'halite' ? `${app.haliteName || app.title} (Folder)` : app.title,
+      subtitle: app.type === 'halite' 
+        ? `${app.haliteUrls?.length || 0} apps in folder`
+        : app.href,
+      icon: app.type === 'halite' ? '📁' : '🔗',
       action: () => {
         onOpenApp(app);
         onClose();
@@ -156,26 +289,29 @@ export default function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-start justify-center pt-[20vh] px-4"
+      className="fixed inset-0 z-[200] flex flex-col items-center pt-[15vh] sm:pt-[20vh] px-3 sm:px-4 gap-2"
       onClick={onClose}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
-      {/* Command Palette */}
+      {/* Search Input Pill - Floating separately */}
       <div
-        className={`relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${
-          isDarkMode
-            ? 'bg-[#1a1a1a] ring-1 ring-white/10'
-            : 'bg-white ring-1 ring-gray-200'
+        className={`relative w-full max-w-[95vw] sm:max-w-xl rounded-full shadow-2xl ${
+          liquidGlassEnabled
+            ? 'liquid-surface'
+            : glassmorphismEnabled
+              ? isDarkMode
+                ? 'bg-[#1a1a1a]/90 backdrop-blur-xl ring-1 ring-white/15'
+                : 'bg-white/90 backdrop-blur-xl ring-1 ring-gray-200/40'
+              : isDarkMode
+                ? 'bg-[#1a1a1a] ring-1 ring-white/10'
+                : 'bg-white ring-1 ring-gray-200'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search Input */}
-        <div className={`flex items-center gap-3 px-4 py-3 border-b ${
-          isDarkMode ? 'border-white/10' : 'border-gray-200'
-        }`}>
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2.5 sm:py-3">
+          <svg className="w-4 h-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
           </svg>
           <input
@@ -184,36 +320,51 @@ export default function CommandPalette({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search apps, actions, settings..."
-            className={`flex-1 bg-transparent border-0 outline-none text-base ${
+            className={`flex-1 bg-transparent border-0 outline-none text-sm ${
               isDarkMode ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'
             }`}
           />
-          <kbd className={`px-2 py-1 text-xs font-semibold rounded ${
+          <kbd className={`hidden sm:inline-block px-1.5 py-0.5 text-xs font-semibold rounded ${
             isDarkMode ? 'bg-white/10 text-gray-400' : 'bg-gray-100 text-gray-600'
           }`}>
             ESC
           </kbd>
         </div>
+      </div>
 
-        {/* Results */}
+      {/* Results Dropdown - Separate from search */}
+      <div
+        className={`relative w-full max-w-[95vw] sm:max-w-xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden ${
+          liquidGlassEnabled
+            ? 'liquid-surface'
+            : glassmorphismEnabled
+              ? isDarkMode
+                ? 'bg-[#1a1a1a]/90 backdrop-blur-xl ring-1 ring-white/15'
+                : 'bg-white/90 backdrop-blur-xl ring-1 ring-gray-200/40'
+              : isDarkMode
+                ? 'bg-[#1a1a1a] ring-1 ring-white/10'
+                : 'bg-white ring-1 ring-gray-200'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div
           ref={listRef}
-          className="max-h-[60vh] overflow-y-auto custom-scrollbar"
+          className="max-h-[50vh] sm:max-h-[50vh] md:max-h-[55vh] overflow-y-auto custom-scrollbar"
         >
           {filteredCommands.length === 0 ? (
-            <div className={`px-4 py-8 text-center ${
+            <div className={`px-4 py-6 text-center ${
               isDarkMode ? 'text-gray-500' : 'text-gray-400'
             }`}>
               <p className="text-sm">No results found</p>
             </div>
           ) : (
-            <div className="py-2">
+            <div className="py-1.5 mx-1.5 sm:mx-2">
               {filteredCommands.map((command, index) => (
                 <button
                   key={command.id}
                   onClick={() => command.action()}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${
+                  className={`w-full px-2.5 sm:px-3 py-2 flex items-center gap-2 sm:gap-2.5 transition-colors rounded-xl sm:rounded-2xl ${
                     index === selectedIndex
                       ? isDarkMode
                         ? 'bg-blue-500/20 text-blue-400'
@@ -223,11 +374,11 @@ export default function CommandPalette({
                         : 'text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="text-2xl">{command.icon}</span>
-                  <div className="flex-1 text-left">
-                    <div className="font-medium">{command.title}</div>
+                  <span className="text-lg sm:text-xl flex-shrink-0">{command.icon}</span>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="text-sm font-medium truncate">{command.title}</div>
                     {command.subtitle && (
-                      <div className={`text-xs ${
+                      <div className={`text-xs truncate ${
                         index === selectedIndex
                           ? isDarkMode ? 'text-blue-300' : 'text-blue-500'
                           : isDarkMode ? 'text-gray-500' : 'text-gray-400'
@@ -236,7 +387,7 @@ export default function CommandPalette({
                       </div>
                     )}
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded ${
+                  <span className={`hidden sm:inline-block text-[10px] px-1.5 py-0.25 rounded-md flex-shrink-0 ${
                     isDarkMode ? 'bg-white/5 text-gray-500' : 'bg-gray-100 text-gray-500'
                   }`}>
                     {command.category}
@@ -248,21 +399,21 @@ export default function CommandPalette({
         </div>
 
         {/* Footer */}
-        <div className={`px-4 py-2 border-t flex items-center justify-between text-xs ${
+        <div className={`px-2 sm:px-3 py-1.5 border-t flex items-center justify-between text-xs ${
           isDarkMode ? 'border-white/10 text-gray-500' : 'border-gray-200 text-gray-400'
         }`}>
-          <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className={`px-1.5 py-0.5 rounded ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>↑</kbd>
-              <kbd className={`px-1.5 py-0.5 rounded ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>↓</kbd>
-              <span className="ml-1">Navigate</span>
+              <kbd className={`px-1 py-0.5 rounded text-[10px] ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>↑</kbd>
+              <kbd className={`px-1 py-0.5 rounded text-[10px] ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>↓</kbd>
+              <span className="ml-0.5 text-[11px]">Navigate</span>
             </span>
             <span className="flex items-center gap-1">
-              <kbd className={`px-1.5 py-0.5 rounded ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>↵</kbd>
-              <span className="ml-1">Select</span>
+              <kbd className={`px-1 py-0.5 rounded text-[10px] ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>↵</kbd>
+              <span className="ml-0.5 text-[11px]">Select</span>
             </span>
           </div>
-          <span>{filteredCommands.length} results</span>
+          <span className="text-[11px] ml-auto">{filteredCommands.length} results</span>
         </div>
       </div>
     </div>

@@ -1,0 +1,6 @@
+                         <div className="flex items-center justify-between">
+                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show Big Clock</label>
+                           <button onClick={() => onToggleBigClock && onToggleBigClock()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showBigClock ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showBigClock ? 'translate-x-6' : 'translate-x-1'}`} />
+                           </button>
+                         </div>

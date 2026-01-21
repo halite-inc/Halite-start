@@ -25,6 +25,7 @@ import LeftSidebar from './components/LeftSidebar';
 import CommandPalette from './components/CommandPalette';
 import UsageStatistics from './components/UsageStatistics';
 import { getImageObjectUrl, deleteImageBlob, saveImageBlob } from './lib/idb';
+import { LiquidGlassCard, LiquidGlassGlobalCanvas } from './components/LiquidGlass';
 import React from 'react';
 
 interface App {
@@ -103,7 +104,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none', onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; onAppClick?: (appId: string) => void }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none', appCardBackgroundColor, onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; onAppClick?: (appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -112,6 +113,22 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
     transition,
     isDragging,
   } = useSortable({ id: app.id, disabled: !isEditModalOpen });
+
+  const [hovered, setHovered] = useState(false);
+  const [iconSrc, setIconSrc] = useState<string | undefined>(app.icon);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (app.icon?.startsWith('idb:')) {
+      const key = app.icon.replace('idb:', '');
+      getImageObjectUrl(key).then(url => {
+        if (isMounted && url) setIconSrc(url);
+      });
+    } else {
+      setIconSrc(app.icon);
+    }
+    return () => { isMounted = false; };
+  }, [app.icon]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -173,11 +190,13 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
     >
       {/* App Card */}
       <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`${currentSizeClass} ${appCardBorderRadius === 'small' ? 'rounded-lg' : appCardBorderRadius === 'full' ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${(backgroundImage || removeAppCardBorders) ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border'} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
           } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
           } ${liquidGlassEnabled
-            ? 'liquid-surface liquid-pressable'
+            ? '' // handled by component
             : glassmorphismEnabled
               ? (isDark
                 ? `bg-black/20 backdrop-blur-md text-white hover:bg-black/30 ${removeAppCardBorders ? '' : 'border-[1.5px] border-white/15 hover:border-white/25'} shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]`
@@ -186,7 +205,10 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
                 ? `bg-black text-white hover:bg-gray-900 ${removeAppCardBorders ? '' : 'border border-[#2C2D2D]'} shadow-[inset_0_0_20px_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[inset_0_0_25px_rgba(255,255,255,0.2),0_2px_6px_rgba(0,0,0,0.4)]`
                 : `bg-white text-black hover:bg-white ${removeAppCardBorders ? '' : 'border border-[#e0e0e0]'} shadow-[0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_4px_rgba(0,0,0,0.08)]`)
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}${extraClasses} ${hoverClass}`}
-        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+        style={{ 
+          animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined,
+          ...(appCardBackgroundColor ? { backgroundColor: appCardBackgroundColor } : {})
+        }}
         onClick={(e) => {
           if (!isEditModalOpen) {
             onAppClick?.(app.id);
@@ -207,17 +229,17 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
         }}
       >
         {liquidGlassEnabled && (
-          <div className="pointer-events-none absolute inset-0 rounded-2xl" />
+          <LiquidGlassCard isDark={isDark} isHovered={hovered} />
         )}
         {/* Inner Shadow Overlay */}
         {appCardInnerShadow !== 'none' && (
           <div className={`pointer-events-none absolute inset-0 rounded-inherit ${currentInnerShadowClass}`} style={{ borderRadius: 'inherit' }} />
         )}
         {/* App Icon */}
-        <div>
-          {app.icon ? (
+        <div className="relative z-10">
+          {iconSrc ? (
             <img
-              src={app.icon}
+              src={iconSrc}
               alt={`${app.title} icon`}
               className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm ${iconBgClass} ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
               onError={(e) => {
@@ -228,7 +250,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
             />
           ) : null}
           {/* Fallback icon if no image or image fails to load */}
-          <div className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm flex items-center justify-center text-lg ${iconBgClass} ${app.icon ? 'hidden' : ''} ${isDark ? 'text-gray-600' : 'text-gray-600'
+          <div className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm flex items-center justify-center text-lg ${iconBgClass} ${iconSrc ? 'hidden' : ''} ${isDark ? 'text-gray-600' : 'text-gray-600'
             }`}>
             🔗
           </div>
@@ -251,7 +273,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
       {isEditModalOpen && (
         <button
           onClick={() => onRemove(app.id)}
-          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
+          className="absolute -top-2 -right-2 bg-red-500/60 backdrop-blur-xl hover:bg-red-600/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-all duration-200 z-10 ring-1 ring-white/30 shadow-[0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
           title="Remove app"
         >
           ×
@@ -261,7 +283,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
   );
 }
 
-function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none', onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; onAppClick?: (appId: string) => void }) {
+function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none', appCardBackgroundColor, onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; onAppClick?: (appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -270,6 +292,8 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
     transition,
     isDragging,
   } = useSortable({ id: app.id, disabled: !isEditModalOpen });
+
+  const [hovered, setHovered] = useState(false);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -334,11 +358,13 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
     >
       {/* Halite Card */}
       <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`${currentSizeClass} ${appCardBorderRadius === 'small' ? 'rounded-lg' : appCardBorderRadius === 'full' ? 'rounded-full' : 'rounded-2xl'} transition duration-300 flex flex-col items-center justify-center text-center relative overflow-hidden ${(backgroundImage || removeAppCardBorders) ? 'border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)]' : 'border'} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
           } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
           } ${liquidGlassEnabled
-            ? 'liquid-surface liquid-pressable'
+            ? '' // handled by component
             : glassmorphismEnabled
               ? (isDark
                 ? `bg-black/20 backdrop-blur-md text-white hover:bg-black/30 ${removeAppCardBorders ? '' : 'border-[1.5px] border-white/15 hover:border-white/25'} shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]`
@@ -347,7 +373,10 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
                 ? `bg-black text-white hover:bg-gray-900 ${removeAppCardBorders ? '' : 'border border-[#2C2D2D]'} shadow-[inset_0_0_20px_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.3)] hover:shadow-[inset_0_0_25px_rgba(255,255,255,0.2),0_2px_6px_rgba(0,0,0,0.4)]`
                 : `bg-white text-black hover:bg-white ${removeAppCardBorders ? '' : 'border border-[#e0e0e0]'} shadow-[0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_4px_rgba(0,0,0,0.08)]`)
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${hoverClass}`}
-        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+        style={{ 
+          animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined,
+          ...(appCardBackgroundColor ? { backgroundColor: appCardBackgroundColor } : {})
+        }}
         onClick={handleClick}
         onContextMenu={(e) => {
           if (!isEditModalOpen) {
@@ -356,7 +385,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
         }}
       >
         {liquidGlassEnabled && (
-          <div className="pointer-events-none absolute inset-0 rounded-2xl" />
+          <LiquidGlassCard isDark={isDark} isHovered={hovered} />
         )}
         {/* Inner Shadow Overlay */}
         {appCardInnerShadow !== 'none' && (
@@ -364,7 +393,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
         )}
         {/* Dynamic Grid of Mini Icons (2x2 diagonal, 3x1, or 2x2) */}
         {haliteUrls.length === 2 ? (
-          <div className="w-full h-full p-1 relative">
+          <div className="w-full h-full p-1 relative z-10">
             {/* First icon - top left */}
             <div className="absolute top-0 left-0 w-1/2 h-1/2 flex items-center justify-center relative overflow-hidden rounded">
               {haliteIcons[0] && haliteIcons[0].trim() !== '' ? (
@@ -421,7 +450,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
             </div>
           </div>
         ) : (
-          <div className="w-full h-full p-1 grid gap-0.5 grid-cols-2 grid-rows-2">
+          <div className="w-full h-full p-1 grid gap-0.5 grid-cols-2 grid-rows-2 relative z-10">
             {haliteUrls.map((url, index) => {
               const hasIcon = haliteIcons[index] && haliteIcons[index].trim() !== '';
               return (
@@ -473,7 +502,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
       {isEditModalOpen && (
         <button
           onClick={() => onRemove(app.id)}
-          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
+          className="absolute -top-2 -right-2 bg-red-500/60 backdrop-blur-xl hover:bg-red-600/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-all duration-200 z-10 ring-1 ring-white/30 shadow-[0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
           title="Remove app"
         >
           ×
@@ -495,6 +524,8 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
     transition,
     isDragging,
   } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -540,11 +571,13 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
       className={`relative group ${isDragging ? 'z-50' : ''}`}
     >
       <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
           } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
           } ${liquidGlassEnabled
-            ? 'liquid-surface'
+            ? ''
             : glassmorphismEnabled
               ? (isDark
                 ? 'bg-white/10 backdrop-blur-xl backdrop-saturate-150 text-white ring-1 ring-white/15 shadow-[0_10px_28px_rgba(0,0,0,0.30)]'
@@ -555,6 +588,11 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}`}
         style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
       >
+        {liquidGlassEnabled && (
+          <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+            <LiquidGlassCard isDark={isDark} isHovered={hovered} className="rounded-3xl" />
+          </div>
+        )}
         {/* iOS-like sheen and soft highlights */}
         <div className="pointer-events-none absolute -top-10 -left-12 w-28 h-28 rounded-full bg-white/60 blur-3xl opacity-70" />
         <div className="pointer-events-none absolute -bottom-12 -right-14 w-36 h-36 rounded-full bg-white/40 blur-3xl opacity-60" />
@@ -588,7 +626,7 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
       {isEditModalOpen && (
         <button
           onClick={onRemove}
-          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-opacity duration-200 z-10"
+          className="absolute -top-2 -right-2 bg-red-500/60 backdrop-blur-xl hover:bg-red-600/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-all duration-200 z-10 ring-1 ring-white/30 shadow-[0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
           title="Remove widget"
         >
           ×
@@ -611,6 +649,8 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
     transition,
     isDragging,
   } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const fetchLocationAndWeather = async () => {
@@ -711,11 +751,13 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
       className={`relative group ${isDragging ? 'z-50' : ''}`}
     >
       <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
         className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-start justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
           } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
           } ${liquidGlassEnabled
-            ? 'liquid-surface'
+            ? ''
             : glassmorphismEnabled
               ? (isDark
                 ? 'bg-blue-400/20 backdrop-blur-md text-black border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
@@ -727,7 +769,9 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         style={{ animationDelay: isEditModalOpen ? `${(parseInt(widget.id, 10) % 8) * 60}ms` : undefined }}
       >
         {liquidGlassEnabled && (
-          <div className="pointer-events-none absolute inset-0 rounded-3xl" />
+          <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
+            <LiquidGlassCard isDark={isDark} isHovered={hovered} className="rounded-3xl" />
+          </div>
         )}
         {/* Rain droplet effect */}
         <div className="absolute inset-0 opacity-20">
@@ -744,8 +788,8 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
             }`}>
             {mounted ? (loading ? 'Loading...' : error ? 'Location unavailable' : weather.location) : 'Loading...'}
           </div>
-          <div className="flex items-center gap-1 mb-1">
-            <div className="text-xs">
+          <div className="flex items-center gap-1.5 relative z-10">
+          {/* Month */}<div className="text-xs">
               {mounted ? (loading ? '⏳' : error ? '⚠️' :
                 weather.condition === 'Sunny' ? '☀️' :
                   weather.condition === 'Cloudy' ? '☁️' :
@@ -1941,6 +1985,7 @@ export default function Home() {
   const [removeAppCardBorders, setRemoveAppCardBorders] = useState<boolean>(false);
   const [appCardSize, setAppCardSize] = useState<'small' | 'normal' | 'large'>('normal');
   const [appCardInnerShadow, setAppCardInnerShadow] = useState<'none' | 'small' | 'medium' | 'large'>('none');
+  const [appCardBackgroundColor, setAppCardBackgroundColor] = useState<string>('');
 
   const [youtubeSearchMode, setYoutubeSearchMode] = useState<boolean>(false);
   const [haliteFolderName, setHaliteFolderName] = useState<string>('');
@@ -1989,6 +2034,7 @@ export default function Home() {
   const [isGreetingDropdownOpen, setIsGreetingDropdownOpen] = useState<boolean>(false);
   const [nameInput, setNameInput] = useState<string>('user');
   const nameEditorRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const greetingDropdownRef = useRef<HTMLDivElement | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
@@ -2003,6 +2049,8 @@ export default function Home() {
 
   const [showTopTime, setShowTopTime] = useState<boolean>(true);
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
+  const [showBigClock, setShowBigClock] = useState<boolean>(false);
+  const [bigClockTime, setBigClockTime] = useState<Date>(new Date());
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
@@ -2179,7 +2227,14 @@ export default function Home() {
     return () => window.clearInterval(intervalId);
   }, [showTopTime]);
 
-
+  useEffect(() => {
+    if (!showBigClock) return;
+    setBigClockTime(new Date());
+    const intervalId = window.setInterval(() => {
+      setBigClockTime(new Date());
+    }, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [showBigClock]);
 
   // Load saved state on mount to avoid hydration mismatch
   useEffect(() => {
@@ -2479,6 +2534,20 @@ export default function Home() {
       if (savedGreetingStyle === 'hi' || savedGreetingStyle === 'welcome' || savedGreetingStyle === 'time-based') {
         setGreetingStyle(savedGreetingStyle);
         console.log('✅ Greeting style loaded:', savedGreetingStyle);
+      }
+
+      // Load show top time
+      const savedShowTopTime = localStorage.getItem('showTopTime');
+      if (savedShowTopTime !== null) {
+        setShowTopTime(savedShowTopTime === 'true');
+        console.log('✅ Show top time loaded:', savedShowTopTime === 'true');
+      }
+
+      // Load show big clock
+      const savedShowBigClock = localStorage.getItem('showBigClock');
+      if (savedShowBigClock !== null) {
+        setShowBigClock(savedShowBigClock === 'true');
+        console.log('✅ Show big clock loaded:', savedShowBigClock === 'true');
       }
 
       console.log('✅ All settings loaded successfully');
@@ -2954,7 +3023,7 @@ export default function Home() {
     // Add favicon URL to the app
     const appWithIcon = {
       ...app,
-      icon: getFaviconUrl(app.href)
+      icon: app.icon || getFaviconUrl(app.href)
     };
     setApps([...apps, appWithIcon]);
   };
@@ -3007,6 +3076,11 @@ export default function Home() {
   };
 
   const removeApp = (id: string) => {
+    const appToRemove = apps.find(app => app.id === id);
+    if (appToRemove?.icon?.startsWith('idb:')) {
+      const key = appToRemove.icon.replace('idb:', '');
+      deleteImageBlob(key).catch(console.error);
+    }
     setApps(apps.filter(app => app.id !== id));
   };
 
@@ -3146,6 +3220,7 @@ export default function Home() {
 
   return (
     <main suppressHydrationWarning
+      ref={containerRef}
       className={`min-h-screen px-4 py-8 transition-all duration-300 ${backgroundImage || (!isDarkMode && !backgroundImage) ? 'bg-cover bg-center bg-no-repeat' : ''
         } ${isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white'} ${backgroundBlur && backgroundImage ? 'relative' : ''}`}
       style={{
@@ -3161,9 +3236,10 @@ export default function Home() {
         '--liquid-reflection-rgb': liquidReflectionRgb,
       } as React.CSSProperties}
     >
+      {liquidGlassEnabled && <LiquidGlassGlobalCanvas eventSource={containerRef} />}
       {/* Background blur overlay */}
       {backgroundBlur > 0 && backgroundImage && (
-        <div 
+        <div
           className="fixed inset-0 pointer-events-none z-0"
           style={{
             backdropFilter: `blur(${backgroundBlur}px)`,
@@ -3281,7 +3357,7 @@ export default function Home() {
                 : 'bg-white text-gray-900 ring-gray-200'
                 }`}
             >
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col relative z-10 w-full px-3">
                 <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Update greeting</span>
                 <input
                   ref={nameInputRef}
@@ -3325,6 +3401,29 @@ export default function Home() {
         </div>
       </div>
       <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
+        {/* Big Clock Display - Above App Cards */}
+        {showBigClock && (
+          <div className="mb-8 flex justify-center" suppressHydrationWarning>
+            <div className={`inline-flex items-center justify-center px-12 py-8 rounded-3xl transition-all duration-300 ${
+              backgroundImage
+                ? 'bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] ring-1 ring-white/20'
+                : isDarkMode
+                  ? 'bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] ring-1 ring-white/15'
+                  : 'bg-white shadow-[0_4px_24px_rgba(0,0,0,0.08)] ring-1 ring-gray-200'
+              }`}>
+              <span className={`text-7xl sm:text-8xl md:text-9xl font-bold tracking-tight ${
+                backgroundImage
+                  ? 'text-white'
+                  : isDarkMode
+                    ? 'text-white'
+                    : 'text-gray-900'
+                }`}>
+                {bigClockTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+              </span>
+            </div>
+          </div>
+        )}
+
 
         {/* Apps Grid with Drag and Drop */}
         <DndContext
@@ -3362,6 +3461,8 @@ export default function Home() {
                       appCardBorderRadius={appCardBorderRadius}
                       removeAppCardBorders={removeAppCardBorders}
                       appCardSize={appCardSize}
+                      appCardInnerShadow={appCardInnerShadow}
+                      appCardBackgroundColor={appCardBackgroundColor}
                       onContextMenu={handleContextMenu}
                       onAppClick={trackAppClick}
                     />
@@ -3385,6 +3486,8 @@ export default function Home() {
                       appCardBorderRadius={appCardBorderRadius}
                       removeAppCardBorders={removeAppCardBorders}
                       appCardSize={appCardSize}
+                      appCardInnerShadow={appCardInnerShadow}
+                      appCardBackgroundColor={appCardBackgroundColor}
                       onContextMenu={handleContextMenu}
                       onAppClick={trackAppClick}
                     />
@@ -4440,7 +4543,25 @@ export default function Home() {
         liquidReflectionColor={liquidReflectionColor}
         onSetLiquidReflectionColor={(value) => setLiquidReflectionColor(value)}
         showTopTime={showTopTime}
-        onToggleTopTime={() => setShowTopTime(prev => !prev)}
+        onToggleTopTime={() => {
+          setShowTopTime(prev => {
+            const newValue = !prev;
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('showTopTime', newValue.toString());
+            }
+            return newValue;
+          });
+        }}
+        showBigClock={showBigClock}
+        onToggleBigClock={() => {
+          setShowBigClock(prev => {
+            const newValue = !prev;
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('showBigClock', newValue.toString());
+            }
+            return newValue;
+          });
+        }}
 
         greetingStyle={greetingStyle}
         onSetGreetingStyle={(style) => setGreetingStyle(style)}
@@ -4476,65 +4597,107 @@ export default function Home() {
         onSetAppCardSize={setAppCardSize}
         appCardInnerShadow={appCardInnerShadow}
         onSetAppCardInnerShadow={setAppCardInnerShadow}
+        appCardBackgroundColor={appCardBackgroundColor}
+        onSetAppCardBackgroundColor={(color) => {
+          setAppCardBackgroundColor(color);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('appCardBackgroundColor', color);
+          }
+        }}
       />
 
       {/* Context Menu */}
-      {contextMenu && (
-        <div
-          data-context-menu
-          className="fixed z-[100]"
-          style={{
-            left: `${contextMenu.x}px`,
-            top: `${contextMenu.y}px`,
-          }}
-          onClick={(e) => e.stopPropagation()}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
+      {contextMenu && (() => {
+        // Find the app to check if it's a folder
+        const clickedApp = apps.find(app => app.id === contextMenu.appId);
+        const isFolder = clickedApp?.type === 'halite';
+        
+        return (
           <div
-            className={`min-w-[160px] rounded-xl shadow-xl ring-1 overflow-hidden ${isDarkMode
-              ? glassmorphismEnabled
-                ? 'bg-[#2B2B2B]/90 backdrop-blur-md ring-white/20'
-                : liquidGlassEnabled
-                  ? 'liquid-surface'
-                  : 'bg-[#1e1e1e] ring-white/10'
-              : glassmorphismEnabled
-                ? 'bg-white/90 backdrop-blur-md ring-gray-200/40'
-                : liquidGlassEnabled
-                  ? 'liquid-surface'
-                  : 'bg-white ring-gray-200'
-              }`}
+            data-context-menu
+            className="fixed z-[100]"
+            style={{
+              left: `${contextMenu.x}px`,
+              top: `${contextMenu.y}px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenInNewTab();
-              }}
-              className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
-                ? 'text-white hover:bg-white/10'
-                : 'text-gray-800 hover:bg-gray-100'
+            <div
+              className={`min-w-[160px] rounded-xl shadow-xl ring-1 overflow-hidden ${isDarkMode
+                ? glassmorphismEnabled
+                  ? 'bg-[#2B2B2B]/90 backdrop-blur-md ring-white/20'
+                  : liquidGlassEnabled
+                    ? 'liquid-surface'
+                    : 'bg-[#1e1e1e] ring-white/10'
+                : glassmorphismEnabled
+                  ? 'bg-white/90 backdrop-blur-md ring-gray-200/40'
+                  : liquidGlassEnabled
+                    ? 'liquid-surface'
+                    : 'bg-white ring-gray-200'
                 }`}
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              {/* Edit option - only show for folders (halite type) */}
+              {isFolder && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditModalOpen(true);
+                    setContextMenu(null);
+                  }}
+                  className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
+                    ? 'text-white hover:bg-white/10'
+                    : 'text-gray-800 hover:bg-gray-100'
+                    }`}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Edit Folder
+                </button>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenInNewTab();
+                }}
+                className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
+                  ? 'text-white hover:bg-white/10'
+                  : 'text-gray-800 hover:bg-gray-100'
+                  }`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-              Open in new tab
-            </button>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+                Open in new tab
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Command Palette */}
       <CommandPalette
@@ -4542,6 +4705,8 @@ export default function Home() {
         onClose={() => setIsCommandPaletteOpen(false)}
         apps={apps}
         isDarkMode={isDarkMode}
+        glassmorphismEnabled={glassmorphismEnabled}
+        liquidGlassEnabled={liquidGlassEnabled}
         onOpenApp={(app) => {
           if (typeof window !== 'undefined') {
             window.open(app.href, '_blank');

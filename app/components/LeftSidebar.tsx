@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { saveImageBlob, deleteImageBlob, getImageObjectUrl } from '../lib/idb';
+import { LiquidGlassCard } from './LiquidGlass';
 
 interface App {
   id: string;
@@ -71,6 +72,8 @@ interface LeftSidebarProps {
   onSetLiquidReflectionColor: (color: string) => void;
   showTopTime?: boolean;
   onToggleTopTime?: () => void;
+  showBigClock?: boolean;
+  onToggleBigClock?: () => void;
   greetingStyle?: 'hi' | 'welcome' | 'time-based';
   onSetGreetingStyle?: (style: 'hi' | 'welcome' | 'time-based') => void;
 
@@ -90,6 +93,8 @@ interface LeftSidebarProps {
   onSetAppCardSize?: (size: 'small' | 'normal' | 'large') => void;
   appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large';
   onSetAppCardInnerShadow?: (shadow: 'none' | 'small' | 'medium' | 'large') => void;
+  appCardBackgroundColor?: string;
+  onSetAppCardBackgroundColor?: (color: string) => void;
 }
 
 interface ModernDropdownProps {
@@ -220,7 +225,7 @@ const NavButton = ({ label, icon, isActive, onClick, isDarkMode, iconColor }: { 
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+      className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${isActive
         ? isDarkMode
           ? 'bg-blue-600/20 text-blue-400'
           : 'bg-blue-50 text-blue-600'
@@ -229,10 +234,10 @@ const NavButton = ({ label, icon, isActive, onClick, isDarkMode, iconColor }: { 
           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
         }`}
     >
-      <span className={`flex items-center justify-center w-7 h-7 rounded-lg ${bgClass} ${iconColor || 'text-gray-500'}`}>
+      <span className={`flex items-center justify-center w-6 h-6 rounded-md ${bgClass} ${iconColor || 'text-gray-500'}`}>
         {icon}
       </span>
-      <span>{label}</span>
+      <span className="truncate">{label}</span>
     </button>
   );
 };
@@ -298,6 +303,8 @@ export default function LeftSidebar({
   // onToggleBookmarksParagraph,
   showTopTime,
   onToggleTopTime,
+  showBigClock,
+  onToggleBigClock,
   // fluidModeEnabled,
   // onToggleFluidMode,
   greetingStyle,
@@ -319,7 +326,10 @@ export default function LeftSidebar({
   appCardSize,
   onSetAppCardSize,
   appCardInnerShadow,
+
   onSetAppCardInnerShadow,
+  appCardBackgroundColor,
+  onSetAppCardBackgroundColor,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
@@ -329,6 +339,9 @@ export default function LeftSidebar({
   const [bgError, setBgError] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   const previewImageUrlRef = useRef<string>('');
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [customIconFile, setCustomIconFile] = useState<File | null>(null);
+  const [customIconError, setCustomIconError] = useState<string | null>(null);
 
   // Section Navigation
   const [openSection, setOpenSection] = useState<'widgets' | 'background' | 'addApp' | 'bookmarks' | 'layout' | 'search' | 'customization' | 'accessibility' | 'typography' | 'animations' | null>('layout');
@@ -475,16 +488,86 @@ export default function LeftSidebar({
     };
   }, [backgroundImage]);
 
-  const handleAddApp = () => {
+  // Draggable Sidebar Logic
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const posStartRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (isOpen) {
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [isOpen]);
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) return;
+    setIsDragging(true);
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    posStartRef.current = { ...position };
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      setPosition({
+        x: posStartRef.current.x + dx,
+        y: posStartRef.current.y + dy
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  const handleAddApp = async () => {
     if (newApp.title && newApp.href) {
+      let iconUrl = undefined;
+      if (customIconFile) {
+        const key = `icon-${Date.now()}`;
+        await saveImageBlob(key, customIconFile);
+        iconUrl = `idb:${key}`;
+      }
+
       const app: App = {
         id: Date.now().toString(),
         title: newApp.title,
         href: newApp.href.startsWith('http') ? newApp.href : `https://${newApp.href}`,
+        icon: iconUrl,
       };
       onAddApp(app);
       setNewApp({ title: '', href: '' });
+      setCustomIconFile(null);
+      setCustomIconError(null);
     }
+  };
+
+  const handleIconUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setCustomIconError(null);
+    if (!file.type.startsWith('image/')) {
+      setCustomIconError('Please upload a valid image file.');
+      return;
+    }
+    const maxBytes = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxBytes) {
+      setCustomIconError('Image is too large. Max 2MB.');
+      return;
+    }
+    setCustomIconFile(file);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -609,25 +692,34 @@ export default function LeftSidebar({
       )}
       {/* Right Sidebar */}
       <div
+        ref={sidebarRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed right-4 top-40 bottom-32 w-96 sm:w-[42rem] rounded-2xl overflow-hidden transform transition-all duration-300 ease-in-out z-50 ${glassmorphismEnabled
+        className={`fixed inset-x-2 sm:inset-x-auto sm:right-4 top-24 sm:top-52 bottom-24 sm:bottom-48 w-auto sm:w-[26rem] md:w-[44rem] rounded-2xl overflow-hidden transform ${isDragging ? 'transition-none' : 'transition-all duration-300'} ease-in-out z-50 ${glassmorphismEnabled
           ? isDarkMode
             ? 'bg-[#2B2B2B]/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
             : 'bg-white/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
           : liquidGlassEnabled
-            ? 'liquid-elevated'
+            ? ''
             : isDarkMode ? 'bg-[#2B2B2B] shadow-[0_8px_24px_rgba(0,0,0,0.35)]' : 'bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]'
-          } ${isOpen ? 'translate-x-0' : 'translate-x-[calc(100%+1rem)]'
           }`}
+        style={{
+          transform: isOpen
+            ? `translate(${position.x}px, ${position.y}px)`
+            : 'translateX(calc(100% + 1rem))'
+        }}
       >
-        <div className="flex flex-col h-full">
+        {liquidGlassEnabled && <LiquidGlassCard isDark={isDarkMode} isHovered={false} className="rounded-2xl" />}
+        <div className="flex flex-col h-full relative z-10">
           {/* Header */}
-          <div className={`sticky top-0 z-10 flex items-center justify-between p-3 ${isDarkMode
+          <div 
+            onMouseDown={handleDragStart}
+            className={`sticky top-0 z-10 flex items-center justify-between p-3 cursor-move select-none ${isDarkMode
             ? 'border-b border-white/10'
             : 'border-b border-gray-200'
-            }`}>
+            }`}
+          >
             <h2 id="settings-title" className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
               Dashboard Settings
@@ -669,7 +761,7 @@ export default function LeftSidebar({
           {/* Content Layout */}
           <div className="flex-1 flex overflow-hidden min-h-0">
             {/* Side Navigation */}
-            <div className={`w-[170px] shrink-0 flex flex-col gap-1 p-2 border-r overflow-y-auto custom-scrollbar ${
+            <div className={`w-[140px] sm:w-[200px] shrink-0 flex flex-col gap-1 p-2 border-r overflow-y-auto custom-scrollbar ${
               isDarkMode ? 'border-white/10' : 'border-gray-200'
             }`}>
               <NavButton
@@ -846,6 +938,31 @@ export default function LeftSidebar({
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${removeAppCardBorders ? 'translate-x-6' : 'translate-x-1'}`} />
                           </button>
                         </div>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Background</label>
+                          <div className="flex items-center gap-2">
+                             <button 
+                               onClick={() => onSetAppCardBackgroundColor && onSetAppCardBackgroundColor('')}
+                               className={`px-2 py-1 text-xs rounded border ${!appCardBackgroundColor ? (isDarkMode ? 'bg-white/10 border-white/20 text-white' : 'bg-gray-100 border-gray-300 text-gray-800') : (isDarkMode ? 'text-gray-400 border-transparent hover:text-white' : 'text-gray-500 border-transparent hover:text-gray-800')}`}
+                             >
+                               Auto
+                             </button>
+                             <div className="flex items-center gap-2 border rounded-md p-1 border-gray-200 dark:border-white/10">
+                               <input 
+                                 type="color" 
+                                 value={appCardBackgroundColor || '#ffffff'} 
+                                 onChange={(e) => onSetAppCardBackgroundColor && onSetAppCardBackgroundColor(e.target.value)} 
+                                 className="h-6 w-8 rounded cursor-pointer bg-transparent" 
+                               />
+                             </div>
+                          </div>
+                        </div>
+                         <div className="flex items-center justify-between">
+                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show Big Clock</label>
+                           <button onClick={() => onToggleBigClock && onToggleBigClock()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showBigClock ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showBigClock ? 'translate-x-6' : 'translate-x-1'}`} />
+                           </button>
+                         </div>
                      </div>
                   </div>
                 )}
@@ -2001,6 +2118,20 @@ export default function LeftSidebar({
                             : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500/50'
                         }`}
                       />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Custom Icon (Optional)</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleIconUpload}
+                        className={`block w-full text-sm ${isDarkMode
+                          ? 'text-gray-300 file:bg-white/10 file:text-white file:border-white/20 file:hover:bg-white/20'
+                          : 'text-gray-700 file:bg-gray-100 file:text-gray-800 file:border-gray-300 file:hover:bg-gray-200'
+                          } file:rounded-lg file:px-4 file:py-2 file:mr-4 file:border file:cursor-pointer mb-1`}
+                      />
+                      {customIconError && <p className="text-xs text-red-500 mb-2">{customIconError}</p>}
+                      {customIconFile && <p className="text-xs text-green-500 mb-2">Selected: {customIconFile.name}</p>}
                     </div>
                     <button
                       onClick={handleAddApp}
