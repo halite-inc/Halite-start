@@ -2051,6 +2051,10 @@ export default function Home() {
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
   const [showBigClock, setShowBigClock] = useState<boolean>(false);
   const [bigClockTime, setBigClockTime] = useState<Date>(new Date());
+  const [bigClockMarginTop, setBigClockMarginTop] = useState<number>(128);
+  const [bigClockColor, setBigClockColor] = useState<string>('');
+  const [bigClockSize, setBigClockSize] = useState<'small' | 'medium' | 'large' | 'huge'>('medium');
+  const [bigClockGlassMode, setBigClockGlassMode] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
@@ -2333,6 +2337,21 @@ export default function Home() {
         setShowSearchBar(savedShowSearchBar === 'true');
         console.log('✅ Show search bar loaded:', savedShowSearchBar === 'true');
       }
+
+      const savedBigClockMarginTop = localStorage.getItem('bigClockMarginTop');
+      if (savedBigClockMarginTop !== null) {
+        const margin = parseInt(savedBigClockMarginTop, 10);
+        setBigClockMarginTop(isNaN(margin) ? 128 : margin);
+      }
+
+      const savedBigClockColor = localStorage.getItem('bigClockColor');
+      if (savedBigClockColor) setBigClockColor(savedBigClockColor);
+
+      const savedBigClockSize = localStorage.getItem('bigClockSize');
+      if (savedBigClockSize) setBigClockSize(savedBigClockSize as any);
+
+      const savedBigClockGlassMode = localStorage.getItem('bigClockGlassMode');
+      if (savedBigClockGlassMode !== null) setBigClockGlassMode(savedBigClockGlassMode === 'true');
 
       const savedSearchBarWidth = localStorage.getItem('searchBarWidth');
       if (savedSearchBarWidth && (savedSearchBarWidth === 'narrow' || savedSearchBarWidth === 'medium' || savedSearchBarWidth === 'wide')) {
@@ -3403,22 +3422,47 @@ export default function Home() {
       <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
         {/* Big Clock Display - Above App Cards */}
         {showBigClock && (
-          <div className="mb-8 flex justify-center" suppressHydrationWarning>
-            <div className={`inline-flex items-center justify-center px-12 py-8 rounded-3xl transition-all duration-300 ${
-              backgroundImage
-                ? 'bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] ring-1 ring-white/20'
-                : isDarkMode
-                  ? 'bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] ring-1 ring-white/15'
-                  : 'bg-white shadow-[0_4px_24px_rgba(0,0,0,0.08)] ring-1 ring-gray-200'
-              }`}>
-              <span className={`text-7xl sm:text-8xl md:text-9xl font-bold tracking-tight ${
-                backgroundImage
-                  ? 'text-white'
-                  : isDarkMode
-                    ? 'text-white'
-                    : 'text-gray-900'
-                }`}>
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 z-0 pointer-events-none transition-all duration-300" 
+            style={{ 
+              top: `${bigClockMarginTop}px`,
+            }} 
+            suppressHydrationWarning
+          >
+            <div className="flex flex-col items-center justify-center transition-all duration-300">
+              <span 
+                className={`font-bold tracking-tight leading-none transition-all duration-300 ${
+                  bigClockSize === 'small' ? 'text-5xl sm:text-6xl md:text-7xl' :
+                  bigClockSize === 'large' ? 'text-8xl sm:text-9xl md:text-[10rem]' :
+                  bigClockSize === 'huge' ? 'text-9xl sm:text-[10rem] md:text-[12rem]' :
+                  'text-7xl sm:text-8xl md:text-9xl' // medium
+                } ${
+                  bigClockGlassMode 
+                    ? 'bg-clip-text text-transparent bg-gradient-to-b from-white/90 to-white/10 drop-shadow-lg' 
+                    : ''
+                }`}
+                style={{
+                   color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined
+                }}
+              >
                 {bigClockTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+              </span>
+              <span 
+                className={`font-medium tracking-wide opacity-80 mt-2 transition-all duration-300 ${
+                  bigClockSize === 'small' ? 'text-lg sm:text-xl' :
+                  bigClockSize === 'large' ? 'text-2xl sm:text-3xl' :
+                  bigClockSize === 'huge' ? 'text-3xl sm:text-4xl' :
+                  'text-xl sm:text-2xl' // medium
+                } ${
+                  bigClockGlassMode 
+                    ? 'bg-clip-text text-transparent bg-gradient-to-b from-white/90 to-white/10 drop-shadow-md' 
+                    : ''
+                }`}
+                style={{
+                   color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined
+                }}
+              >
+                {bigClockTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </span>
             </div>
           </div>
@@ -4560,6 +4604,31 @@ export default function Home() {
               localStorage.setItem('showBigClock', newValue.toString());
             }
             return newValue;
+          });
+        }}
+        bigClockMarginTop={bigClockMarginTop}
+        onSetBigClockMarginTop={(value) => {
+          setBigClockMarginTop(value);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('bigClockMarginTop', value.toString());
+          }
+        }}
+        bigClockColor={bigClockColor}
+        onSetBigClockColor={(color) => {
+          setBigClockColor(color);
+          if (typeof window !== 'undefined') localStorage.setItem('bigClockColor', color);
+        }}
+        bigClockSize={bigClockSize}
+        onSetBigClockSize={(size) => {
+          setBigClockSize(size);
+          if (typeof window !== 'undefined') localStorage.setItem('bigClockSize', size);
+        }}
+        bigClockGlassMode={bigClockGlassMode}
+        onToggleBigClockGlassMode={() => {
+          setBigClockGlassMode(prev => {
+            const next = !prev;
+            if (typeof window !== 'undefined') localStorage.setItem('bigClockGlassMode', next.toString());
+            return next;
           });
         }}
 

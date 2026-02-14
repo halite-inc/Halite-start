@@ -76,6 +76,14 @@ interface LeftSidebarProps {
   onToggleBigClock?: () => void;
   greetingStyle?: 'hi' | 'welcome' | 'time-based';
   onSetGreetingStyle?: (style: 'hi' | 'welcome' | 'time-based') => void;
+  bigClockMarginTop?: number;
+  onSetBigClockMarginTop?: (value: number) => void;
+  bigClockColor?: string;
+  onSetBigClockColor?: (color: string) => void;
+  bigClockSize?: 'small' | 'medium' | 'large' | 'huge';
+  onSetBigClockSize?: (size: 'small' | 'medium' | 'large' | 'huge') => void;
+  bigClockGlassMode?: boolean;
+  onToggleBigClockGlassMode?: () => void;
 
   searchBarWidth?: 'narrow' | 'medium' | 'wide';
   onSetSearchBarWidth?: (width: 'narrow' | 'medium' | 'wide') => void;
@@ -309,6 +317,14 @@ export default function LeftSidebar({
   // onToggleFluidMode,
   greetingStyle,
   onSetGreetingStyle,
+  bigClockMarginTop,
+  onSetBigClockMarginTop,
+  bigClockColor,
+  onSetBigClockColor,
+  bigClockSize,
+  onSetBigClockSize,
+  bigClockGlassMode,
+  onToggleBigClockGlassMode,
 
   searchBarWidth,
   onSetSearchBarWidth,
@@ -963,6 +979,63 @@ export default function LeftSidebar({
                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showBigClock ? 'translate-x-6' : 'translate-x-1'}`} />
                            </button>
                          </div>
+                         {showBigClock && (
+                           <div className="space-y-4 border-t pt-4 mt-4 border-gray-200 dark:border-white/10">
+                              {/* Margin */}
+                             <div>
+                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Top Margin</label>
+                               <div className="mt-2 flex items-center gap-3">
+                                 <input type="range" min={0} max={600} step={4} value={bigClockMarginTop ?? 128} onChange={(e) => onSetBigClockMarginTop && onSetBigClockMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500" />
+                                 <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{bigClockMarginTop ?? 128}px</span>
+                               </div>
+                             </div>
+
+                              {/* Size */}
+                              <div className="flex items-center justify-between">
+                                <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Size</label>
+                                <SegmentedControl 
+                                  value={bigClockSize || 'medium'} 
+                                  onChange={(val) => onSetBigClockSize && onSetBigClockSize(val)} 
+                                  options={[
+                                    { value: 'small', label: 'S' }, 
+                                    { value: 'medium', label: 'M' }, 
+                                    { value: 'large', label: 'L' },
+                                    { value: 'huge', label: 'XL' }
+                                  ]} 
+                                  isDarkMode={isDarkMode} 
+                                />
+                              </div>
+
+                              {/* Glass Mode */}
+                              <div className="flex items-center justify-between">
+                                <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Glass Mode</label>
+                                <button onClick={() => onToggleBigClockGlassMode && onToggleBigClockGlassMode()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${bigClockGlassMode ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${bigClockGlassMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                                </button>
+                              </div>
+
+                              {/* Color */}
+                              <div className="flex items-center justify-between">
+                                <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Color</label>
+                                <div className="flex items-center gap-2">
+                                   <button 
+                                     onClick={() => onSetBigClockColor && onSetBigClockColor('')}
+                                     className={`px-2 py-1 text-xs rounded border ${!bigClockColor ? (isDarkMode ? 'bg-white/10 border-white/20 text-white' : 'bg-gray-100 border-gray-300 text-gray-800') : (isDarkMode ? 'text-gray-400 border-transparent hover:text-white' : 'text-gray-500 border-transparent hover:text-gray-800')}`}
+                                   >
+                                     Auto
+                                   </button>
+                                   <div className="flex items-center gap-2 border rounded-md p-1 border-gray-200 dark:border-white/10">
+                                     <input 
+                                       type="color" 
+                                       value={bigClockColor || '#ffffff'} 
+                                       onChange={(e) => onSetBigClockColor && onSetBigClockColor(e.target.value)} 
+                                       className="h-6 w-8 rounded cursor-pointer bg-transparent" 
+                                     />
+                                   </div>
+                                </div>
+                              </div>
+                           </div>
+                         )}
                      </div>
                   </div>
                 )}
