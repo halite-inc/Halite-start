@@ -2048,11 +2048,13 @@ export default function Home() {
   const [sessionStartTime] = useState<number>(Date.now());
 
   const [showTopTime, setShowTopTime] = useState<boolean>(true);
+  const [topPillSize, setTopPillSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
   const [showBigClock, setShowBigClock] = useState<boolean>(false);
   const [bigClockTime, setBigClockTime] = useState<Date>(new Date());
   const [bigClockMarginTop, setBigClockMarginTop] = useState<number>(128);
   const [bigClockColor, setBigClockColor] = useState<string>('');
+  const [bigClockFont, setBigClockFont] = useState<string>('default');
   const [bigClockSize, setBigClockSize] = useState<'small' | 'medium' | 'large' | 'huge'>('medium');
   const [bigClockGlassMode, setBigClockGlassMode] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
@@ -2555,6 +2557,13 @@ export default function Home() {
         console.log('✅ Greeting style loaded:', savedGreetingStyle);
       }
 
+      // Load top pill size
+      const savedTopPillSize = localStorage.getItem('topPillSize');
+      if (savedTopPillSize === 'small' || savedTopPillSize === 'medium' || savedTopPillSize === 'large') {
+        setTopPillSize(savedTopPillSize);
+        console.log('✅ Top pill size loaded:', savedTopPillSize);
+      }
+
       // Load show top time
       const savedShowTopTime = localStorage.getItem('showTopTime');
       if (savedShowTopTime !== null) {
@@ -2568,6 +2577,10 @@ export default function Home() {
         setShowBigClock(savedShowBigClock === 'true');
         console.log('✅ Show big clock loaded:', savedShowBigClock === 'true');
       }
+
+      // Load big clock font
+      const savedBigClockFont = localStorage.getItem('bigClockFont');
+      if (savedBigClockFont) setBigClockFont(savedBigClockFont);
 
       console.log('✅ All settings loaded successfully');
       setIsLoading(false); // Mark loading as complete
@@ -3288,7 +3301,7 @@ export default function Home() {
       {showTopTime && (
         <div className="fixed top-4 left-4 z-40">
           <span
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ring-1 ${
+            className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} rounded-full font-semibold ring-1 ${
               backgroundImage
                 ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
                 : isDarkMode
@@ -3310,7 +3323,7 @@ export default function Home() {
               setIsGreetingDropdownOpen(prev => !prev);
               setIsNameEditorOpen(false);
             }}
-            className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
+            className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} rounded-full font-semibold ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
               backgroundImage
                 ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
                 : isDarkMode
@@ -3442,7 +3455,12 @@ export default function Home() {
                     : ''
                 }`}
                 style={{
-                   color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined
+                   color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined,
+                   fontFamily: bigClockFont === 'default' ? undefined :
+                               bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
+                               bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
+                               bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
+                               bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' : undefined
                 }}
               >
                 {bigClockTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
@@ -3459,7 +3477,12 @@ export default function Home() {
                     : ''
                 }`}
                 style={{
-                   color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined
+                   color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined,
+                   fontFamily: bigClockFont === 'default' ? undefined :
+                               bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
+                               bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
+                               bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
+                               bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' : undefined
                 }}
               >
                 {bigClockTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -4074,6 +4097,74 @@ export default function Home() {
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/40" onClick={() => setIsQuickAppOpen(false)} />
             <div className="absolute bottom-20 right-4 z-10 flex gap-4">
+              <div className={`w-80 lg:w-[30rem] rounded-2xl p-4 shadow-2xl max-h-96 overflow-y-auto custom-scrollbar ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+                <h4 className="text-sm font-semibold mb-3">Popular Websites</h4>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                  {[
+                    { title: 'YouTube', url: 'youtube.com' },
+                    { title: 'GitHub', url: 'github.com' },
+                    { title: 'Twitter', url: 'twitter.com' },
+                    { title: 'Reddit', url: 'reddit.com' },
+                    { title: 'Instagram', url: 'instagram.com' },
+                    { title: 'LinkedIn', url: 'linkedin.com' },
+                    { title: 'Facebook', url: 'facebook.com' },
+                    { title: 'Netflix', url: 'netflix.com' },
+                    { title: 'Spotify', url: 'spotify.com' },
+                    { title: 'Discord', url: 'discord.com' },
+                    { title: 'Notion', url: 'notion.so' },
+                    { title: 'Figma', url: 'figma.com' },
+                    { title: 'Amazon', url: 'amazon.com' },
+                    { title: 'Google', url: 'google.com' },
+                    { title: 'Gmail', url: 'gmail.com' },
+                    { title: 'Twitch', url: 'twitch.tv' },
+                    { title: 'ChatGPT', url: 'chatgpt.com' },
+                    { title: 'Apple', url: 'apple.com' },
+                    { title: 'Wikipedia', url: 'wikipedia.org' },
+                    { title: 'BBC', url: 'bbc.com' },
+                    { title: 'CNN', url: 'cnn.com' },
+                    { title: 'Pinterest', url: 'pinterest.com' },
+                    { title: 'TikTok', url: 'tiktok.com' },
+                    { title: 'eBay', url: 'ebay.com' },
+                    { title: 'AliExpress', url: 'aliexpress.com' },
+                    { title: 'Airbnb', url: 'airbnb.com' },
+                    { title: 'Booking.com', url: 'booking.com' },
+                    { title: 'IMDb', url: 'imdb.com' },
+                    { title: 'Trello', url: 'trello.com' },
+                    { title: 'Slack', url: 'slack.com' },
+                    { title: 'Zoom', url: 'zoom.us' },
+                    { title: 'Dropbox', url: 'dropbox.com' },
+                    { title: 'Adobe', url: 'adobe.com' },
+                    { title: 'Canva', url: 'canva.com' },
+                  ].map((site) => (
+                    <button
+                      key={site.url}
+                      onClick={() => {
+                        addApp({
+                          id: Date.now().toString(),
+                          title: site.title,
+                          href: `https://${site.url}`,
+                          icon: getFaviconUrl(`https://${site.url}`)
+                        });
+                        setIsQuickAppOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${isDarkMode
+                        ? 'bg-white/5 hover:bg-white/10 text-white'
+                        : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
+                        }`}
+                    >
+                      <img
+                        src={getFaviconUrl(`https://${site.url}`)}
+                        alt=""
+                        className="w-4 h-4"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      <span>{site.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className={`w-80 rounded-2xl p-4 shadow-2xl ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
                 <h4 className="text-sm font-semibold mb-3">Add Favorite App</h4>
                 <div className="space-y-2">
@@ -4109,55 +4200,6 @@ export default function Home() {
                   >
                     Add
                   </button>
-                </div>
-              </div>
-              <div className={`w-64 rounded-2xl p-4 shadow-2xl max-h-96 overflow-y-auto custom-scrollbar ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
-                <h4 className="text-sm font-semibold mb-3">Popular Websites</h4>
-                <div className="space-y-2">
-                  {[
-                    { title: 'YouTube', url: 'youtube.com' },
-                    { title: 'GitHub', url: 'github.com' },
-                    { title: 'Twitter', url: 'twitter.com' },
-                    { title: 'Reddit', url: 'reddit.com' },
-                    { title: 'Instagram', url: 'instagram.com' },
-                    { title: 'LinkedIn', url: 'linkedin.com' },
-                    { title: 'Facebook', url: 'facebook.com' },
-                    { title: 'Netflix', url: 'netflix.com' },
-                    { title: 'Spotify', url: 'spotify.com' },
-                    { title: 'Discord', url: 'discord.com' },
-                    { title: 'Notion', url: 'notion.so' },
-                    { title: 'Figma', url: 'figma.com' },
-                    { title: 'Amazon', url: 'amazon.com' },
-                    { title: 'Google', url: 'google.com' },
-                    { title: 'Gmail', url: 'gmail.com' },
-                  ].map((site) => (
-                    <button
-                      key={site.url}
-                      onClick={() => {
-                        addApp({
-                          id: Date.now().toString(),
-                          title: site.title,
-                          href: `https://${site.url}`,
-                          icon: getFaviconUrl(`https://${site.url}`)
-                        });
-                        setIsQuickAppOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${isDarkMode
-                        ? 'bg-white/5 hover:bg-white/10 text-white'
-                        : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
-                        }`}
-                    >
-                      <img
-                        src={getFaviconUrl(`https://${site.url}`)}
-                        alt=""
-                        className="w-4 h-4"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                      <span>{site.title}</span>
-                    </button>
-                  ))}
                 </div>
               </div>
             </div>
@@ -4348,7 +4390,11 @@ export default function Home() {
 
       {/* Floating Action Dock */}
       <div
-        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border px-1 py-1 sm:px-1.5 sm:py-1.5 flex items-center gap-1 z-30 ${liquidGlassEnabled
+        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border flex items-center gap-1 z-30 ${
+          topPillSize === 'small' ? 'px-1 py-1 sm:px-1 sm:py-1 gap-0.5' :
+          topPillSize === 'large' ? 'px-1.5 py-1.5 sm:px-2 sm:py-2 gap-1.5' :
+          'px-1 py-1 sm:px-1.5 sm:py-1.5'
+        } ${liquidGlassEnabled
           ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
           : glassmorphismEnabled
             ? (isDarkMode
@@ -4364,7 +4410,11 @@ export default function Home() {
           onClick={() => {
             setIsEditModalOpen(!isEditModalOpen);
           }}
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
+          className={`${
+            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
+            'w-7 h-7 sm:w-8 sm:h-8'
+          } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
             : glassmorphismEnabled
               ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
@@ -4374,11 +4424,11 @@ export default function Home() {
           aria-label={isEditModalOpen ? 'Exit Edit Mode' : 'Enter Edit Mode'}
         >
           {isEditModalOpen ? (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           )}
@@ -4389,7 +4439,11 @@ export default function Home() {
         <div className="relative">
           <button
             onClick={quickAddFavoriteApp}
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
+            className={`${
+              topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+              topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
+              'w-7 h-7 sm:w-8 sm:h-8'
+            } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
               ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
               : glassmorphismEnabled
                 ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
@@ -4398,7 +4452,7 @@ export default function Home() {
             title="Add Favorite App"
             aria-label="Add Favorite App"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
@@ -4409,7 +4463,11 @@ export default function Home() {
         {isEditModalOpen && (
         <button
           onClick={openHaliteModal}
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
+          className={`${
+            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
+            'w-7 h-7 sm:w-8 sm:h-8'
+          } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50'
             : glassmorphismEnabled
               ? (isDarkMode ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50' : 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50')
@@ -4421,7 +4479,7 @@ export default function Home() {
             boxShadow: '0 2px 8px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
           }}
         >
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         </button>
@@ -4430,7 +4488,11 @@ export default function Home() {
         {/* Settings Button */}
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
+          className={`${
+            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
+            'w-7 h-7 sm:w-8 sm:h-8'
+          } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
             : glassmorphismEnabled
               ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
@@ -4439,7 +4501,7 @@ export default function Home() {
           title="Settings"
           aria-label="Settings"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -4586,6 +4648,11 @@ export default function Home() {
         onSetAppGroupMarginTop={(value) => setAppGroupMarginTop(value)}
         liquidReflectionColor={liquidReflectionColor}
         onSetLiquidReflectionColor={(value) => setLiquidReflectionColor(value)}
+        topPillSize={topPillSize}
+        onSetTopPillSize={(size) => {
+          setTopPillSize(size);
+          if (typeof window !== 'undefined') localStorage.setItem('topPillSize', size);
+        }}
         showTopTime={showTopTime}
         onToggleTopTime={() => {
           setShowTopTime(prev => {
@@ -4617,6 +4684,11 @@ export default function Home() {
         onSetBigClockColor={(color) => {
           setBigClockColor(color);
           if (typeof window !== 'undefined') localStorage.setItem('bigClockColor', color);
+        }}
+        bigClockFont={bigClockFont}
+        onSetBigClockFont={(font) => {
+          setBigClockFont(font);
+          if (typeof window !== 'undefined') localStorage.setItem('bigClockFont', font);
         }}
         bigClockSize={bigClockSize}
         onSetBigClockSize={(size) => {

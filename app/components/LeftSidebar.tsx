@@ -80,9 +80,13 @@ interface LeftSidebarProps {
   onSetBigClockMarginTop?: (value: number) => void;
   bigClockColor?: string;
   onSetBigClockColor?: (color: string) => void;
+  bigClockFont?: string;
+  onSetBigClockFont?: (font: string) => void;
   bigClockSize?: 'small' | 'medium' | 'large' | 'huge';
   onSetBigClockSize?: (size: 'small' | 'medium' | 'large' | 'huge') => void;
   bigClockGlassMode?: boolean;
+  topPillSize?: 'small' | 'medium' | 'large';
+  onSetTopPillSize?: (size: 'small' | 'medium' | 'large') => void;
   onToggleBigClockGlassMode?: () => void;
 
   searchBarWidth?: 'narrow' | 'medium' | 'wide';
@@ -321,8 +325,12 @@ export default function LeftSidebar({
   onSetBigClockMarginTop,
   bigClockColor,
   onSetBigClockColor,
+  bigClockFont,
+  onSetBigClockFont,
   bigClockSize,
   onSetBigClockSize,
+  topPillSize,
+  onSetTopPillSize,
   bigClockGlassMode,
   onToggleBigClockGlassMode,
 
@@ -505,37 +513,80 @@ export default function LeftSidebar({
   }, [backgroundImage]);
 
   // Draggable Sidebar Logic
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef({ x: 0, y: 0 });
-  const posStartRef = useRef({ x: 0, y: 0 });
+  // position stores { left, top } in px for the modal
+  const MODAL_RAW_WIDTH = 704; // matches md:w-[44rem]
+  const getDefaultPosition = () => ({
+    left: typeof window !== 'undefined' ? Math.max(0, window.innerWidth - MODAL_RAW_WIDTH - 16) : 16,
+    top: typeof window !== 'undefined' ? Math.max(16, Math.round(window.innerHeight * 0.06)) : 48,
+  });
 
+  const [position, setPosition] = useState(getDefaultPosition);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ mouseX: 0, mouseY: 0, modalLeft: 0, modalTop: 0 });
+
+  // Load saved position
   useEffect(() => {
-    if (isOpen) {
-      setPosition({ x: 0, y: 0 });
+    try {
+      const saved = localStorage.getItem('settingsWindowPosition');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Support old format {x, y} or new format {left, top}
+        if (typeof parsed.left === 'number' && typeof parsed.top === 'number') {
+          setPosition(parsed);
+        } else if (typeof parsed.x === 'number') {
+          // Old format: x was an offset from right, y from top — skip and use default
+          setPosition(getDefaultPosition());
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load settings position:', e);
     }
-  }, [isOpen]);
+  }, [mounted]);
 
   const handleDragStart = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) return;
+    e.preventDefault();
     setIsDragging(true);
-    dragStartRef.current = { x: e.clientX, y: e.clientY };
-    posStartRef.current = { ...position };
+    dragStartRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      modalLeft: position.left,
+      modalTop: position.top,
+    };
   };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
-      const dx = e.clientX - dragStartRef.current.x;
-      const dy = e.clientY - dragStartRef.current.y;
+      const dx = e.clientX - dragStartRef.current.mouseX;
+      const dy = e.clientY - dragStartRef.current.mouseY;
+      const newLeft = dragStartRef.current.modalLeft + dx;
+      const newTop = dragStartRef.current.modalTop + dy;
+      // Clamp to viewport
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
       setPosition({
-        x: posStartRef.current.x + dx,
-        y: posStartRef.current.y + dy
+        left: Math.max(0, Math.min(newLeft, vw - 200)),
+        top: Math.max(0, Math.min(newTop, vh - 80)),
       });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
+      if (!isDragging) return;
       setIsDragging(false);
+      const dx = e.clientX - dragStartRef.current.mouseX;
+      const dy = e.clientY - dragStartRef.current.mouseY;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const finalPos = {
+        left: Math.max(0, Math.min(dragStartRef.current.modalLeft + dx, vw - 200)),
+        top: Math.max(0, Math.min(dragStartRef.current.modalTop + dy, vh - 80)),
+      };
+      try {
+        localStorage.setItem('settingsWindowPosition', JSON.stringify(finalPos));
+      } catch (e) {
+        console.error('Failed to save settings position:', e);
+      }
     };
 
     if (isDragging) {
@@ -686,8 +737,8 @@ export default function LeftSidebar({
     : 'bg-white text-gray-800 ring-1 ring-gray-200 hover:bg-gray-50 shadow-sm'
     }`;
   const panelClass = `${isDarkMode
-    ? 'rounded-xl p-2.5 bg-[#121212]/85 ring-1 ring-white/10'
-    : 'rounded-xl p-2.5 bg-white/90 ring-1 ring-gray-200'
+    ? 'rounded-xl p-2.5 bg-transparent'
+    : 'rounded-xl p-2.5 bg-transparent'
     }`;
   const modeLabel = liquidGlassEnabled ? 'Liquid' : (glassmorphismEnabled ? 'Glass' : 'Normal');
   const modeBadgeClass = `${isLiquid
@@ -706,34 +757,39 @@ export default function LeftSidebar({
           aria-hidden="true"
         />
       )}
-      {/* Right Sidebar */}
+      {/* Right Sidebar / Settings Window */}
       <div
         ref={sidebarRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed inset-x-2 sm:inset-x-auto sm:right-4 top-24 sm:top-52 bottom-24 sm:bottom-48 w-auto sm:w-[26rem] md:w-[44rem] rounded-2xl overflow-hidden transform ${isDragging ? 'transition-none' : 'transition-all duration-300'} ease-in-out z-50 ${glassmorphismEnabled
+        className={`fixed w-[calc(100vw-1rem)] sm:w-[26rem] md:w-[44rem] rounded-2xl overflow-hidden z-50 ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
           ? isDarkMode
-            ? 'bg-[#2B2B2B]/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
-            : 'bg-white/80 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
+            ? 'bg-[#2B2B2B]/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)]'
+            : 'bg-white/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.15)]'
           : liquidGlassEnabled
             ? ''
-            : isDarkMode ? 'bg-[#2B2B2B] shadow-[0_8px_24px_rgba(0,0,0,0.35)]' : 'bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]'
+            : isDarkMode ? 'bg-[#1e1e1e] shadow-[0_16px_40px_rgba(0,0,0,0.5)]' : 'bg-[#fafafa] shadow-[0_16px_40px_rgba(0,0,0,0.12)]'
           }`}
         style={{
-          transform: isOpen
-            ? `translate(${position.x}px, ${position.y}px)`
-            : 'translateX(calc(100% + 1rem))'
+          left: `${position.left}px`,
+          top: `${position.top}px`,
+          height: '600px',
+          maxHeight: 'calc(100vh - 2rem)',
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? 'auto' : 'none',
+          transform: 'scale(0.88)',
+          transformOrigin: 'top right',
         }}
       >
         {liquidGlassEnabled && <LiquidGlassCard isDark={isDarkMode} isHovered={false} className="rounded-2xl" />}
-        <div className="flex flex-col h-full relative z-10">
+        <div className="flex flex-col relative z-10 h-full">
           {/* Header */}
           <div 
             onMouseDown={handleDragStart}
-            className={`sticky top-0 z-10 flex items-center justify-between p-3 cursor-move select-none ${isDarkMode
-            ? 'border-b border-white/10'
-            : 'border-b border-gray-200'
+            className={`flex items-center justify-between p-4 cursor-move select-none ${isDarkMode
+            ? 'border-b border-white/5'
+            : 'border-b border-transparent'
             }`}
           >
             <h2 id="settings-title" className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
@@ -1034,6 +1090,22 @@ export default function LeftSidebar({
                                    </div>
                                 </div>
                               </div>
+                              {/* Font */}
+                              <div className="flex items-center justify-between">
+                                <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Font</label>
+                                <ModernDropdown 
+                                  value={bigClockFont || 'default'} 
+                                  onChange={(val) => onSetBigClockFont && onSetBigClockFont(val as any)} 
+                                  options={[
+                                    { value: 'default', label: 'Default' }, 
+                                    { value: 'serif', label: 'Serif' }, 
+                                    { value: 'mono', label: 'Mono' },
+                                    { value: 'elegant', label: 'Elegant' },
+                                    { value: 'fun', label: 'Fun' }
+                                  ]} 
+                                  isDarkMode={isDarkMode} 
+                                />
+                              </div>
                            </div>
                          )}
                      </div>
@@ -1098,6 +1170,10 @@ export default function LeftSidebar({
                            <div className="flex items-center justify-between">
                              <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Greeting Style</label>
                              <ModernDropdown value={greetingStyle || 'hi'} onChange={(val) => onSetGreetingStyle && onSetGreetingStyle(val as any)} options={[{ value: 'hi', label: 'Hi' }, { value: 'welcome', label: 'Welcome' }, { value: 'time-based', label: 'Time Based' }]} isDarkMode={isDarkMode} />
+                           </div>
+                           <div className="flex items-center justify-between">
+                             <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Size</label>
+                             <SegmentedControl value={topPillSize || 'medium'} onChange={(val) => onSetTopPillSize && onSetTopPillSize(val as any)} options={[{ value: 'small', label: 'Small' }, { value: 'medium', label: 'Medium' }, { value: 'large', label: 'Large' }]} isDarkMode={isDarkMode} />
                            </div>
                         </div>
                         {/* Background Blur */}
