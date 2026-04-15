@@ -104,7 +104,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none', appCardBackgroundColor, onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; onAppClick?: (appId: string) => void }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', customAppCardSize = 64, appCardInnerShadow = 'none', appCardBackgroundColor, onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large' | 'custom'; customAppCardSize?: number; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; onAppClick?: (appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -171,7 +171,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
     normal: 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]',
     large: 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'
   };
-  const currentSizeClass = sizeClasses[appCardSize] || sizeClasses.normal;
+  const currentSizeClass = appCardSize === 'custom' ? '' : (sizeClasses[appCardSize] || sizeClasses.normal);
 
   /* Inner Shadow Classes */
   const innerShadowClasses = {
@@ -185,8 +185,11 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`relative group ${showAppTitles ? 'w-[40px] sm:w-[48px] lg:w-[60px]' : 'w-[48px] sm:w-[60px] lg:w-[70px]'} ${isDragging ? 'z-50' : ''}`}
+      style={{
+        ...style,
+        ...(appCardSize === 'custom' && customAppCardSize ? { width: `${customAppCardSize}px` } : {})
+      }}
+      className={`relative group ${appCardSize === 'custom' ? '' : (showAppTitles ? 'w-[40px] sm:w-[48px] lg:w-[60px]' : 'w-[48px] sm:w-[60px] lg:w-[70px]')} ${isDragging ? 'z-50' : ''}`}
     >
       {/* App Card */}
       <div
@@ -207,7 +210,8 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''}${extraClasses} ${hoverClass}`}
         style={{ 
           animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined,
-          ...(appCardBackgroundColor ? { backgroundColor: appCardBackgroundColor } : {})
+          ...(appCardBackgroundColor ? { backgroundColor: appCardBackgroundColor } : {}),
+          ...(appCardSize === 'custom' && customAppCardSize ? { width: `${customAppCardSize}px`, height: `${customAppCardSize}px` } : {})
         }}
         onClick={(e) => {
           if (!isEditModalOpen) {
@@ -241,7 +245,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
             <img
               src={iconSrc}
               alt={`${app.title} icon`}
-              className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm ${iconBgClass} ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
+              className={`${appCardSize === 'custom' ? 'w-[60%] h-[60%]' : (showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10')} rounded-full shadow-sm ${iconBgClass} ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
               onError={(e) => {
                 // Show a fallback icon if the image fails to load
                 e.currentTarget.style.display = 'none';
@@ -283,7 +287,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
   );
 }
 
-function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', appCardInnerShadow = 'none', appCardBackgroundColor, onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large'; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; onAppClick?: (appId: string) => void }) {
+function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, liquidGlassEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', customAppCardSize = 64, appCardInnerShadow = 'none', appCardBackgroundColor, onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; liquidGlassEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large' | 'custom'; customAppCardSize?: number; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; onAppClick?: (appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -339,7 +343,7 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
     normal: 'w-[40px] h-[40px] sm:w-[48px] sm:h-[48px] lg:w-[60px] lg:h-[60px]',
     large: 'w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] lg:w-[70px] lg:h-[70px]'
   };
-  const currentSizeClass = sizeClasses[appCardSize] || sizeClasses.normal;
+  const currentSizeClass = appCardSize === 'custom' ? '' : (sizeClasses[appCardSize] || sizeClasses.normal);
 
   /* Inner Shadow Classes */
   const innerShadowClasses = {
@@ -353,8 +357,11 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`relative group ${showAppTitles ? 'w-[40px] sm:w-[48px] lg:w-[60px]' : 'w-[48px] sm:w-[60px] lg:w-[70px]'} ${isDragging ? 'z-50' : ''}`}
+      style={{
+        ...style,
+        ...(appCardSize === 'custom' && customAppCardSize ? { width: `${customAppCardSize}px` } : {})
+      }}
+      className={`relative group ${appCardSize === 'custom' ? '' : (showAppTitles ? 'w-[40px] sm:w-[48px] lg:w-[60px]' : 'w-[48px] sm:w-[60px] lg:w-[70px]')} ${isDragging ? 'z-50' : ''}`}
     >
       {/* Halite Card */}
       <div
@@ -375,7 +382,8 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
           } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${hoverClass}`}
         style={{ 
           animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined,
-          ...(appCardBackgroundColor ? { backgroundColor: appCardBackgroundColor } : {})
+          ...(appCardBackgroundColor ? { backgroundColor: appCardBackgroundColor } : {}),
+          ...(appCardSize === 'custom' && customAppCardSize ? { width: `${customAppCardSize}px`, height: `${customAppCardSize}px` } : {})
         }}
         onClick={handleClick}
         onContextMenu={(e) => {
@@ -1983,7 +1991,8 @@ export default function Home() {
   const [monochromeIcons, setMonochromeIcons] = useState<boolean>(false);
   const [appCardBorderRadius, setAppCardBorderRadius] = useState<'small' | 'medium' | 'full'>('medium');
   const [removeAppCardBorders, setRemoveAppCardBorders] = useState<boolean>(false);
-  const [appCardSize, setAppCardSize] = useState<'small' | 'normal' | 'large'>('normal');
+  const [appCardSize, setAppCardSize] = useState<'small' | 'normal' | 'large' | 'custom'>('normal');
+  const [customAppCardSize, setCustomAppCardSize] = useState<number>(64);
   const [appCardInnerShadow, setAppCardInnerShadow] = useState<'none' | 'small' | 'medium' | 'large'>('none');
   const [appCardBackgroundColor, setAppCardBackgroundColor] = useState<string>('');
 
@@ -2049,6 +2058,8 @@ export default function Home() {
 
   const [showTopTime, setShowTopTime] = useState<boolean>(true);
   const [topPillSize, setTopPillSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [topPillStyle, setTopPillStyle] = useState<'card' | 'text'>('card');
+  const [dockVisibility, setDockVisibility] = useState<'always' | 'hover'>('always');
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
   const [showBigClock, setShowBigClock] = useState<boolean>(false);
   const [bigClockTime, setBigClockTime] = useState<Date>(new Date());
@@ -2058,6 +2069,10 @@ export default function Home() {
   const [bigClockSize, setBigClockSize] = useState<'small' | 'medium' | 'large' | 'huge'>('medium');
   const [bigClockGlassMode, setBigClockGlassMode] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
+  const iconUploadRef = useRef<HTMLInputElement>(null);
+  const [pendingIconAppId, setPendingIconAppId] = useState<string | null>(null);
+
+
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
 
@@ -2538,9 +2553,18 @@ export default function Home() {
 
       // Load app card size
       const savedAppCardSize = localStorage.getItem('appCardSize');
-      if (savedAppCardSize === 'small' || savedAppCardSize === 'normal' || savedAppCardSize === 'large') {
-        setAppCardSize(savedAppCardSize as 'small' | 'normal' | 'large');
+      if (savedAppCardSize === 'small' || savedAppCardSize === 'normal' || savedAppCardSize === 'large' || savedAppCardSize === 'custom') {
+        setAppCardSize(savedAppCardSize as 'small' | 'normal' | 'large' | 'custom');
         console.log('✅ App card size loaded:', savedAppCardSize);
+      }
+
+      // Load custom app card size
+      const savedCustomAppCardSize = localStorage.getItem('customAppCardSize');
+      if (savedCustomAppCardSize) {
+        const parsed = parseInt(savedCustomAppCardSize, 10);
+        if (!isNaN(parsed) && parsed >= 32 && parsed <= 150) {
+          setCustomAppCardSize(parsed);
+        }
       }
 
       // Load inner shadow
@@ -2560,8 +2584,21 @@ export default function Home() {
       // Load top pill size
       const savedTopPillSize = localStorage.getItem('topPillSize');
       if (savedTopPillSize === 'small' || savedTopPillSize === 'medium' || savedTopPillSize === 'large') {
-        setTopPillSize(savedTopPillSize);
+        setTopPillSize(savedTopPillSize as 'small' | 'medium' | 'large');
         console.log('✅ Top pill size loaded:', savedTopPillSize);
+      }
+
+      // Load top pill style
+      const savedTopPillStyle = localStorage.getItem('topPillStyle');
+      if (savedTopPillStyle === 'card' || savedTopPillStyle === 'text') {
+        setTopPillStyle(savedTopPillStyle);
+      }
+
+      // Load dock visibility
+      const savedDockVisibility = localStorage.getItem('dockVisibility');
+      if (savedDockVisibility === 'always' || savedDockVisibility === 'hover') {
+        setDockVisibility(savedDockVisibility);
+        console.log('✅ Dock visibility loaded:', savedDockVisibility);
       }
 
       // Load show top time
@@ -3149,6 +3186,27 @@ export default function Home() {
     setContextMenu(null);
   };
 
+  const handleChangeIcon = (appId: string) => {
+    setPendingIconAppId(appId);
+    setContextMenu(null);
+    // Trigger the hidden file input
+    setTimeout(() => iconUploadRef.current?.click(), 50);
+  };
+
+  const handleIconFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !pendingIconAppId) return;
+    e.target.value = ''; // reset so same file can be re-selected
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 2 * 1024 * 1024) return; // 2 MB guard
+    const key = `icon-${pendingIconAppId}-${Date.now()}`;
+    await saveImageBlob(key, file);
+    setApps(prev => prev.map(a =>
+      a.id === pendingIconAppId ? { ...a, icon: `idb:${key}` } : a
+    ));
+    setPendingIconAppId(null);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -3301,12 +3359,16 @@ export default function Home() {
       {showTopTime && (
         <div className="fixed top-4 left-4 z-40">
           <span
-            className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} rounded-full font-semibold ring-1 ${
-              backgroundImage
-                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
-                : isDarkMode
-                  ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
-                  : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+            className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} font-semibold ${
+              topPillStyle === 'text'
+                ? `bg-transparent ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
+                : `rounded-full ring-1 ${
+                  backgroundImage
+                    ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+                    : isDarkMode
+                      ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+                      : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                  }`
               }`}
             aria-live="polite"
           >
@@ -3323,12 +3385,16 @@ export default function Home() {
               setIsGreetingDropdownOpen(prev => !prev);
               setIsNameEditorOpen(false);
             }}
-            className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} rounded-full font-semibold ring-1 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
-              backgroundImage
-                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
-                : isDarkMode
-                  ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
-                  : 'bg-white text-black ring-gray-200 hover:bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+            className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
+              topPillStyle === 'text'
+                ? `bg-transparent hover:opacity-80 ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
+                : `rounded-full ring-1 ${
+                  backgroundImage
+                    ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
+                    : isDarkMode
+                      ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
+                      : 'bg-white text-black ring-gray-200 hover:bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                  }`
               }`}
             title="Click to see options"
             aria-expanded={isGreetingDropdownOpen}
@@ -3339,45 +3405,52 @@ export default function Home() {
           {isGreetingDropdownOpen && (
             <div
               id="greeting-dropdown-menu"
-              className={`absolute right-0 mt-2 w-48 rounded-2xl shadow-xl ring-1 overflow-hidden ${isDarkMode
-                ? 'bg-[#141414] text-white ring-white/10'
-                : 'bg-white text-gray-900 ring-gray-200'
+              className={`absolute right-0 mt-1.5 w-40 rounded-xl overflow-hidden ring-1 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.18)] ${isDarkMode
+                ? 'bg-[#1a1a1a]/90 text-white ring-white/10'
+                : 'bg-white/90 text-gray-900 ring-black/8'
                 }`}
+              style={{ animation: 'dropdownFadeIn 0.12s ease-out' }}
             >
-              <button
-                type="button"
-                onClick={() => {
-                  setIsGreetingDropdownOpen(false);
-                  setIsSidebarOpen(true);
-                }}
-                className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-3 ${isDarkMode
-                  ? 'hover:bg-white/10 text-white'
-                  : 'hover:bg-gray-50 text-gray-900'
-                  }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Settings
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsGreetingDropdownOpen(false);
-                  setIsNameEditorOpen(true);
-                  setNameInput(userName);
-                }}
-                className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-3 ${isDarkMode
-                  ? 'hover:bg-white/10 text-white'
-                  : 'hover:bg-gray-50 text-gray-900'
-                  }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit Name
-              </button>
+              <div className="py-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsGreetingDropdownOpen(false);
+                    setIsSidebarOpen(true);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-2.5 ${isDarkMode
+                    ? 'hover:bg-white/8 text-white/90'
+                    : 'hover:bg-gray-50 text-gray-800'
+                    }`}
+                >
+                  <span className={`flex items-center justify-center w-5 h-5 rounded-md flex-shrink-0 ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </span>
+                  Settings
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsGreetingDropdownOpen(false);
+                    setIsNameEditorOpen(true);
+                    setNameInput(userName);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-2.5 ${isDarkMode
+                    ? 'hover:bg-white/8 text-white/90'
+                    : 'hover:bg-gray-50 text-gray-800'
+                    }`}
+                >
+                  <span className={`flex items-center justify-center w-5 h-5 rounded-md flex-shrink-0 ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </span>
+                  Edit Name
+                </button>
+              </div>
             </div>
           )}
           {isNameEditorOpen && (
@@ -3460,7 +3533,8 @@ export default function Home() {
                                bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
                                bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
                                bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
-                               bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' : undefined
+                               bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' :
+                               bigClockFont === 'poppins' ? 'Poppins, sans-serif' : undefined
                 }}
               >
                 {bigClockTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
@@ -3482,7 +3556,8 @@ export default function Home() {
                                bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
                                bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
                                bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
-                               bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' : undefined
+                               bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' :
+                               bigClockFont === 'poppins' ? 'Poppins, sans-serif' : undefined
                 }}
               >
                 {bigClockTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -3500,13 +3575,9 @@ export default function Home() {
         >
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
             <div className="mb-6" style={{ marginTop: appGroupMarginTop }}>
-              <div className={`${centerAppsGroup
-                ? 'grid w-fit mx-auto [grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]'
-                : 'grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'
-                } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px] ${centerAppsGroup
-                  ? (appCardSize === 'small' ? 'gap-x-1 sm:gap-x-1.5 lg:gap-x-2' : 'gap-x-2 sm:gap-x-3 lg:gap-x-4')
-                  : (appCardSize === 'small' ? 'gap-x-0' : 'gap-x-0.5 sm:gap-x-0.5 lg:gap-x-0.5')
-                }`}>
+              <div className={`flex flex-wrap justify-center ${
+                appCardSize === 'small' ? 'gap-x-1 gap-y-0 sm:gap-x-1.5 sm:gap-y-0.5' : 'gap-x-1 gap-y-0 sm:gap-x-1.5 sm:gap-y-0.5 lg:gap-x-2 lg:gap-y-1'
+              }`}>
                 {apps.map((app, index) => (
                   app.type === 'halite' ? (
                     <HaliteCard
@@ -3528,6 +3599,7 @@ export default function Home() {
                       appCardBorderRadius={appCardBorderRadius}
                       removeAppCardBorders={removeAppCardBorders}
                       appCardSize={appCardSize}
+                      customAppCardSize={customAppCardSize}
                       appCardInnerShadow={appCardInnerShadow}
                       appCardBackgroundColor={appCardBackgroundColor}
                       onContextMenu={handleContextMenu}
@@ -3553,6 +3625,7 @@ export default function Home() {
                       appCardBorderRadius={appCardBorderRadius}
                       removeAppCardBorders={removeAppCardBorders}
                       appCardSize={appCardSize}
+                      customAppCardSize={customAppCardSize}
                       appCardInnerShadow={appCardInnerShadow}
                       appCardBackgroundColor={appCardBackgroundColor}
                       onContextMenu={handleContextMenu}
@@ -3577,7 +3650,7 @@ export default function Home() {
                 <div className={`${centerAppsGroup
                   ? 'grid w-fit mx-auto [grid-template-columns:repeat(1,max-content)] sm:[grid-template-columns:repeat(2,max-content)] md:[grid-template-columns:repeat(3,max-content)] lg:[grid-template-columns:repeat(4,max-content)] xl:[grid-template-columns:repeat(5,max-content)] 2xl:[grid-template-columns:repeat(6,max-content)] 3xl:[grid-template-columns:repeat(7,max-content)]'
                   : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7'
-                  } gap-y-4 sm:gap-y-5 ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0 sm:gap-x-1 lg:gap-x-2'}`}>
+                  } gap-y-2 sm:gap-y-3 ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0 sm:gap-x-1 lg:gap-x-2'}`}>
                   {widgets.map((widget, index) => (
                     widget.type === 'clock' ? (
                       <SortableClockWidget
@@ -4388,31 +4461,28 @@ export default function Home() {
         )}
       </div>
 
-      {/* Floating Action Dock */}
-      <div
-        className={`fixed bottom-4 right-4 sm:bottom-5 sm:right-5 rounded-full shadow-lg border flex items-center gap-1 z-30 ${
-          topPillSize === 'small' ? 'px-1 py-1 sm:px-1 sm:py-1 gap-0.5' :
-          topPillSize === 'large' ? 'px-1.5 py-1.5 sm:px-2 sm:py-2 gap-1.5' :
-          'px-1 py-1 sm:px-1.5 sm:py-1.5'
-        } ${liquidGlassEnabled
-          ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
-          : glassmorphismEnabled
-            ? (isDarkMode
-              ? 'bg-black/25 border-white/10 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.35)]'
-              : 'bg-white/60 border-white/30 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.12)]')
-            : (isDarkMode
-              ? 'bg-[#0f1115] border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.45)]'
-              : 'bg-white border-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.10)]')
-          }`}
-      >
+      {/* Floating Action Dock Wrapper */}
+      <div className="fixed bottom-0 right-0 p-4 sm:p-5 z-30 flex items-end justify-end group" style={{ pointerEvents: dockVisibility === 'hover' && !isEditModalOpen ? 'auto' : 'none', width: '150px', height: '150px' }}>
+        <div
+          className={`rounded-full shadow-lg border flex items-center gap-1 transition-all duration-300 pointer-events-auto ${
+            'px-1 py-1 sm:px-1.5 sm:py-1.5'
+          } ${liquidGlassEnabled
+            ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
+            : glassmorphismEnabled
+              ? (isDarkMode
+                ? 'bg-black/25 border-white/10 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.35)]'
+                : 'bg-white/60 border-white/30 backdrop-blur-md shadow-[0_10px_28px_rgba(0,0,0,0.12)]')
+              : (isDarkMode
+                ? 'bg-[#0f1115] border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.45)]'
+                : 'bg-white border-gray-200 shadow-[0_8px_24px_rgba(0,0,0,0.10)]')
+            } ${dockVisibility === 'hover' && !isEditModalOpen ? 'opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0' : 'opacity-100 translate-y-0'}`}
+        >
         {/* Edit Mode Button */}
         <button
           onClick={() => {
             setIsEditModalOpen(!isEditModalOpen);
           }}
           className={`${
-            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
-            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
             'w-7 h-7 sm:w-8 sm:h-8'
           } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
@@ -4424,11 +4494,11 @@ export default function Home() {
           aria-label={isEditModalOpen ? 'Exit Edit Mode' : 'Enter Edit Mode'}
         >
           {isEditModalOpen ? (
-            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={"w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={"w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           )}
@@ -4440,8 +4510,6 @@ export default function Home() {
           <button
             onClick={quickAddFavoriteApp}
             className={`${
-              topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
-              topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
               'w-7 h-7 sm:w-8 sm:h-8'
             } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
               ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
@@ -4452,7 +4520,7 @@ export default function Home() {
             title="Add Favorite App"
             aria-label="Add Favorite App"
           >
-            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={"w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
@@ -4464,8 +4532,6 @@ export default function Home() {
         <button
           onClick={openHaliteModal}
           className={`${
-            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
-            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
             'w-7 h-7 sm:w-8 sm:h-8'
           } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50'
@@ -4479,7 +4545,7 @@ export default function Home() {
             boxShadow: '0 2px 8px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
           }}
         >
-          <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="currentColor" viewBox="0 0 20 20">
+          <svg className={"w-4 h-4"} fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         </button>
@@ -4489,8 +4555,6 @@ export default function Home() {
         <button
           onClick={() => setIsSidebarOpen(true)}
           className={`${
-            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
-            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
             'w-7 h-7 sm:w-8 sm:h-8'
           } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
@@ -4501,11 +4565,12 @@ export default function Home() {
           title="Settings"
           aria-label="Settings"
         >
-          <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={"w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
+        </div>
       </div>
 
 
@@ -4653,6 +4718,16 @@ export default function Home() {
           setTopPillSize(size);
           if (typeof window !== 'undefined') localStorage.setItem('topPillSize', size);
         }}
+        topPillStyle={topPillStyle}
+        onSetTopPillStyle={(style) => {
+          setTopPillStyle(style);
+          if (typeof window !== 'undefined') localStorage.setItem('topPillStyle', style);
+        }}
+        dockVisibility={dockVisibility}
+        onSetDockVisibility={(visibility) => {
+          setDockVisibility(visibility);
+          if (typeof window !== 'undefined') localStorage.setItem('dockVisibility', visibility);
+        }}
         showTopTime={showTopTime}
         onToggleTopTime={() => {
           setShowTopTime(prev => {
@@ -4736,6 +4811,11 @@ export default function Home() {
         onToggleRemoveAppCardBorders={() => setRemoveAppCardBorders(prev => !prev)}
         appCardSize={appCardSize}
         onSetAppCardSize={setAppCardSize}
+        customAppCardSize={customAppCardSize}
+        onSetCustomAppCardSize={(size) => {
+          setCustomAppCardSize(size);
+          if (typeof window !== 'undefined') localStorage.setItem('customAppCardSize', size.toString());
+        }}
         appCardInnerShadow={appCardInnerShadow}
         onSetAppCardInnerShadow={setAppCardInnerShadow}
         appCardBackgroundColor={appCardBackgroundColor}
@@ -4810,6 +4890,24 @@ export default function Home() {
                   Edit Folder
                 </button>
               )}
+              {/* Change Icon - only for regular (non-folder) apps */}
+              {!isFolder && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleChangeIcon(contextMenu.appId);
+                  }}
+                  className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
+                    ? 'text-white hover:bg-white/10'
+                    : 'text-gray-800 hover:bg-gray-100'
+                    }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Change Icon
+                </button>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -4839,6 +4937,15 @@ export default function Home() {
           </div>
         );
       })()}
+
+      {/* Hidden file input for icon upload via context menu */}
+      <input
+        ref={iconUploadRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleIconFileChange}
+      />
 
       {/* Command Palette */}
       <CommandPalette

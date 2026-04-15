@@ -268,6 +268,17 @@ html {
   }
 }
 
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
@@ -319,81 +330,83 @@ html {
   background-color: rgba(148, 163, 184, 0.85);
 }
 
-/* Range slider styles - Modern Apple-like design */
+/* Range slider styles — minimal modern design */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
+  width: 100%;
   background: transparent;
   cursor: pointer;
+  outline: none;
 }
 
-/* Webkit (Chrome, Safari, Edge) track */
-input[type="range"]::-webkit-slider-track {
-  height: 6px;
-  border-radius: 3px;
-  background: #e5e7eb;
-  transition: background 0.2s ease;
+/* Webkit track */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: #e2e8f0;
 }
 
-.dark input[type="range"]::-webkit-slider-track {
-  background: #374151;
+.dark input[type="range"]::-webkit-slider-runnable-track {
+  background: #334155;
 }
 
 /* Webkit thumb */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #ffffff;
+  background: #3b82f6;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-top: -7px;
+  margin-top: -5.5px;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  transform: scale(1.2);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
 }
 
 input[type="range"]::-webkit-slider-thumb:active {
   transform: scale(1.05);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15);
 }
 
 /* Firefox track */
 input[type="range"]::-moz-range-track {
-  height: 6px;
-  border-radius: 3px;
-  background: #e5e7eb;
+  height: 3px;
+  border-radius: 999px;
+  background: #e2e8f0;
   border: none;
-  transition: background 0.2s ease;
 }
 
 .dark input[type="range"]::-moz-range-track {
-  background: #374151;
+  background: #334155;
 }
 
 /* Firefox thumb */
 input[type="range"]::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #ffffff;
+  background: #3b82f6;
   cursor: pointer;
   border: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  transform: scale(1.2);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
 }
 
-input[type="range"]::-moz-range-thumb:active {
-  transform: scale(1.05);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
+/* Firefox progress fill */
+input[type="range"]::-moz-range-progress {
+  height: 3px;
+  border-radius: 999px;
+  background: #3b82f6;
 }
