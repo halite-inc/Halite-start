@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import {
@@ -25,6 +25,7 @@ import LeftSidebar from './components/LeftSidebar';
 import CommandPalette from './components/CommandPalette';
 import UsageStatistics from './components/UsageStatistics';
 import { getImageObjectUrl, deleteImageBlob, saveImageBlob } from './lib/idb';
+import { getFaviconUrl, fetchBestFavicon } from './lib/favicon';
 import { LiquidGlassCard, LiquidGlassGlobalCanvas } from './components/LiquidGlass';
 import React from 'react';
 
@@ -81,16 +82,6 @@ const defaultWidgets: Widget[] = [
 ];
 
 const defaultBookmarks: Bookmark[] = [];
-
-// Function to get favicon URL
-const getFaviconUrl = (url: string): string => {
-  try {
-    const domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-  } catch {
-    return '';
-  }
-};
 
 const hexToRgb = (hex: string): [number, number, number] => {
   let value = hex.trim().replace('#', '');
@@ -185,11 +176,8 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        ...(appCardSize === 'custom' && customAppCardSize ? { width: `${customAppCardSize}px` } : {})
-      }}
-      className={`relative group ${appCardSize === 'custom' ? '' : (showAppTitles ? 'w-[40px] sm:w-[48px] lg:w-[60px]' : 'w-[48px] sm:w-[60px] lg:w-[70px]')} ${isDragging ? 'z-50' : ''}`}
+      style={style}
+      className={`relative group ${showAppTitles ? 'w-[40px] sm:w-[48px] lg:w-[60px]' : 'w-[48px] sm:w-[60px] lg:w-[70px]'} ${isDragging ? 'z-50' : ''}`}
     >
       {/* App Card */}
       <div
@@ -2069,10 +2057,6 @@ export default function Home() {
   const [bigClockSize, setBigClockSize] = useState<'small' | 'medium' | 'large' | 'huge'>('medium');
   const [bigClockGlassMode, setBigClockGlassMode] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
-  const iconUploadRef = useRef<HTMLInputElement>(null);
-  const [pendingIconAppId, setPendingIconAppId] = useState<string | null>(null);
-
-
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
 
@@ -3088,13 +3072,22 @@ export default function Home() {
     }
   };
 
-  const addApp = (app: App) => {
-    // Add favicon URL to the app
+  const addApp = async (app: App) => {
+    const initialIcon = app.icon || getFaviconUrl(app.href);
     const appWithIcon = {
       ...app,
-      icon: app.icon || getFaviconUrl(app.href)
+      icon: initialIcon
     };
-    setApps([...apps, appWithIcon]);
+    setApps((prevApps) => [...prevApps, appWithIcon]);
+
+    if (!app.icon) {
+      try {
+        const bestIcon = await fetchBestFavicon(app.href);
+        setApps((prevApps) => prevApps.map((item) => item.id === appWithIcon.id ? { ...item, icon: bestIcon } : item));
+      } catch {
+        // Keep the placeholder icon if remote resolution fails.
+      }
+    }
   };
 
   const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip') => {
@@ -3119,14 +3112,14 @@ export default function Home() {
     setIsHaliteModalOpen(true);
   };
 
-  const addHaliteFolder = () => {
+  const addHaliteFolder = async () => {
     const validUrls = haliteUrls.filter(url => url.trim() !== '');
     if (validUrls.length >= 2 && validUrls.length <= 4) {
       const normalizedUrls = validUrls.map(url => {
         const trimmed = url.trim();
         return trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
       });
-      const haliteIcons = normalizedUrls.map(url => getFaviconUrl(url));
+      const haliteIcons = normalizedUrls.map((url) => getFaviconUrl(url));
       const folderName = haliteFolderName.trim() || 'Halite';
       const haliteApp: App = {
         id: `halite-${Date.now()}`,
@@ -3137,7 +3130,16 @@ export default function Home() {
         haliteIcons: haliteIcons,
         haliteName: folderName,
       };
-      addApp(haliteApp);
+
+      await addApp(haliteApp);
+
+      try {
+        const resolvedIcons = await Promise.all(normalizedUrls.map((url) => fetchBestFavicon(url).catch(() => getFaviconUrl(url))));
+        setApps((prevApps) => prevApps.map((item) => item.id === haliteApp.id ? { ...item, haliteIcons: resolvedIcons } : item));
+      } catch {
+        // Keep placeholder halite icons on failure.
+      }
+
       setHaliteUrls(['', '', '', '']);
       setHaliteFolderName('');
       setIsHaliteModalOpen(false);
@@ -3184,27 +3186,6 @@ export default function Home() {
       }
     }
     setContextMenu(null);
-  };
-
-  const handleChangeIcon = (appId: string) => {
-    setPendingIconAppId(appId);
-    setContextMenu(null);
-    // Trigger the hidden file input
-    setTimeout(() => iconUploadRef.current?.click(), 50);
-  };
-
-  const handleIconFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !pendingIconAppId) return;
-    e.target.value = ''; // reset so same file can be re-selected
-    if (!file.type.startsWith('image/')) return;
-    if (file.size > 2 * 1024 * 1024) return; // 2 MB guard
-    const key = `icon-${pendingIconAppId}-${Date.now()}`;
-    await saveImageBlob(key, file);
-    setApps(prev => prev.map(a =>
-      a.id === pendingIconAppId ? { ...a, icon: `idb:${key}` } : a
-    ));
-    setPendingIconAppId(null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -3405,52 +3386,45 @@ export default function Home() {
           {isGreetingDropdownOpen && (
             <div
               id="greeting-dropdown-menu"
-              className={`absolute right-0 mt-1.5 w-40 rounded-xl overflow-hidden ring-1 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.18)] ${isDarkMode
-                ? 'bg-[#1a1a1a]/90 text-white ring-white/10'
-                : 'bg-white/90 text-gray-900 ring-black/8'
+              className={`absolute right-0 mt-2 w-48 rounded-2xl shadow-xl ring-1 overflow-hidden ${isDarkMode
+                ? 'bg-[#141414] text-white ring-white/10'
+                : 'bg-white text-gray-900 ring-gray-200'
                 }`}
-              style={{ animation: 'dropdownFadeIn 0.12s ease-out' }}
             >
-              <div className="py-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsGreetingDropdownOpen(false);
-                    setIsSidebarOpen(true);
-                  }}
-                  className={`w-full text-left px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-2.5 ${isDarkMode
-                    ? 'hover:bg-white/8 text-white/90'
-                    : 'hover:bg-gray-50 text-gray-800'
-                    }`}
-                >
-                  <span className={`flex items-center justify-center w-5 h-5 rounded-md flex-shrink-0 ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </span>
-                  Settings
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsGreetingDropdownOpen(false);
-                    setIsNameEditorOpen(true);
-                    setNameInput(userName);
-                  }}
-                  className={`w-full text-left px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-2.5 ${isDarkMode
-                    ? 'hover:bg-white/8 text-white/90'
-                    : 'hover:bg-gray-50 text-gray-800'
-                    }`}
-                >
-                  <span className={`flex items-center justify-center w-5 h-5 rounded-md flex-shrink-0 ${isDarkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </span>
-                  Edit Name
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGreetingDropdownOpen(false);
+                  setIsSidebarOpen(true);
+                }}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-3 ${isDarkMode
+                  ? 'hover:bg-white/10 text-white'
+                  : 'hover:bg-gray-50 text-gray-900'
+                  }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Settings
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGreetingDropdownOpen(false);
+                  setIsNameEditorOpen(true);
+                  setNameInput(userName);
+                }}
+                className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-3 ${isDarkMode
+                  ? 'hover:bg-white/10 text-white'
+                  : 'hover:bg-gray-50 text-gray-900'
+                  }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Name
+              </button>
             </div>
           )}
           {isNameEditorOpen && (
@@ -3575,9 +3549,13 @@ export default function Home() {
         >
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
             <div className="mb-6" style={{ marginTop: appGroupMarginTop }}>
-              <div className={`flex flex-wrap justify-center ${
-                appCardSize === 'small' ? 'gap-x-1 gap-y-0 sm:gap-x-1.5 sm:gap-y-0.5' : 'gap-x-1 gap-y-0 sm:gap-x-1.5 sm:gap-y-0.5 lg:gap-x-2 lg:gap-y-1'
-              }`}>
+              <div className={`${centerAppsGroup
+                ? 'grid w-fit mx-auto [grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]'
+                : 'grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'
+                } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px] ${centerAppsGroup
+                  ? (appCardSize === 'small' ? 'gap-x-1 sm:gap-x-1.5 lg:gap-x-2' : 'gap-x-2 sm:gap-x-3 lg:gap-x-4')
+                  : (appCardSize === 'small' ? 'gap-x-0' : 'gap-x-0.5 sm:gap-x-0.5 lg:gap-x-0.5')
+                }`}>
                 {apps.map((app, index) => (
                   app.type === 'halite' ? (
                     <HaliteCard
@@ -3650,7 +3628,7 @@ export default function Home() {
                 <div className={`${centerAppsGroup
                   ? 'grid w-fit mx-auto [grid-template-columns:repeat(1,max-content)] sm:[grid-template-columns:repeat(2,max-content)] md:[grid-template-columns:repeat(3,max-content)] lg:[grid-template-columns:repeat(4,max-content)] xl:[grid-template-columns:repeat(5,max-content)] 2xl:[grid-template-columns:repeat(6,max-content)] 3xl:[grid-template-columns:repeat(7,max-content)]'
                   : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7'
-                  } gap-y-2 sm:gap-y-3 ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0 sm:gap-x-1 lg:gap-x-2'}`}>
+                  } gap-y-4 sm:gap-y-5 ${centerAppsGroup ? 'gap-x-2 sm:gap-x-3 lg:gap-x-4' : 'gap-x-0 sm:gap-x-1 lg:gap-x-2'}`}>
                   {widgets.map((widget, index) => (
                     widget.type === 'clock' ? (
                       <SortableClockWidget
@@ -4170,8 +4148,7 @@ export default function Home() {
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/40" onClick={() => setIsQuickAppOpen(false)} />
             <div className="absolute bottom-20 right-4 z-10 flex gap-4">
-              <div className={`w-80 lg:w-[30rem] rounded-2xl p-4 shadow-2xl max-h-96 overflow-y-auto custom-scrollbar ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
-                <h4 className="text-sm font-semibold mb-3">Popular Websites</h4>
+              <div className={`w-80 lg:w-[30rem] rounded-[28px] p-4 shadow-2xl max-h-96 overflow-y-auto custom-scrollbar ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-white ring-1 ring-gray-200'} text-white`}>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                   {[
                     { title: 'YouTube', url: 'youtube.com' },
@@ -4220,7 +4197,7 @@ export default function Home() {
                         });
                         setIsQuickAppOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${isDarkMode
+                      className={`w-full text-left px-3 py-2 rounded-2xl text-sm transition-colors flex items-center gap-2 ${isDarkMode
                         ? 'bg-white/5 hover:bg-white/10 text-white'
                         : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
                         }`}
@@ -4238,26 +4215,26 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
-                <h4 className="text-sm font-semibold mb-3">Add Favorite App</h4>
+              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${liquidGlassEnabled ? 'liquid-elevated' : glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-white ring-1 ring-gray-200'}`}>
+                <h4 className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-black'}`}>Add Favorite App</h4>
                 <div className="space-y-2">
                   <input
                     type="text"
                     placeholder="App name"
                     value={quickAppTitleInput}
                     onChange={(e) => setQuickAppTitleInput(e.target.value)}
-                    className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                    className={`w-full px-3 py-2 rounded-full text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 text-gray-200 placeholder-gray-400' : 'bg-white ring-gray-200 text-gray-500 placeholder-gray-500'}`}
                   />
                   <input
                     type="text"
                     placeholder="URL (e.g., twitter.com or https://twitter.com)"
                     value={quickAppUrlInput}
                     onChange={(e) => setQuickAppUrlInput(e.target.value)}
-                    className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
+                    className={`w-full px-3 py-2 rounded-full text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 text-gray-200 placeholder-gray-400' : 'bg-white ring-gray-200 text-gray-500 placeholder-gray-500'}`}
                   />
                 </div>
                 <div className="mt-3 flex justify-end gap-2">
-                  <button onClick={() => setIsQuickAppOpen(false)} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
+                  <button onClick={() => setIsQuickAppOpen(false)} className={`px-4 py-1.5 rounded-full text-sm ${isDarkMode ? 'bg-white/15 hover:bg-white/25 text-black' : 'bg-gray-100 hover:bg-gray-200 text-black'}`}>Cancel</button>
                   <button
                     onClick={() => {
                       const t = quickAppTitleInput.trim();
@@ -4269,7 +4246,7 @@ export default function Home() {
                       setQuickAppUrlInput('');
                       setIsQuickAppOpen(false);
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-500'} text-white`}
+                    className={`px-5 py-1.5 rounded-full min-w-[96px] text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-500'} text-white`}
                   >
                     Add
                   </button>
@@ -4465,6 +4442,8 @@ export default function Home() {
       <div className="fixed bottom-0 right-0 p-4 sm:p-5 z-30 flex items-end justify-end group" style={{ pointerEvents: dockVisibility === 'hover' && !isEditModalOpen ? 'auto' : 'none', width: '150px', height: '150px' }}>
         <div
           className={`rounded-full shadow-lg border flex items-center gap-1 transition-all duration-300 pointer-events-auto ${
+            topPillSize === 'small' ? 'px-1 py-1 sm:px-1 sm:py-1 gap-0.5' :
+            topPillSize === 'large' ? 'px-1.5 py-1.5 sm:px-2 sm:py-2 gap-1.5' :
             'px-1 py-1 sm:px-1.5 sm:py-1.5'
           } ${liquidGlassEnabled
             ? 'bg-white/10 border-white/20 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.28)]'
@@ -4483,6 +4462,8 @@ export default function Home() {
             setIsEditModalOpen(!isEditModalOpen);
           }}
           className={`${
+            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
             'w-7 h-7 sm:w-8 sm:h-8'
           } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
@@ -4494,11 +4475,11 @@ export default function Home() {
           aria-label={isEditModalOpen ? 'Exit Edit Mode' : 'Enter Edit Mode'}
         >
           {isEditModalOpen ? (
-            <svg className={"w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className={"w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           )}
@@ -4510,6 +4491,8 @@ export default function Home() {
           <button
             onClick={quickAddFavoriteApp}
             className={`${
+              topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+              topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
               'w-7 h-7 sm:w-8 sm:h-8'
             } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
               ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
@@ -4520,7 +4503,7 @@ export default function Home() {
             title="Add Favorite App"
             aria-label="Add Favorite App"
           >
-            <svg className={"w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
@@ -4532,6 +4515,8 @@ export default function Home() {
         <button
           onClick={openHaliteModal}
           className={`${
+            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
             'w-7 h-7 sm:w-8 sm:h-8'
           } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 text-white ring-yellow-500/30 hover:ring-yellow-500/50'
@@ -4541,12 +4526,9 @@ export default function Home() {
             } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
           title="Add Halite Folder"
           aria-label="Add Halite Folder"
-          style={{
-            boxShadow: '0 2px 8px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
-          }}
         >
-          <svg className={"w-4 h-4"} fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h4l2 2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
           </svg>
         </button>
         )}
@@ -4555,6 +4537,8 @@ export default function Home() {
         <button
           onClick={() => setIsSidebarOpen(true)}
           className={`${
+            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
             'w-7 h-7 sm:w-8 sm:h-8'
           } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${liquidGlassEnabled
             ? 'bg-white/10 text-white ring-white/15 hover:bg-white/20'
@@ -4565,7 +4549,7 @@ export default function Home() {
           title="Settings"
           aria-label="Settings"
         >
-          <svg className={"w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -4890,24 +4874,6 @@ export default function Home() {
                   Edit Folder
                 </button>
               )}
-              {/* Change Icon - only for regular (non-folder) apps */}
-              {!isFolder && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleChangeIcon(contextMenu.appId);
-                  }}
-                  className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
-                    ? 'text-white hover:bg-white/10'
-                    : 'text-gray-800 hover:bg-gray-100'
-                    }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Change Icon
-                </button>
-              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -4937,15 +4903,6 @@ export default function Home() {
           </div>
         );
       })()}
-
-      {/* Hidden file input for icon upload via context menu */}
-      <input
-        ref={iconUploadRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleIconFileChange}
-      />
 
       {/* Command Palette */}
       <CommandPalette

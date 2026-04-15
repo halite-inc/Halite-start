@@ -775,7 +775,7 @@ export default function LeftSidebar({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed w-[calc(100vw-1rem)] sm:w-[26rem] md:w-[46rem] rounded-3xl overflow-hidden z-50 ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
+        className={`fixed w-[calc(100vw-1rem)] sm:w-[26rem] md:w-[44rem] rounded-2xl overflow-hidden z-50 ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
           ? isDarkMode
             ? 'bg-[#2B2B2B]/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)]'
             : 'bg-white/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.15)]'
@@ -794,7 +794,7 @@ export default function LeftSidebar({
           transformOrigin: 'top right',
         }}
       >
-        {liquidGlassEnabled && <LiquidGlassCard isDark={isDarkMode} isHovered={false} className="rounded-3xl" />}
+        {liquidGlassEnabled && <LiquidGlassCard isDark={isDarkMode} isHovered={false} className="rounded-2xl" />}
         <div className="flex flex-col relative z-10 h-full">
           {/* Header */}
           <div 
@@ -809,10 +809,30 @@ export default function LeftSidebar({
               Dashboard Settings
             </h2>
             <div className="flex items-center gap-3">
+              <span className={`${modeBadgeClass} hidden sm:inline`} title={`Active mode: ${modeLabel}`}>{modeLabel}</span>
+              {/* Theme Toggle */}
+              <button
+                onClick={onToggleTheme}
+                className={`px-2.5 py-1.5 rounded-lg transition-all duration-150 ring-1 ${isDarkMode
+                  ? 'bg-white/5 ring-white/10 hover:bg-white/10 text-yellow-300'
+                  : 'bg-white ring-gray-200 hover:bg-gray-50 text-gray-700'
+                  }`}
+                title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {isDarkMode ? (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                  </svg>
+                )}
+              </button>
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className={`rounded-lg p-1.5 transition-all ${isDarkMode ? 'text-gray-400 hover:text-white hover:bg-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                className={`rounded-lg px-2.5 py-1.5 transition-all ring-1 ${isDarkMode ? 'text-gray-300 hover:text-white ring-white/10 hover:bg-white/5' : 'text-gray-700 ring-gray-200 hover:bg-gray-50'
                   }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -901,7 +921,14 @@ export default function LeftSidebar({
                 isDarkMode={isDarkMode}
                 iconColor="text-emerald-500"
               />
-
+              <NavButton
+                label="Add App"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
+                isActive={openSection === 'addApp'}
+                onClick={() => setOpenSection('addApp')}
+                isDarkMode={isDarkMode}
+                iconColor="text-rose-500"
+              />
             </div>
 
             {/* Main Content Area */}
@@ -1135,31 +1162,6 @@ export default function LeftSidebar({
                        {/* Visual Effects */}
                        <div className="space-y-2">
                         <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Visual Effects</h4>
-                        {/* Dark / Light mode row */}
-                        <div className="flex items-center justify-between">
-                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            {isDarkMode ? 'Dark Mode' : 'Light Mode'}
-                          </label>
-                          <button
-                            onClick={onToggleTheme}
-                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all duration-150 ring-1 text-xs font-medium ${isDarkMode
-                              ? 'bg-white/5 ring-white/10 hover:bg-white/10 text-yellow-300'
-                              : 'bg-white ring-gray-200 hover:bg-gray-50 text-indigo-600'
-                            }`}
-                            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                          >
-                            {isDarkMode ? (
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-                              </svg>
-                            ) : (
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                              </svg>
-                            )}
-                            {isDarkMode ? 'Dark' : 'Light'}
-                          </button>
-                        </div>
                          <div className="grid grid-cols-3 gap-2">
                            <button onClick={onToggleNormalMode} className={`p-2 rounded-xl text-[10px] font-semibold transition-all ${normalModeEnabled ? 'bg-slate-700 text-white shadow-md' : isDarkMode ? 'bg-[#121212] text-gray-400 border border-white/10' : 'bg-white text-gray-600 border border-gray-200'}`}>Normal</button>
                            <button onClick={onToggleGlassmorphism} className={`p-2 rounded-xl text-[10px] font-semibold transition-all ${glassmorphismEnabled ? 'bg-blue-600 text-white shadow-md' : isDarkMode ? 'bg-[#121212] text-gray-400 border border-white/10' : 'bg-white text-gray-600 border border-gray-200'}`}>Glass</button>
@@ -1184,7 +1186,7 @@ export default function LeftSidebar({
                            </div>
                            <div className="flex items-center justify-between">
                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Size</label>
-                             <SegmentedControl value={topPillSize || 'medium'} onChange={(val) => onSetTopPillSize && onSetTopPillSize(val as any)} options={[{ value: 'small', label: 'S' }, { value: 'medium', label: 'M' }, { value: 'large', label: 'L' }]} isDarkMode={isDarkMode} />
+                             <SegmentedControl value={topPillSize || 'medium'} onChange={(val) => onSetTopPillSize && onSetTopPillSize(val as any)} options={[{ value: 'medium', label: 'Medium' }]} isDarkMode={isDarkMode} />
                            </div>
                            <div className="flex items-center justify-between">
                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Style</label>
