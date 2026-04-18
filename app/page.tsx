@@ -133,7 +133,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
     } catch { return false; }
   })();
 
-  const extraClasses = isYouTube ? ' bg-[#FF0037]' : '';
+  const extraClasses = isYouTube && !liquidGlassEnabled ? ' bg-[#FF0037]' : '';
   const iconBgClass = isYouTube ? 'bg-[#FF0037]' : 'bg-white';
 
   const hoverClass = animateIconsEnabled
@@ -3498,10 +3498,14 @@ export default function Home() {
                   'text-7xl sm:text-8xl md:text-9xl' // medium
                 } ${
                   bigClockGlassMode 
-                    ? 'bg-clip-text text-transparent bg-gradient-to-b from-white/90 to-white/10 drop-shadow-lg' 
+                    ? 'bg-clip-text text-transparent drop-shadow-lg' 
                     : ''
                 }`}
                 style={{
+                   ...(bigClockGlassMode ? {
+                     backgroundImage: `linear-gradient(to bottom, ${bigClockColor || 'white'}cc, ${bigClockColor || 'white'}33)`,
+                     backgroundClip: 'text',
+                   } : {}),
                    color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined,
                    fontFamily: bigClockFont === 'default' ? undefined :
                                bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
@@ -3521,10 +3525,14 @@ export default function Home() {
                   'text-xl sm:text-2xl' // medium
                 } ${
                   bigClockGlassMode 
-                    ? 'bg-clip-text text-transparent bg-gradient-to-b from-white/90 to-white/10 drop-shadow-md' 
+                    ? 'bg-clip-text text-transparent drop-shadow-md' 
                     : ''
                 }`}
                 style={{
+                   ...(bigClockGlassMode ? {
+                     backgroundImage: `linear-gradient(to bottom, ${bigClockColor || 'white'}cc, ${bigClockColor || 'white'}33)`,
+                     backgroundClip: 'text',
+                   } : {}),
                    color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined,
                    fontFamily: bigClockFont === 'default' ? undefined :
                                bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :

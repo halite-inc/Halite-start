@@ -410,3 +410,44 @@ input[type="range"]::-moz-range-progress {
   border-radius: 999px;
   background: #3b82f6;
 }
+
+/* Enhanced slider with dots/ticks */
+.slider-with-dots {
+  position: relative;
+}
+
+.slider-with-dots::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    #94a3b8 0px,
+    #94a3b8 2px,
+    transparent 2px,
+    transparent 80px
+  );
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.dark .slider-with-dots::before {
+  background: repeating-linear-gradient(
+    90deg,
+    #64748b 0px,
+    #64748b 2px,
+    transparent 2px,
+    transparent 80px
+  );
+}
+
+.slider-with-dots::-webkit-slider-runnable-track {
+  background: transparent;
+}
+
+.dark .slider-with-dots::-webkit-slider-runnable-track {
+  background: transparent;
+}

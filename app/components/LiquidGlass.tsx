@@ -29,7 +29,7 @@ export function LiquidGlassCard({ className, isDark, isHovered }: { className?: 
 
   return (
     <>
-      <div ref={ref} className={`absolute inset-0 rounded-2xl pointer-events-none backdrop-blur-3xl backdrop-saturate-150 ${isDark ? 'bg-white/5' : 'bg-white/10'} ${className || ''}`} />
+      <div ref={ref} className={`absolute inset-0 rounded-3xl pointer-events-none backdrop-blur-3xl backdrop-saturate-150 ${isDark ? 'bg-white/5' : 'bg-white/10'} ${className || ''}`} />
       <View track={ref as React.MutableRefObject<HTMLElement>}>
          <Scene isDark={isDark} isHovered={isHovered} />
       </View>

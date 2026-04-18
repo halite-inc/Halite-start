@@ -775,7 +775,7 @@ export default function LeftSidebar({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed w-[calc(100vw-1rem)] sm:w-[26rem] md:w-[44rem] rounded-2xl overflow-hidden z-50 ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
+        className={`fixed w-[calc(100vw-1rem)] sm:w-[26rem] md:w-[44rem] rounded-3xl overflow-hidden z-50 ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
           ? isDarkMode
             ? 'bg-[#2B2B2B]/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)]'
             : 'bg-white/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.15)]'
@@ -844,9 +844,7 @@ export default function LeftSidebar({
           {/* Content Layout */}
           <div className="flex-1 flex overflow-hidden min-h-0">
             {/* Side Navigation */}
-            <div className={`w-[140px] sm:w-[200px] shrink-0 flex flex-col gap-1 p-2 border-r overflow-y-auto custom-scrollbar ${
-              isDarkMode ? 'border-white/10' : 'border-gray-200'
-            }`}>
+            <div className={`w-[140px] sm:w-[200px] shrink-0 flex flex-col gap-1 p-2 overflow-y-auto custom-scrollbar`}>
               <NavButton
                 label="App & Widget"
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>}
@@ -966,7 +964,7 @@ export default function LeftSidebar({
                          <div>
                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Group Margin Top</label>
                           <div className="mt-2 flex items-center gap-3">
-                            <input type="range" min={0} max={800} step={1} value={appGroupMarginTop} onChange={(e) => onSetAppGroupMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500" />
+                            <input type="range" min={0} max={800} step={1} value={appGroupMarginTop} onChange={(e) => onSetAppGroupMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500 slider-with-dots" />
                             <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{appGroupMarginTop}px</span>
                           </div>
                         </div>
@@ -982,7 +980,7 @@ export default function LeftSidebar({
                              <div>
                                <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Top Margin</label>
                                <div className="mt-2 flex items-center gap-3">
-                                 <input type="range" min={0} max={600} step={4} value={bigClockMarginTop ?? 128} onChange={(e) => onSetBigClockMarginTop && onSetBigClockMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500" />
+                                 <input type="range" min={0} max={600} step={4} value={bigClockMarginTop ?? 128} onChange={(e) => onSetBigClockMarginTop && onSetBigClockMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500 slider-with-dots" />
                                  <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{bigClockMarginTop ?? 128}px</span>
                                </div>
                              </div>
@@ -1251,22 +1249,22 @@ export default function LeftSidebar({
                           </div>
                           {animateIconsEnabled && (
                             <>
-                              <div className="mt-3 flex items-center justify-between">
+                              <div className="mt-3 flex items-center justify-between relative">
                                 <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hover Animation</label>
-                                <button type="button" onClick={() => setIsHoverDropdownOpen(v => !v)} className={`text-xs px-3 py-1.5 rounded-lg ring-1 transition-colors flex items-center gap-1 ${isDarkMode ? 'bg-[#0f1115] text-white ring-white/10 hover:bg-white/5' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50'}`} aria-haspopup="listbox" aria-expanded={isHoverDropdownOpen}>
+                                <button type="button" onClick={() => setIsHoverDropdownOpen(v => !v)} className={`text-xs px-3.5 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium ${isDarkMode ? 'bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue-500/30 ring-1 ring-blue-500/30' : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue-500/30 ring-1 ring-blue-400/50'}`} aria-haspopup="listbox" aria-expanded={isHoverDropdownOpen}>
                                   <span className="capitalize flex items-center gap-1.5">{renderHoverIcon(hoverAnimationStyle)}{hoverAnimationStyle}</span>
-                                  <svg className={`w-3.5 h-3.5 transition-transform ${isHoverDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                  <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${isHoverDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </button>
+                                {isHoverDropdownOpen && (
+                                  <div className={`absolute right-0 top-full mt-2 z-50 w-44 rounded-2xl overflow-hidden shadow-2xl ring-1 backdrop-blur-md transition-all duration-200 ${isDarkMode ? 'bg-[#0f1117]/95 ring-white/10 shadow-black/50' : 'bg-white/95 ring-gray-200/50 shadow-gray-500/20'}`} role="listbox">
+                                    {(['scale', 'tilt', 'skew', 'spin', 'bounce', 'pulse', 'float', 'slide', 'glow'] as const).map((opt, idx) => (
+                                      <button key={opt} type="button" onMouseDown={(e) => { e.preventDefault(); onSetHoverAnimationStyle(opt); setIsHoverDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-xs capitalize transition-all duration-150 flex items-center gap-2.5 font-medium border-b border-transparent ${isDarkMode ? 'text-gray-200 hover:bg-blue-600/20' : 'text-gray-900 hover:bg-blue-50'} ${hoverAnimationStyle === opt ? (isDarkMode ? 'bg-blue-600/30 text-blue-300 border-blue-600/50' : 'bg-blue-100 text-blue-700 border-blue-200') : ''} ${idx === ['scale', 'tilt', 'skew', 'spin', 'bounce', 'pulse', 'float', 'slide', 'glow'].length - 1 ? 'border-b-0' : ''}`} role="option" aria-selected={hoverAnimationStyle === opt}>
+                                        {renderHoverIcon(opt)}<span className="flex-1">{opt}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                              {isHoverDropdownOpen && (
-                                <div className={`absolute right-0 mt-2 z-20 w-40 rounded-xl overflow-hidden shadow-lg ring-1 ${isDarkMode ? 'bg-[#121212] ring-white/10' : 'bg-white ring-gray-200'}`} role="listbox">
-                                  {(['scale', 'tilt', 'skew', 'spin', 'bounce', 'pulse', 'float', 'glow'] as const).map(opt => (
-                                    <button key={opt} type="button" onMouseDown={(e) => { e.preventDefault(); onSetHoverAnimationStyle(opt); setIsHoverDropdownOpen(false); }} className={`w-full text-left px-3 py-2 text-xs capitalize transition-colors ${isDarkMode ? 'text-white hover:bg-white/10' : 'text-gray-800 hover:bg-gray-100'} ${hoverAnimationStyle === opt ? (isDarkMode ? 'bg-white/5' : 'bg-gray-50') : ''}`} role="option" aria-selected={hoverAnimationStyle === opt}>
-                                      {renderHoverIcon(opt)}{opt}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
                               <div className="mt-3 flex items-center justify-between">
                                 <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Apply to Widgets</label>
                                 <button onClick={onToggleAnimateWidgets} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${animateWidgetsEnabled ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
@@ -1313,7 +1311,7 @@ export default function LeftSidebar({
                                 <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Blur Amount</label>
                                 <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{backgroundBlur || 0}px</span>
                               </div>
-                              <input type="range" min="0" max="20" value={backgroundBlur || 0} onChange={(e) => onSetBackgroundBlur && onSetBackgroundBlur(Number(e.target.value))} className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
+                              <input type="range" min="0" max="20" value={backgroundBlur || 0} onChange={(e) => onSetBackgroundBlur && onSetBackgroundBlur(Number(e.target.value))} className={`w-full h-2 rounded-lg appearance-none cursor-pointer slider-with-dots ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
                           </div>
                         )}
                     </div>
@@ -1989,27 +1987,27 @@ export default function LeftSidebar({
                                   {renderHoverIcon(hoverAnimationStyle)}
                                   {hoverAnimationStyle}
                                 </span>
-                                <svg className={`w-3.5 h-3.5 transition-transform ${isHoverDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${isHoverDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                               </button>
                               {isHoverDropdownOpen && (
-                                <div className={`absolute right-0 mt-2 z-20 w-40 rounded-xl overflow-hidden shadow-lg ring-1 ${isDarkMode ? 'bg-[#121212] ring-white/10' : 'bg-white ring-gray-200'
+                                <div className={`absolute right-0 mt-2 z-50 w-44 rounded-2xl overflow-hidden shadow-2xl ring-1 backdrop-blur-md transition-all duration-200 ${isDarkMode ? 'bg-[#0f1117]/95 ring-white/10 shadow-black/50' : 'bg-white/95 ring-gray-200/50 shadow-gray-500/20'
                                   }`}
                                   role="listbox"
                                 >
-                                  {(['scale', 'tilt', 'skew', 'spin', 'bounce'] as const).map(opt => (
+                                  {(['scale', 'tilt', 'skew', 'spin', 'bounce', 'pulse', 'float', 'slide', 'glow'] as const).map((opt, idx) => (
                                     <button
                                       key={opt}
                                       type="button"
                                       onMouseDown={(e) => { e.preventDefault(); onSetHoverAnimationStyle(opt); setIsHoverDropdownOpen(false); }}
-                                      className={`w-full text-left px-3 py-2 text-xs capitalize transition-colors flex items-center gap-2 ${isDarkMode ? 'text-white hover:bg-white/10' : 'text-gray-800 hover:bg-gray-100'
-                                        } ${hoverAnimationStyle === opt ? (isDarkMode ? 'bg-white/5' : 'bg-gray-50') : ''}`}
+                                      className={`w-full text-left px-4 py-2.5 text-xs capitalize transition-all duration-150 flex items-center gap-2.5 font-medium border-b border-transparent ${isDarkMode ? 'text-gray-200 hover:bg-blue-600/20' : 'text-gray-900 hover:bg-blue-50'
+                                        } ${hoverAnimationStyle === opt ? (isDarkMode ? 'bg-blue-600/30 text-blue-300 border-blue-600/50' : 'bg-blue-100 text-blue-700 border-blue-200') : ''} ${idx === ['scale', 'tilt', 'skew', 'spin', 'bounce', 'pulse', 'float', 'slide', 'glow'].length - 1 ? 'border-b-0' : ''}`}
                                       role="option"
                                       aria-selected={hoverAnimationStyle === opt}
                                     >
                                       {renderHoverIcon(opt)}
-                                      {opt}
+                                      <span className="flex-1">{opt}</span>
                                     </button>
                                   ))}
                                 </div>
