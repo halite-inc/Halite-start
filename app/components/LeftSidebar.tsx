@@ -243,16 +243,16 @@ const NavButton = ({ label, icon, isActive, onClick, isDarkMode, iconColor }: { 
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${isActive
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs sm:text-sm font-medium transition-all duration-200 ${isActive
         ? isDarkMode
-          ? 'bg-blue-600/20 text-blue-400'
-          : 'bg-blue-50 text-blue-600'
+          ? 'bg-gray-600/20 text-gray-300'
+          : 'bg-gray-100 text-gray-700'
         : isDarkMode
           ? 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
         }`}
     >
-      <span className={`flex items-center justify-center w-6 h-6 rounded-md ${bgClass} ${iconColor || 'text-gray-500'}`}>
+      <span className={`flex items-center justify-center w-6 h-6 rounded-2xl ${bgClass} ${iconColor || 'text-gray-500'}`}>
         {icon}
       </span>
       <span className="truncate">{label}</span>
@@ -744,7 +744,7 @@ export default function LeftSidebar({
   // Derived styles based on active visual mode
   const isGlass = glassmorphismEnabled;
   const isLiquid = liquidGlassEnabled;
-  const sectionHeaderClass = `w-full flex items-center justify-between px-3 py-1.5 rounded-lg transition-colors ${isDarkMode
+  const sectionHeaderClass = `w-full flex items-center justify-between px-3 py-1.5 rounded-xl transition-colors ${isDarkMode
     ? 'bg-white/5 text-white ring-1 ring-white/10 hover:bg-white/10'
     : 'bg-white text-gray-800 ring-1 ring-gray-200 hover:bg-gray-50 shadow-sm'
     }`;
@@ -775,7 +775,7 @@ export default function LeftSidebar({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed w-[calc(100vw-1rem)] sm:w-[26rem] md:w-[44rem] rounded-3xl overflow-hidden z-50 ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
+        className={`fixed w-[calc(100vw-1rem)] sm:w-[28rem] md:w-[47rem] rounded-3xl overflow-hidden z-50 ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
           ? isDarkMode
             ? 'bg-[#2B2B2B]/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)]'
             : 'bg-white/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.15)]'
@@ -795,56 +795,9 @@ export default function LeftSidebar({
         }}
       >
         {liquidGlassEnabled && <LiquidGlassCard isDark={isDarkMode} isHovered={false} className="rounded-2xl" />}
-        <div className="flex flex-col relative z-10 h-full">
-          {/* Header */}
-          <div 
-            onMouseDown={handleDragStart}
-            className={`flex items-center justify-between p-4 cursor-move select-none ${isDarkMode
-            ? 'border-b border-white/5'
-            : 'border-b border-transparent'
-            }`}
-          >
-            <h2 id="settings-title" className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-              Dashboard Settings
-            </h2>
-            <div className="flex items-center gap-3">
-              {/* Theme Toggle */}
-              <button
-                onClick={onToggleTheme}
-                className={`px-2.5 py-1.5 rounded-full transition-all duration-150 ring-1 ${isDarkMode
-                  ? 'bg-white/5 ring-white/10 hover:bg-white/10 text-yellow-300'
-                  : 'bg-white ring-gray-200 hover:bg-gray-50 text-gray-700'
-                  }`}
-                title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {isDarkMode ? (
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                  </svg>
-                )}
-              </button>
-              {/* Close Button */}
-              <button
-                onClick={onClose}
-                className={`rounded-lg px-2.5 py-1.5 transition-all ring-1 ${isDarkMode ? 'text-gray-300 hover:text-white ring-white/10 hover:bg-white/5' : 'text-gray-700 ring-gray-200 hover:bg-gray-50'
-                  }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Content Layout */}
-          <div className="flex-1 flex overflow-hidden min-h-0">
-            {/* Side Navigation */}
-            <div className={`w-[140px] sm:w-[200px] shrink-0 flex flex-col gap-1 p-2 overflow-y-auto custom-scrollbar`}>
+        <div className="flex relative z-10 h-full gap-2 p-2">
+          {/* Left Sidebar - Full Height */}
+          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-3 overflow-y-auto custom-scrollbar rounded-2xl ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-100/50 ring-gray-200/50'}`}>
               <NavButton
                 label="App & Widget"
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>}
@@ -877,7 +830,6 @@ export default function LeftSidebar({
                 isDarkMode={isDarkMode}
                 iconColor="text-pink-500"
               />
-              <div className={`my-2 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`} />
               <NavButton
                 label="Widgets"
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>}
@@ -894,17 +846,65 @@ export default function LeftSidebar({
                 isDarkMode={isDarkMode}
                 iconColor="text-emerald-500"
               />
+              {/* Spacer to push theme toggle to bottom */}
+              <div className="flex-1" />
+              {/* Theme Toggle - Bottom Left */}
+              <div className="pt-2 border-t border-gray-200 dark:border-white/10 flex justify-start">
+                <button
+                  onClick={onToggleTheme}
+                  className={`p-1.5 rounded-full transition-all duration-150 ${isDarkMode
+                    ? 'text-yellow-300 hover:bg-white/10'
+                    : 'text-gray-700 hover:bg-gray-200/50'
+                    }`}
+                  title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {isDarkMode ? (
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
-            {/* Main Content Area */}
-            <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 ${
-              openSection === 'search' ? 'bg-transparent' : ''
-            }`}>
+            {/* Right Column: Title Bar + Main Content */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Title Bar */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-white/10 shrink-0">
+                <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                  {openSection === 'layout' ? 'App & Widget Layout'
+                    : openSection === 'bookmarks' ? 'Bookmarks'
+                    : openSection === 'search' ? 'Search Settings'
+                    : openSection === 'customization' ? 'Customization'
+                    : openSection === 'widgets' ? 'Widgets'
+                    : openSection === 'background' ? 'Background'
+                    : 'Dashboard Settings'}
+                </h2>
+                <button
+                  onClick={onClose}
+                  className={`p-1.5 rounded-full transition-all duration-150 ${isDarkMode
+                    ? 'text-gray-400 hover:bg-white/10'
+                    : 'text-gray-500 hover:bg-gray-200/50'
+                    }`}
+                  title="Close settings"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              {/* Main Content Area */}
+              <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 ${
+                openSection === 'search' ? 'bg-transparent' : ''
+              }`}>
               
                 {/* Bookmarks Section */}
                 {openSection === 'bookmarks' && (
                   <div className={panelClass}>
-                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Bookmarks</h3>
                      <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -941,7 +941,6 @@ export default function LeftSidebar({
                 {/* Layout (App & Widget) Section */}
                 {openSection === 'layout' && (
                   <div className={panelClass}>
-                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>App &amp; Widget Layout</h3>
                      <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show App Titles</label>
@@ -1058,7 +1057,6 @@ export default function LeftSidebar({
                 {/* Search Section */}
                 {openSection === 'search' && (
                    <div className={panelClass}>
-                     <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Search Settings</h3>
                      <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show Search Bar</label>
@@ -1087,7 +1085,6 @@ export default function LeftSidebar({
                 {/* Customization Section */}
                 {openSection === 'customization' && (
                   <div className={panelClass}>
-                    <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Customization</h3>
                     <div className="space-y-6">
                        {/* Visual Effects */}
                        <div className="space-y-2">
@@ -2231,7 +2228,7 @@ export default function LeftSidebar({
                           className={`block w-full text-sm ${isDarkMode
                             ? 'text-gray-300 file:bg-white/10 file:text-white file:border-white/20 file:hover:bg-white/20'
                             : 'text-gray-700 file:bg-gray-100 file:text-gray-800 file:border-gray-300 file:hover:bg-gray-200'
-                            } file:rounded-lg file:px-4 file:py-2 file:mr-4 file:border file:cursor-pointer`}
+                            } file:rounded-full file:px-4 file:py-2 file:mr-4 file:border file:cursor-pointer`}
                         />
                         {bgError && (
                           <p className={`mt-2 text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
@@ -2274,13 +2271,32 @@ export default function LeftSidebar({
                               setBgError(null);
                               setSelectedFile(null);
                             }}
-                            className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${isDarkMode
+                            className={`text-xs px-3 py-1.5 rounded-full transition-colors ${isDarkMode
                               ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30'
                               : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
                               }`}
                           >
                             Remove Background
                           </button>
+                          {/* Background Settings */}
+                          <div className="space-y-3 pt-3 mt-3 border-t border-gray-200 dark:border-white/10">
+                            {/* Blur */}
+                            <div>
+                              <label className={`block text-sm font-medium mb-2 flex items-center justify-between ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                <span>Blur Effect</span>
+                                <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{backgroundBlur || 0}px</span>
+                              </label>
+                              <input 
+                                type="range" 
+                                min={0} 
+                                max={20} 
+                                step={1} 
+                                value={backgroundBlur || 0} 
+                                onChange={(e) => onSetBackgroundBlur && onSetBackgroundBlur(Number(e.target.value))} 
+                                className="w-full accent-blue-500 slider-with-dots" 
+                              />
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -2355,9 +2371,9 @@ export default function LeftSidebar({
                 </div>
               )}
             </div>
+            </div>
           </div>
         </div>
-      </div>
     </>
   );
 } 
