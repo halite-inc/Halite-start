@@ -87,6 +87,12 @@ async function fetchViaProxy(hostname: string, timeoutMs: number): Promise<strin
 export function getFaviconUrl(urlOrDomain: string, size = 64): string {
   const hostname = extractHostname(urlOrDomain);
   if (!hostname) return '';
+  
+  // Custom favicon handling for faceprep.online
+  if (hostname.includes('faceprep.online')) {
+    return '/faceprep.png';
+  }
+  
   return `https://www.google.com/s2/favicons?domain=${hostname}&sz=${size}`;
 }
 
@@ -110,6 +116,11 @@ export async function fetchBestFavicon(
 
   const hostname = extractHostname(urlOrDomain);
   if (!hostname) return '';
+  
+  // Custom favicon handling for faceprep.online
+  if (hostname.includes('faceprep.online')) {
+    return '/faceprep.png';
+  }
 
   // ── Cache hit ──────────────────────────────────────────────────────────────
   const hit = cache.get(hostname);

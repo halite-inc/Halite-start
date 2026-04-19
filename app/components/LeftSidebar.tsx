@@ -113,6 +113,8 @@ interface LeftSidebarProps {
   onSetAppCardInnerShadow?: (shadow: 'none' | 'small' | 'medium' | 'large') => void;
   appCardBackgroundColor?: string;
   onSetAppCardBackgroundColor?: (color: string) => void;
+  fontFamily?: 'default' | 'serif' | 'mono' | 'sans' | 'elegant';
+  onSetFontFamily?: (family: 'default' | 'serif' | 'mono' | 'sans' | 'elegant') => void;
 }
 
 interface ModernDropdownProps {
@@ -366,6 +368,8 @@ export default function LeftSidebar({
   onSetAppCardInnerShadow,
   appCardBackgroundColor,
   onSetAppCardBackgroundColor,
+  fontFamily,
+  onSetFontFamily,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
@@ -797,7 +801,7 @@ export default function LeftSidebar({
         {liquidGlassEnabled && <LiquidGlassCard isDark={isDarkMode} isHovered={false} className="rounded-2xl" />}
         <div className="flex relative z-10 h-full gap-2 p-2">
           {/* Left Sidebar - Full Height */}
-          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-3 overflow-y-auto custom-scrollbar rounded-2xl ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-100/50 ring-gray-200/50'}`}>
+          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-2.5 overflow-y-auto custom-scrollbar rounded-2xl ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-100/50 ring-gray-200/50'}`}>
               <NavButton
                 label="App & Widget"
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>}
@@ -1219,6 +1223,10 @@ export default function LeftSidebar({
                       {/* Typography */}
                       <div className="space-y-2">
                         <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Typography</h4>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Page Font Family</label>
+                          <ModernDropdown value={fontFamily || 'default'} onChange={(val) => onSetFontFamily && onSetFontFamily(val as any)} options={[{ value: 'default', label: 'Default' }, { value: 'serif', label: 'Serif' }, { value: 'mono', label: 'Monospace' }, { value: 'sans', label: 'Sans-Serif' }, { value: 'elegant', label: 'Elegant' }]} isDarkMode={isDarkMode} />
+                        </div>
                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Text Color</label>
                           <ModernDropdown value={appTitleColor} onChange={(val) => onSetAppTitleColor(val as any)} options={[{ value: 'auto', label: 'Auto' }, { value: 'black', label: 'Black' }, { value: 'white', label: 'White' }]} isDarkMode={isDarkMode} />

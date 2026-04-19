@@ -110,7 +110,13 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
 
   useEffect(() => {
     let isMounted = true;
-    if (app.icon?.startsWith('idb:')) {
+    
+    // Check if this is a faceprep.online URL and use custom icon
+    const isFaceprep = app.href.includes('faceprep.online');
+    
+    if (isFaceprep) {
+      setIconSrc('/faceprep.png');
+    } else if (app.icon?.startsWith('idb:')) {
       const key = app.icon.replace('idb:', '');
       getImageObjectUrl(key).then(url => {
         if (isMounted && url) setIconSrc(url);
@@ -119,7 +125,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
       setIconSrc(app.icon);
     }
     return () => { isMounted = false; };
-  }, [app.icon]);
+  }, [app.icon, app.href]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -314,6 +320,15 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
 
   const haliteUrls = app.haliteUrls || [];
   const haliteIcons = app.haliteIcons || [];
+  
+  // Override icons for faceprep.online URLs with custom icon
+  const displayIcons = haliteIcons.map((icon, idx) => {
+    const url = haliteUrls[idx];
+    if (url && url.includes('faceprep.online')) {
+      return '/faceprep.png';
+    }
+    return icon;
+  });
 
   const handleClick = (e: React.MouseEvent) => {
     if (!isEditModalOpen && haliteUrls.length > 0) {
@@ -392,10 +407,10 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
           <div className="w-full h-full p-1 relative z-10">
             {/* First icon - top left */}
             <div className="absolute top-0 left-0 w-1/2 h-1/2 flex items-center justify-center relative overflow-hidden rounded">
-              {haliteIcons[0] && haliteIcons[0].trim() !== '' ? (
+              {displayIcons[0] && displayIcons[0].trim() !== '' ? (
                 <>
                   <img
-                    src={haliteIcons[0]}
+                    src={displayIcons[0]}
                     alt={`${app.title} 1`}
                     className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
                     onError={(e) => {
@@ -419,10 +434,10 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
             </div>
             {/* Second icon - bottom right */}
             <div className="absolute bottom-0 right-0 w-1/2 h-1/2 flex items-center justify-center relative overflow-hidden rounded">
-              {haliteIcons[1] && haliteIcons[1].trim() !== '' ? (
+              {displayIcons[1] && displayIcons[1].trim() !== '' ? (
                 <>
                   <img
-                    src={haliteIcons[1]}
+                    src={displayIcons[1]}
                     alt={`${app.title} 2`}
                     className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
                     onError={(e) => {
@@ -448,13 +463,13 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
         ) : (
           <div className="w-full h-full p-1 grid gap-0.5 grid-cols-2 grid-rows-2 relative z-10">
             {haliteUrls.map((url, index) => {
-              const hasIcon = haliteIcons[index] && haliteIcons[index].trim() !== '';
+              const hasIcon = displayIcons[index] && displayIcons[index].trim() !== '';
               return (
                 <div key={index} className="w-full h-full flex items-center justify-center relative overflow-hidden rounded">
                   {hasIcon ? (
                     <>
                       <img
-                        src={haliteIcons[index]}
+                        src={displayIcons[index]}
                         alt={`${app.title} ${index + 1}`}
                         className={`w-full h-full object-cover ${monochromeIcons ? 'grayscale contrast-125' : ''}`}
                         onError={(e) => {
@@ -2057,6 +2072,10 @@ export default function Home() {
   const [bigClockSize, setBigClockSize] = useState<'small' | 'medium' | 'large' | 'huge'>('medium');
   const [bigClockGlassMode, setBigClockGlassMode] = useState<boolean>(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null);
+  const [editingApp, setEditingApp] = useState<App | null>(null);
+  const [editAppTitle, setEditAppTitle] = useState<string>('');
+  const [editAppUrl, setEditAppUrl] = useState<string>('');
+  const [fontFamily, setFontFamily] = useState<'default' | 'serif' | 'mono' | 'sans' | 'elegant'>('default');
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
 
@@ -2565,6 +2584,12 @@ export default function Home() {
         console.log('✅ Greeting style loaded:', savedGreetingStyle);
       }
 
+      const savedFontFamily = localStorage.getItem('fontFamily');
+      if (savedFontFamily === 'default' || savedFontFamily === 'serif' || savedFontFamily === 'mono' || savedFontFamily === 'sans' || savedFontFamily === 'elegant') {
+        setFontFamily(savedFontFamily);
+        console.log('✅ Font family loaded:', savedFontFamily);
+      }
+
       // Load top pill size
       const savedTopPillSize = localStorage.getItem('topPillSize');
       if (savedTopPillSize === 'small' || savedTopPillSize === 'medium' || savedTopPillSize === 'large') {
@@ -2756,6 +2781,17 @@ export default function Home() {
       localStorage.setItem('userName', userName);
       localStorage.setItem('greetingStyle', greetingStyle);
       localStorage.setItem('showTopTime', showTopTime.toString());
+      localStorage.setItem('fontFamily', fontFamily);
+
+      // Apply font family to document
+      const fontFamilyMap = {
+        default: 'system-ui, -apple-system, sans-serif',
+        serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+        mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+        sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+        elegant: '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif'
+      };
+      document.documentElement.style.fontFamily = fontFamilyMap[fontFamily];
 
       // Apply theme to document
       if (isDarkMode) {
@@ -2813,6 +2849,7 @@ export default function Home() {
     showTopTime,
     searchBarWidth,
     compactSearchBar,
+    fontFamily,
     isLoading,
     isResetting
   ]);
@@ -3161,7 +3198,7 @@ export default function Home() {
 
     // Calculate position with viewport bounds checking
     const menuWidth = 160;
-    const menuHeight = 50;
+    const menuHeight = 100;
     const x = Math.min(e.clientX, window.innerWidth - menuWidth - 10);
     const y = Math.min(e.clientY, window.innerHeight - menuHeight - 10);
 
@@ -3170,6 +3207,36 @@ export default function Home() {
       y: Math.max(10, y),
       appId,
     });
+  };
+
+  const startEditingApp = (appId: string) => {
+    const app = apps.find(a => a.id === appId);
+    if (!app) return;
+    setEditingApp(app);
+    setEditAppTitle(app.title);
+    setEditAppUrl(app.href);
+    setContextMenu(null);
+  };
+
+  const saveEditedApp = () => {
+    if (!editingApp || !editAppTitle.trim() || !editAppUrl.trim()) {
+      return;
+    }
+    const normalizedUrl = editAppUrl.trim().startsWith('http') ? editAppUrl.trim() : `https://${editAppUrl.trim()}`;
+    setApps(apps.map(app => 
+      app.id === editingApp.id 
+        ? { ...app, title: editAppTitle.trim(), href: normalizedUrl }
+        : app
+    ));
+    setEditingApp(null);
+    setEditAppTitle('');
+    setEditAppUrl('');
+  };
+
+  const cancelEditingApp = () => {
+    setEditingApp(null);
+    setEditAppTitle('');
+    setEditAppUrl('');
   };
 
   const handleOpenInNewTab = () => {
@@ -4337,6 +4404,53 @@ export default function Home() {
           </div>
         )}
 
+        {/* Edit App Modal */}
+        {editingApp && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40" onClick={cancelEditingApp} />
+            <div className={`relative z-10 w-[92%] max-w-sm rounded-2xl p-4 ${isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+              <h4 className="text-sm font-semibold mb-3">Edit App</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Title</label>
+                  <input
+                    type="text"
+                    placeholder="App title"
+                    value={editAppTitle}
+                    onChange={(e) => setEditAppTitle(e.target.value)}
+                    className={`w-full mt-1 px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400 text-white' : 'bg-white ring-gray-200 placeholder-gray-500 text-gray-900'}`}
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>URL</label>
+                  <input
+                    type="text"
+                    placeholder="URL (e.g., example.com or https://example.com)"
+                    value={editAppUrl}
+                    onChange={(e) => setEditAppUrl(e.target.value)}
+                    className={`w-full mt-1 px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400 text-white' : 'bg-white ring-gray-200 placeholder-gray-500 text-gray-900'}`}
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end gap-2">
+                <button onClick={cancelEditingApp} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
+                <button
+                  onClick={saveEditedApp}
+                  disabled={!editAppTitle.trim() || !editAppUrl.trim()}
+                  className={`px-3 py-1.5 rounded-lg text-sm ${
+                    editAppTitle.trim() && editAppUrl.trim()
+                      ? isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-500'
+                      : isDarkMode ? 'bg-gray-600 cursor-not-allowed' : 'bg-gray-400 cursor-not-allowed'
+                  } text-white`}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar under widget cards group */}
         {showSearchBar && (
           <div className={`mt-6 mb-6 relative rounded-2xl shadow-lg ${compactSearchBar ? 'p-1' : 'p-1.5 sm:p-2'} ${searchBarWidth === 'narrow' ? 'max-w-md mx-auto' : searchBarWidth === 'wide' ? 'max-w-4xl mx-auto' : 'max-w-2xl mx-auto'
@@ -4817,6 +4931,9 @@ export default function Home() {
             localStorage.setItem('appCardBackgroundColor', color);
           }
         }}
+
+        fontFamily={fontFamily}
+        onSetFontFamily={(family) => setFontFamily(family)}
       />
 
       {/* Context Menu */}
@@ -4853,35 +4970,32 @@ export default function Home() {
                     : 'bg-white ring-gray-200'
                 }`}
             >
-              {/* Edit option - only show for folders (halite type) */}
-              {isFolder && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsEditModalOpen(true);
-                    setContextMenu(null);
-                  }}
-                  className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
-                    ? 'text-white hover:bg-white/10'
-                    : 'text-gray-800 hover:bg-gray-100'
-                    }`}
+              {/* Edit option for all apps */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startEditingApp(contextMenu.appId);
+                }}
+                className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
+                  ? 'text-white hover:bg-white/10'
+                  : 'text-gray-800 hover:bg-gray-100'
+                  }`}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
-                  Edit Folder
-                </button>
-              )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit App
+              </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
