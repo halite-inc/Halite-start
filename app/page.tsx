@@ -2075,7 +2075,7 @@ export default function Home() {
   const [editingApp, setEditingApp] = useState<App | null>(null);
   const [editAppTitle, setEditAppTitle] = useState<string>('');
   const [editAppUrl, setEditAppUrl] = useState<string>('');
-  const [fontFamily, setFontFamily] = useState<'default' | 'serif' | 'mono' | 'sans' | 'elegant'>('default');
+  const [fontFamily, setFontFamily] = useState<'default' | 'serif' | 'mono' | 'sans' | 'elegant' | 'poppins' | 'fun'>('default');
 
   const liquidReflectionRgb = hexToRgb(liquidReflectionColor).join(', ');
 
@@ -2585,7 +2585,7 @@ export default function Home() {
       }
 
       const savedFontFamily = localStorage.getItem('fontFamily');
-      if (savedFontFamily === 'default' || savedFontFamily === 'serif' || savedFontFamily === 'mono' || savedFontFamily === 'sans' || savedFontFamily === 'elegant') {
+      if (savedFontFamily === 'default' || savedFontFamily === 'serif' || savedFontFamily === 'mono' || savedFontFamily === 'sans' || savedFontFamily === 'elegant' || savedFontFamily === 'poppins' || savedFontFamily === 'fun') {
         setFontFamily(savedFontFamily);
         console.log('✅ Font family loaded:', savedFontFamily);
       }
@@ -2722,6 +2722,25 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [sessionStartTime, previousTimeSpent]);
 
+  // Apply font family to document whenever it changes
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const fontFamilyMap = {
+        default: 'system-ui, -apple-system, sans-serif',
+        serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+        mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+        sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+        elegant: '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif',
+        poppins: 'Poppins, sans-serif',
+        fun: '"Comic Sans MS", "Chalkboard SE", cursive'
+      };
+      const fontStack = fontFamilyMap[fontFamily];
+      document.documentElement.style.fontFamily = fontStack;
+      document.body.style.fontFamily = fontStack;
+      console.log('🎨 Font family changed to:', fontFamily, '→', fontStack);
+    }
+  }, [fontFamily]);
+
 
 
   // Comprehensive save effect for all settings - only save on user changes, not during load/reset
@@ -2782,16 +2801,6 @@ export default function Home() {
       localStorage.setItem('greetingStyle', greetingStyle);
       localStorage.setItem('showTopTime', showTopTime.toString());
       localStorage.setItem('fontFamily', fontFamily);
-
-      // Apply font family to document
-      const fontFamilyMap = {
-        default: 'system-ui, -apple-system, sans-serif',
-        serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-        mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-        sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
-        elegant: '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif'
-      };
-      document.documentElement.style.fontFamily = fontFamilyMap[fontFamily];
 
       // Apply theme to document
       if (isDarkMode) {
@@ -4933,7 +4942,10 @@ export default function Home() {
         }}
 
         fontFamily={fontFamily}
-        onSetFontFamily={(family) => setFontFamily(family)}
+        onSetFontFamily={(family) => {
+          console.log('Font family selected:', family);
+          setFontFamily(family);
+        }}
       />
 
       {/* Context Menu */}

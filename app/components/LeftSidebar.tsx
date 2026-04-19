@@ -113,8 +113,8 @@ interface LeftSidebarProps {
   onSetAppCardInnerShadow?: (shadow: 'none' | 'small' | 'medium' | 'large') => void;
   appCardBackgroundColor?: string;
   onSetAppCardBackgroundColor?: (color: string) => void;
-  fontFamily?: 'default' | 'serif' | 'mono' | 'sans' | 'elegant';
-  onSetFontFamily?: (family: 'default' | 'serif' | 'mono' | 'sans' | 'elegant') => void;
+  fontFamily?: 'default' | 'serif' | 'mono' | 'sans' | 'elegant' | 'poppins' | 'fun';
+  onSetFontFamily?: (family: 'default' | 'serif' | 'mono' | 'sans' | 'elegant' | 'poppins' | 'fun') => void;
 }
 
 interface ModernDropdownProps {
@@ -1225,7 +1225,7 @@ export default function LeftSidebar({
                         <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Typography</h4>
                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Page Font Family</label>
-                          <ModernDropdown value={fontFamily || 'default'} onChange={(val) => onSetFontFamily && onSetFontFamily(val as any)} options={[{ value: 'default', label: 'Default' }, { value: 'serif', label: 'Serif' }, { value: 'mono', label: 'Monospace' }, { value: 'sans', label: 'Sans-Serif' }, { value: 'elegant', label: 'Elegant' }]} isDarkMode={isDarkMode} />
+                          <ModernDropdown value={fontFamily || 'default'} onChange={(val) => onSetFontFamily && onSetFontFamily(val as any)} options={[{ value: 'default', label: 'Default' }, { value: 'serif', label: 'Serif' }, { value: 'mono', label: 'Monospace' }, { value: 'sans', label: 'Sans-Serif' }, { value: 'elegant', label: 'Elegant' }, { value: 'poppins', label: 'Poppins' }, { value: 'fun', label: 'Fun' }]} isDarkMode={isDarkMode} />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Text Color</label>
