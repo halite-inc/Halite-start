@@ -412,42 +412,42 @@ input[type="range"]::-moz-range-progress {
 }
 
 /* Enhanced slider with dots/ticks */
-.slider-with-dots {
-  position: relative;
-}
-
-.slider-with-dots::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 3px;
+input[type="range"].slider-with-dots::-webkit-slider-runnable-track {
   background: repeating-linear-gradient(
     90deg,
     #94a3b8 0px,
     #94a3b8 2px,
-    transparent 2px,
-    transparent 80px
+    #e2e8f0 2px,
+    #e2e8f0 80px
   );
-  border-radius: 999px;
-  pointer-events: none;
 }
 
-.dark .slider-with-dots::before {
+.dark input[type="range"].slider-with-dots::-webkit-slider-runnable-track {
   background: repeating-linear-gradient(
     90deg,
     #64748b 0px,
     #64748b 2px,
-    transparent 2px,
-    transparent 80px
+    #334155 2px,
+    #334155 80px
   );
 }
 
-.slider-with-dots::-webkit-slider-runnable-track {
-  background: transparent;
+input[type="range"].slider-with-dots::-moz-range-track {
+  background: repeating-linear-gradient(
+    90deg,
+    #94a3b8 0px,
+    #94a3b8 2px,
+    #e2e8f0 2px,
+    #e2e8f0 80px
+  );
 }
 
-.dark .slider-with-dots::-webkit-slider-runnable-track {
-  background: transparent;
+.dark input[type="range"].slider-with-dots::-moz-range-track {
+  background: repeating-linear-gradient(
+    90deg,
+    #64748b 0px,
+    #64748b 2px,
+    #334155 2px,
+    #334155 80px
+  );
 }
