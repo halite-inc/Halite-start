@@ -21,7 +21,6 @@ interface CommandPaletteProps {
   onToggleTheme: () => void;
   onOpenStatistics?: () => void;
   glassmorphismEnabled?: boolean;
-  liquidGlassEnabled?: boolean;
 }
 
 interface Command {
@@ -43,7 +42,6 @@ export default function CommandPalette({
   onToggleTheme,
   onOpenStatistics,
   glassmorphismEnabled = false,
-  liquidGlassEnabled = false,
 }: CommandPaletteProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -138,17 +136,7 @@ export default function CommandPalette({
       category: 'setting' as const,
     }] : []),
     
-    ...(liquidGlassEnabled !== undefined ? [{
-      id: 'toggle-liquid',
-      title: liquidGlassEnabled ? 'Disable Liquid Glass' : 'Enable Liquid Glass',
-      subtitle: 'Toggle liquid glass effect',
-      icon: '💧',
-      action: () => {
-        // This would need to be passed as a prop
-        onClose();
-      },
-      category: 'setting' as const,
-    }] : []),
+
     
     // Navigation
     {
@@ -298,9 +286,7 @@ export default function CommandPalette({
       {/* Search Input Pill - Floating separately */}
       <div
         className={`relative w-full max-w-[95vw] sm:max-w-xl rounded-full shadow-2xl ${
-          liquidGlassEnabled
-            ? 'liquid-surface'
-            : glassmorphismEnabled
+            glassmorphismEnabled
               ? isDarkMode
                 ? 'bg-[#1a1a1a]/90 backdrop-blur-xl ring-1 ring-white/15'
                 : 'bg-white/90 backdrop-blur-xl ring-1 ring-gray-200/40'
@@ -335,9 +321,7 @@ export default function CommandPalette({
       {/* Results Dropdown - Separate from search */}
       <div
         className={`relative w-full max-w-[95vw] sm:max-w-xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden ${
-          liquidGlassEnabled
-            ? 'liquid-surface'
-            : glassmorphismEnabled
+            glassmorphismEnabled
               ? isDarkMode
                 ? 'bg-[#1a1a1a]/90 backdrop-blur-xl ring-1 ring-white/15'
                 : 'bg-white/90 backdrop-blur-xl ring-1 ring-gray-200/40'

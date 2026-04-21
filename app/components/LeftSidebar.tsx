@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { saveImageBlob, deleteImageBlob, getImageObjectUrl } from '../lib/idb';
-import { LiquidGlassCard } from './LiquidGlass';
+
 
 interface App {
   id: string;
@@ -36,8 +36,7 @@ interface LeftSidebarProps {
   onSetBackgroundBlur?: (value: number) => void;
   glassmorphismEnabled: boolean;
   onToggleGlassmorphism: () => void;
-  liquidGlassEnabled: boolean;
-  onToggleLiquidGlass: () => void;
+
 
   normalModeEnabled: boolean;
   onToggleNormalMode: () => void;
@@ -68,8 +67,7 @@ interface LeftSidebarProps {
   onToggleBookmarksTitle?: () => void;
   centerBookmarksGroup?: boolean;
   onToggleCenterBookmarksGroup?: () => void;
-  liquidReflectionColor: string;
-  onSetLiquidReflectionColor: (color: string) => void;
+
   showTopTime?: boolean;
   onToggleTopTime?: () => void;
   showBigClock?: boolean;
@@ -281,8 +279,7 @@ export default function LeftSidebar({
   onSetBackgroundBlur,
   glassmorphismEnabled,
   onToggleGlassmorphism,
-  liquidGlassEnabled,
-  onToggleLiquidGlass,
+
 
   normalModeEnabled,
   onToggleNormalMode,
@@ -317,8 +314,7 @@ export default function LeftSidebar({
   onToggleBookmarksTitle,
   centerBookmarksGroup,
   onToggleCenterBookmarksGroup,
-  liquidReflectionColor,
-  onSetLiquidReflectionColor,
+
   // showBookmarksParagraph,
   // onToggleBookmarksParagraph,
   showTopTime,
@@ -747,7 +743,7 @@ export default function LeftSidebar({
 
   // Derived styles based on active visual mode
   const isGlass = glassmorphismEnabled;
-  const isLiquid = liquidGlassEnabled;
+  const isLiquid = false;
   const sectionHeaderClass = `w-full flex items-center justify-between px-3 py-1.5 rounded-xl transition-colors ${isDarkMode
     ? 'bg-white/5 text-white ring-1 ring-white/10 hover:bg-white/10'
     : 'bg-white text-gray-800 ring-1 ring-gray-200 hover:bg-gray-50 shadow-sm'
@@ -756,7 +752,7 @@ export default function LeftSidebar({
     ? 'rounded-xl p-2.5 bg-transparent'
     : 'rounded-xl p-2.5 bg-transparent'
     }`;
-  const modeLabel = liquidGlassEnabled ? 'Liquid' : (glassmorphismEnabled ? 'Glass' : 'Normal');
+  const modeLabel = glassmorphismEnabled ? 'Glass' : 'Normal';
   const modeBadgeClass = `${isLiquid
     ? 'bg-white/15 text-white ring-1 ring-white/20'
     : isGlass
@@ -783,9 +779,7 @@ export default function LeftSidebar({
           ? isDarkMode
             ? 'bg-[#2B2B2B]/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)]'
             : 'bg-white/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.15)]'
-          : liquidGlassEnabled
-            ? ''
-            : isDarkMode ? 'bg-[#1e1e1e] shadow-[0_16px_40px_rgba(0,0,0,0.5)]' : 'bg-[#fafafa] shadow-[0_16px_40px_rgba(0,0,0,0.12)]'
+          : isDarkMode ? 'bg-[#1e1e1e] shadow-[0_16px_40px_rgba(0,0,0,0.5)]' : 'bg-[#fafafa] shadow-[0_16px_40px_rgba(0,0,0,0.12)]'
           }`}
         style={{
           left: `${position.left}px`,
@@ -798,7 +792,7 @@ export default function LeftSidebar({
           transformOrigin: 'top right',
         }}
       >
-        {liquidGlassEnabled && <LiquidGlassCard isDark={isDarkMode} isHovered={false} className="rounded-2xl" />}
+
         <div className="flex relative z-10 h-full gap-2 p-2">
           {/* Left Sidebar - Full Height */}
           <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-2.5 overflow-y-auto custom-scrollbar rounded-2xl ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-100/50 ring-gray-200/50'}`}>
@@ -1123,32 +1117,8 @@ export default function LeftSidebar({
                                <span className="text-[10px] font-semibold uppercase">Glass</span>
                              </div>
                            </button>
-
-                           <button
-                             onClick={onToggleLiquidGlass}
-                             className={`group relative rounded-xl p-3 transition-all ${liquidGlassEnabled ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md' : isDarkMode ? 'bg-[#121212] text-gray-400 border border-white/10 hover:bg-white/5' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
-                             title="Liquid mode"
-                           >
-                             <div className="flex flex-col items-center gap-2">
-                               <div className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${liquidGlassEnabled ? 'bg-white/10' : isDarkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
-                                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                                   <path d="M12 2.5c5 5 7.5 8.4 7.5 11.5a7.5 7.5 0 11-15 0C4.5 10.9 7 7.5 12 2.5z" />
-                                 </svg>
-                               </div>
-                               <span className="text-[10px] font-semibold uppercase">Liquid</span>
-                             </div>
-                           </button>
                          </div>
                        </div>
-                       {liquidGlassEnabled && (
-                          <div className={`rounded-xl p-3 ${isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
-                            <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Liquid Reflection Color</label>
-                             <div className="mt-3 flex items-center gap-3">
-                                <input type="color" value={liquidReflectionColor} onChange={(e) => onSetLiquidReflectionColor(e.target.value)} className="h-8 w-12 rounded cursor-pointer" />
-                                <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{liquidReflectionColor}</span>
-                             </div>
-                          </div>
-                       )}
 
                       {/* App Card Style */}
                       <div className="space-y-2">
@@ -2115,7 +2085,7 @@ export default function LeftSidebar({
                   {/* Visual Effects Mode - Modern cards */}
                   <div className="space-y-2">
                     <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Visual Effects</h4>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {/* Normal */}
                       <button
                         onClick={onToggleNormalMode}
@@ -2161,57 +2131,7 @@ export default function LeftSidebar({
                         </div>
                         <span className={`pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full bg-white/10 blur-xl ${glassmorphismEnabled ? 'opacity-50' : 'opacity-0 group-hover:opacity-30'} transition-opacity`} />
                       </button>
-
-                      {/* Apple Liquid Glass */}
-                      <button
-                        onClick={onToggleLiquidGlass}
-                        className={`group relative w-full overflow-hidden rounded-xl p-2 text-[10px] font-semibold transition-all duration-300 ${liquidGlassEnabled
-                          ? 'bg-gradient-to-br from-cyan-400 via-blue-500 to-fuchsia-500 text-white shadow-md ring-1 ring-cyan-300/50'
-                          : isDarkMode
-                            ? 'bg-[#121212] text-gray-300 border border-white/10 hover:bg-[#1b1b1b] hover:border-white/20'
-                            : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
-                          }`}
-                        title="Toggle Apple Liquid Glass"
-                      >
-                        <div className="relative z-10 flex flex-col items-center gap-1.5">
-                          <div className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${liquidGlassEnabled ? 'bg-white/20 shadow-inner' : isDarkMode ? 'bg-white/5 group-hover:bg-white/10' : 'bg-gray-100 group-hover:bg-gray-200'
-                            }`}>
-                            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2.5c5 5 7.5 8.4 7.5 11.5a7.5 7.5 0 11-15 0C4.5 10.9 7 7.5 12 2.5z" />
-                            </svg>
-                          </div>
-                          <span>Liquid</span>
-                        </div>
-                        <span className={`pointer-events-none absolute -bottom-8 -left-6 h-24 w-24 rounded-full bg-white/20 blur-2xl ${liquidGlassEnabled ? 'opacity-60' : 'opacity-0 group-hover:opacity-40'} transition-opacity`} />
-                      </button>
                     </div>
-
-                    {liquidGlassEnabled && (
-                      <div className={`mt-3 rounded-xl p-3 ${isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'
-                        }`}>
-                        <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                          }`}>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
-                          </svg>
-                          Liquid Reflection Color
-                        </label>
-                        <div className="mt-3 flex items-center gap-3">
-                          <input
-                            type="color"
-                            value={liquidReflectionColor}
-                            onChange={(e) => onSetLiquidReflectionColor(e.target.value)}
-                            className={`h-9 w-12 cursor-pointer rounded-lg p-1 ${isDarkMode ? 'bg-transparent border border-white/20' : 'bg-white border border-gray-200'
-                              }`}
-                            title="Choose the highlight tint used across liquid surfaces"
-                          />
-                          <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                            }`}>
-                            {liquidReflectionColor.toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
