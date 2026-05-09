@@ -3621,7 +3621,13 @@ export default function Home() {
                                bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
                                bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
                                bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' :
-                               bigClockFont === 'poppins' ? 'Poppins, sans-serif' : undefined
+                               bigClockFont === 'poppins' ? 'Poppins, sans-serif' :
+                               bigClockFont === 'playfair' ? 'var(--font-playfair), "Playfair Display", Georgia, serif' :
+                               bigClockFont === 'raleway' ? 'var(--font-raleway), Raleway, sans-serif' :
+                               bigClockFont === 'space' ? 'var(--font-space-grotesk), "Space Grotesk", sans-serif' :
+                               bigClockFont === 'bebas' ? 'var(--font-bebas-neue), "Bebas Neue", sans-serif' :
+                               bigClockFont === 'pacifico' ? 'var(--font-pacifico), Pacifico, cursive' :
+                               bigClockFont === 'outfit' ? 'var(--font-outfit), Outfit, sans-serif' : undefined
                 }}
               >
                 {bigClockTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
@@ -3648,7 +3654,13 @@ export default function Home() {
                                bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
                                bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
                                bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' :
-                               bigClockFont === 'poppins' ? 'Poppins, sans-serif' : undefined
+                               bigClockFont === 'poppins' ? 'Poppins, sans-serif' :
+                               bigClockFont === 'playfair' ? 'var(--font-playfair), "Playfair Display", Georgia, serif' :
+                               bigClockFont === 'raleway' ? 'var(--font-raleway), Raleway, sans-serif' :
+                               bigClockFont === 'space' ? 'var(--font-space-grotesk), "Space Grotesk", sans-serif' :
+                               bigClockFont === 'bebas' ? 'var(--font-bebas-neue), "Bebas Neue", sans-serif' :
+                               bigClockFont === 'pacifico' ? 'var(--font-pacifico), Pacifico, cursive' :
+                               bigClockFont === 'outfit' ? 'var(--font-outfit), Outfit, sans-serif' : undefined
                 }}
               >
                 {bigClockTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}

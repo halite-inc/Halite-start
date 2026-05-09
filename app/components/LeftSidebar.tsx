@@ -1052,7 +1052,13 @@ export default function LeftSidebar({
                                     { value: 'mono', label: 'Mono' },
                                     { value: 'elegant', label: 'Elegant' },
                                     { value: 'fun', label: 'Fun' },
-                                    { value: 'poppins', label: 'Poppins' }
+                                    { value: 'poppins', label: 'Poppins' },
+                                    { value: 'playfair', label: 'Playfair' },
+                                    { value: 'raleway', label: 'Raleway' },
+                                    { value: 'space', label: 'Space Grotesk' },
+                                    { value: 'bebas', label: 'Bebas Neue' },
+                                    { value: 'pacifico', label: 'Pacifico' },
+                                    { value: 'outfit', label: 'Outfit' },
                                   ]} 
                                   isDarkMode={isDarkMode} 
                                 />
