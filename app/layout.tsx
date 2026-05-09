@@ -21,8 +21,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "halite start",
-  description: "halite start dashboard",
+  title: "Halite Start",
+  description: "Halite Start dashboard",
 };
 
 export default function RootLayout({

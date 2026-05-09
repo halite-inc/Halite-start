@@ -87,6 +87,10 @@ interface LeftSidebarProps {
   onSetTopPillSize?: (size: 'small' | 'medium' | 'large') => void;
   topPillStyle?: 'card' | 'text';
   onSetTopPillStyle?: (style: 'card' | 'text') => void;
+  mergeTopPillsCenter?: boolean;
+  onToggleMergeTopPillsCenter?: () => void;
+  topPillShape?: 'pill' | 'squircle';
+  onSetTopPillShape?: (shape: 'pill' | 'squircle') => void;
   onToggleBigClockGlassMode?: () => void;
   dockVisibility?: 'always' | 'hover';
   onSetDockVisibility?: (visibility: 'always' | 'hover') => void;
@@ -337,6 +341,10 @@ export default function LeftSidebar({
   onSetTopPillSize,
   topPillStyle,
   onSetTopPillStyle,
+  mergeTopPillsCenter,
+  onToggleMergeTopPillsCenter,
+  topPillShape,
+  onSetTopPillShape,
   bigClockGlassMode,
   onToggleBigClockGlassMode,
   dockVisibility,
@@ -1272,14 +1280,24 @@ export default function LeftSidebar({
                              <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Greeting Style</label>
                              <ModernDropdown value={greetingStyle || 'hi'} onChange={(val) => onSetGreetingStyle && onSetGreetingStyle(val as any)} options={[{ value: 'hi', label: 'Hi' }, { value: 'welcome', label: 'Welcome' }, { value: 'time-based', label: 'Time Based' }]} isDarkMode={isDarkMode} />
                            </div>
-                           <div className="flex items-center justify-between">
-                             <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Style</label>
-                             <SegmentedControl value={topPillStyle || 'card'} onChange={(val) => onSetTopPillStyle && onSetTopPillStyle(val as any)} options={[{ value: 'card', label: 'Card' }, { value: 'text', label: 'Text Only' }]} isDarkMode={isDarkMode} />
-                           </div>
-                           <div className="flex items-center justify-between">
-                             <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Bottom Right Pill</label>
-                             <SegmentedControl value={dockVisibility || 'always'} onChange={(val) => onSetDockVisibility && onSetDockVisibility(val as any)} options={[{ value: 'always', label: 'Always' }, { value: 'hover', label: 'Hover' }]} isDarkMode={isDarkMode} />
-                           </div>
+                            <div className="space-y-1.5">
+                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Style</label>
+                               <SegmentedControl value={topPillStyle || 'card'} onChange={(val) => onSetTopPillStyle && onSetTopPillStyle(val as any)} options={[{ value: 'card', label: 'Card' }, { value: 'text', label: 'Text Only' }]} isDarkMode={isDarkMode} />
+                             </div>
+                             <div className="space-y-1.5">
+                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Shape</label>
+                               <SegmentedControl value={topPillShape || 'pill'} onChange={(val) => onSetTopPillShape && onSetTopPillShape(val as 'pill' | 'squircle')} options={[{ value: 'pill', label: 'Pill' }, { value: 'squircle', label: 'Squircle' }]} isDarkMode={isDarkMode} />
+                             </div>
+                            <div className="flex items-center justify-between">
+                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Merge Top Pills Center</label>
+                              <button onClick={() => onToggleMergeTopPillsCenter && onToggleMergeTopPillsCenter()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${mergeTopPillsCenter ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${mergeTopPillsCenter ? 'translate-x-6' : 'translate-x-1'}`} />
+                              </button>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Bottom Right Pill</label>
+                              <SegmentedControl value={dockVisibility || 'always'} onChange={(val) => onSetDockVisibility && onSetDockVisibility(val as any)} options={[{ value: 'always', label: 'Always' }, { value: 'hover', label: 'Hover' }]} isDarkMode={isDarkMode} />
+                            </div>
                         </div>
                         {/* Background Blur */}
                         {backgroundImage && (

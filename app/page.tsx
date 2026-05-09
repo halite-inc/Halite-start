@@ -252,7 +252,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
       {/* App Title - Below the card */}
       {showAppTitles && (
         <div className={`mt-2 text-center w-full ${hideAppTitleText ? 'invisible' : ''}`}>
-          <span className={`truncate text-xs font-medium ${appTitleColor === 'auto'
+          <span className={`block max-w-full truncate text-xs font-medium ${appTitleColor === 'auto'
             ? (isDark ? 'text-white' : 'text-gray-800')
             : appTitleColor === 'black'
               ? 'text-black'
@@ -1997,6 +1997,8 @@ export default function Home() {
   const [showTopTime, setShowTopTime] = useState<boolean>(true);
   const [topPillSize, setTopPillSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [topPillStyle, setTopPillStyle] = useState<'card' | 'text'>('card');
+  const [mergeTopPillsCenter, setMergeTopPillsCenter] = useState<boolean>(false);
+  const [topPillShape, setTopPillShape] = useState<'pill' | 'squircle'>('pill');
   const [dockVisibility, setDockVisibility] = useState<'always' | 'hover'>('always');
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
   const [showBigClock, setShowBigClock] = useState<boolean>(false);
@@ -2522,6 +2524,18 @@ export default function Home() {
       const savedTopPillStyle = localStorage.getItem('topPillStyle');
       if (savedTopPillStyle === 'card' || savedTopPillStyle === 'text') {
         setTopPillStyle(savedTopPillStyle);
+      }
+
+      // Load merge top pills center
+      const savedMergeTopPillsCenter = localStorage.getItem('mergeTopPillsCenter');
+      if (savedMergeTopPillsCenter === 'true') {
+        setMergeTopPillsCenter(true);
+      }
+
+      // Load top pill shape
+      const savedTopPillShape = localStorage.getItem('topPillShape');
+      if (savedTopPillShape === 'pill' || savedTopPillShape === 'squircle') {
+        setTopPillShape(savedTopPillShape);
       }
 
       // Load dock visibility
@@ -3318,149 +3332,262 @@ export default function Home() {
         }
       `}</style>
       {/* Apple Liquid Glass overlays */}
-      {/* Time pill - top left */}
-      {showTopTime && (
-        <div className="fixed top-4 left-4 z-40">
-          <span
-            className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} font-semibold ${
-              topPillStyle === 'text'
-                ? `bg-transparent ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
-                : `rounded-full ring-1 ${
-                  backgroundImage
-                    ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
-                    : isDarkMode
-                      ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
-                      : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
-                  }`
-              }`}
-            aria-live="polite"
-          >
-            {topClockLabel}
-          </span>
+      {/* Top pills: merged centered group OR separate left/right */}
+      {mergeTopPillsCenter ? (
+        /* Merged: both pills centered at top */
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
+          {topPillStyle === 'card' ? (
+            /* Single unified pill card */
+            <div className={`inline-flex items-center ${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold ${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 overflow-hidden ${
+              backgroundImage || isDarkMode
+                ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+                : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+            }`}>
+              {/* Time section */}
+              {showTopTime && (
+                <>
+                  <span className={`${topPillSize === 'small' ? 'px-3 py-1' : topPillSize === 'large' ? 'px-5 py-2' : 'px-4 py-1.5'}`} aria-live="polite">
+                    {topClockLabel}
+                  </span>
+                  {/* Divider */}
+                  <span className={`w-px mx-0.5 h-3 self-center rounded-full ${backgroundImage || isDarkMode ? 'bg-white/15' : 'bg-gray-300/60'}`} />
+                </>
+              )}
+              {/* Greeting section */}
+              <div ref={greetingDropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => { setIsGreetingDropdownOpen(prev => !prev); setIsNameEditorOpen(false); }}
+                  className={`${topPillSize === 'small' ? 'px-3 py-1' : topPillSize === 'large' ? 'px-5 py-2' : 'px-4 py-1.5'} transition-all duration-200 focus:outline-none hover:opacity-80`}
+                  title="Click to see options"
+                  aria-expanded={isGreetingDropdownOpen}
+                  aria-controls="greeting-dropdown-menu"
+                >
+                  {getGreeting()}
+                </button>
+                {isGreetingDropdownOpen && (
+                  <div id="greeting-dropdown-menu" className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode ? 'bg-black/40 text-white ring-white/15' : 'bg-white/50 text-gray-900 ring-gray-200'}`}>
+                    {/* Google Quick Links */}
+                    <div className={`flex items-center justify-around px-2 pt-2 pb-1.5 mx-1.5 mb-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
+                      {[
+                        { name: 'Mail',     url: 'https://mail.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png' },
+                        { name: 'Drive',    url: 'https://drive.google.com',   icon: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_32dp.png' },
+                                        { name: 'Meet',     url: 'https://meet.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_32dp.png' },
+                        { name: 'Calendar', url: 'https://calendar.google.com',icon: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_32dp.png' },
+                      ].map(({ name, url, icon }) => (
+                        <a key={name} href={url} target="_blank" rel="noopener noreferrer" title={name}
+                          className={`flex items-center justify-center p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-500/10'}`}>
+                          <img src={icon} alt={name} title={name} className="w-8 h-8 rounded-md" />
+                        </a>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { setIsGreetingDropdownOpen(false); setIsSidebarOpen(true); }} className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'}`}>
+                      <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      Settings
+                    </button>
+                    <button type="button" onClick={() => { setIsGreetingDropdownOpen(false); setIsNameEditorOpen(true); setNameInput(userName); }} className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'}`}>
+                      <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                      Edit Name
+                    </button>
+                  </div>
+                )}
+                {isNameEditorOpen && (
+                  <div ref={nameEditorRef} id="greeting-name-editor" className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 rounded-2xl shadow-sm ring-1 p-3 flex flex-col gap-3 backdrop-blur-sm transition-all ${isDarkMode ? 'bg-black/40 text-white ring-white/15' : 'bg-white/50 text-gray-900 ring-gray-200'}`}>
+                    <div className="flex flex-col relative z-10 w-full px-2">
+                      <span className="text-xs font-semibold uppercase tracking-wide opacity-60">Update greeting</span>
+                      <input ref={nameInputRef} type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveGreetingName(); } if (e.key === 'Escape') { e.preventDefault(); handleCancelGreetingEdit(); } }}
+                        className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400/50 transition-all ${isDarkMode ? 'bg-white/10 text-white placeholder-white/30 border border-white/5' : 'bg-gray-100/50 text-gray-900 placeholder-gray-400 border border-gray-200/50'}`}
+                        placeholder="Enter your name" />
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      <button type="button" onClick={handleCancelGreetingEdit} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${isDarkMode ? 'text-white/60 hover:text-white/80 hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-500/5'}`}>Cancel</button>
+                      <button type="button" onClick={handleSaveGreetingName} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-500/80 text-white hover:bg-blue-600 transition-colors">Save</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Text-only mode: two items side by side */
+            <div className="flex items-center gap-3">
+              {showTopTime && (
+                <span className={`${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold bg-transparent ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`} aria-live="polite">
+                  {topClockLabel}
+                </span>
+              )}
+              <div ref={greetingDropdownRef} className="relative">
+                <button type="button" onClick={() => { setIsGreetingDropdownOpen(prev => !prev); setIsNameEditorOpen(false); }}
+                  className={`${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold bg-transparent hover:opacity-80 transition-all duration-200 focus:outline-none ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`}
+                  title="Click to see options" aria-expanded={isGreetingDropdownOpen} aria-controls="greeting-dropdown-menu">
+                  {getGreeting()}
+                </button>
+                {isGreetingDropdownOpen && (
+                  <div id="greeting-dropdown-menu" className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode ? 'bg-black/40 text-white ring-white/15' : 'bg-white/50 text-gray-900 ring-gray-200'}`}>
+                    {/* Google Quick Links */}
+                    <div className={`flex items-center justify-around px-2 pt-2 pb-1.5 mx-1.5 mb-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
+                      {[
+                        { name: 'Mail',     url: 'https://mail.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png' },
+                        { name: 'Drive',    url: 'https://drive.google.com',   icon: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_32dp.png' },
+                                        { name: 'Meet',     url: 'https://meet.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_32dp.png' },
+                        { name: 'Calendar', url: 'https://calendar.google.com',icon: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_32dp.png' },
+                      ].map(({ name, url, icon }) => (
+                        <a key={name} href={url} target="_blank" rel="noopener noreferrer" title={name}
+                          className={`flex items-center justify-center p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-500/10'}`}>
+                          <img src={icon} alt={name} title={name} className="w-8 h-8 rounded-md" />
+                        </a>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { setIsGreetingDropdownOpen(false); setIsSidebarOpen(true); }} className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'}`}>
+                      <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      Settings
+                    </button>
+                    <button type="button" onClick={() => { setIsGreetingDropdownOpen(false); setIsNameEditorOpen(true); setNameInput(userName); }} className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'}`}>
+                      <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                      Edit Name
+                    </button>
+                  </div>
+                )}
+                {isNameEditorOpen && (
+                  <div ref={nameEditorRef} id="greeting-name-editor" className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 rounded-2xl shadow-sm ring-1 p-3 flex flex-col gap-3 backdrop-blur-sm transition-all ${isDarkMode ? 'bg-black/40 text-white ring-white/15' : 'bg-white/50 text-gray-900 ring-gray-200'}`}>
+                    <div className="flex flex-col relative z-10 w-full px-2">
+                      <span className="text-xs font-semibold uppercase tracking-wide opacity-60">Update greeting</span>
+                      <input ref={nameInputRef} type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveGreetingName(); } if (e.key === 'Escape') { e.preventDefault(); handleCancelGreetingEdit(); } }}
+                        className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400/50 transition-all ${isDarkMode ? 'bg-white/10 text-white placeholder-white/30 border border-white/5' : 'bg-gray-100/50 text-gray-900 placeholder-gray-400 border border-gray-200/50'}`}
+                        placeholder="Enter your name" />
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      <button type="button" onClick={handleCancelGreetingEdit} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${isDarkMode ? 'text-white/60 hover:text-white/80 hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-500/5'}`}>Cancel</button>
+                      <button type="button" onClick={handleSaveGreetingName} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-500/80 text-white hover:bg-blue-600 transition-colors">Save</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+      ) : (
+        <>
+          {/* Time pill - top left */}
+          {showTopTime && (
+            <div className="fixed top-4 left-8 z-40">
+              <span
+                className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} font-semibold ${
+                  topPillStyle === 'text'
+                    ? `bg-transparent ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
+                    : `${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 ${
+                      backgroundImage
+                        ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+                        : isDarkMode
+                          ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+                          : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                      }`
+                }`}
+                aria-live="polite"
+              >
+                {topClockLabel}
+              </span>
+            </div>
+          )}
+          {/* Greetings pill - top right */}
+          <div ref={greetingDropdownRef} className="fixed top-4 right-8 z-40 flex flex-col items-end gap-2">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGreetingDropdownOpen(prev => !prev);
+                  setIsNameEditorOpen(false);
+                }}
+                className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
+                  topPillStyle === 'text'
+                    ? `bg-transparent hover:opacity-80 ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
+                    : `${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 ${
+                      backgroundImage
+                        ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
+                        : isDarkMode
+                          ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
+                          : 'bg-white text-black ring-gray-200 hover:bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                      }`
+                }`}
+                title="Click to see options"
+                aria-expanded={isGreetingDropdownOpen}
+                aria-controls="greeting-dropdown-menu"
+              >
+                {getGreeting()}
+              </button>
+              {isGreetingDropdownOpen && (
+                <div
+                  id="greeting-dropdown-menu"
+                  className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode
+                    ? 'bg-black/40 text-white ring-white/15'
+                    : 'bg-white/50 text-gray-900 ring-gray-200'
+                    }`}
+                >
+                  {/* Google Quick Links */}
+                  <div className={`flex items-center justify-around px-2 pt-2 pb-1.5 mx-1.5 mb-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
+                    {[
+                      { name: 'Mail',     url: 'https://mail.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png' },
+                      { name: 'Drive',    url: 'https://drive.google.com',   icon: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_32dp.png' },
+                                    { name: 'Meet',     url: 'https://meet.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_32dp.png' },
+                      { name: 'Calendar', url: 'https://calendar.google.com',icon: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_32dp.png' },
+                    ].map(({ name, url, icon }) => (
+                      <a key={name} href={url} target="_blank" rel="noopener noreferrer" title={name}
+                        className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-500/10'}`}>
+                        <img src={icon} alt={name} className="w-6 h-6 rounded-md" />
+                        <span className={`text-[9px] font-medium leading-none ${isDarkMode ? 'text-white/50' : 'text-gray-500'}`}>{name}</span>
+                      </a>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setIsGreetingDropdownOpen(false); setIsSidebarOpen(true); }}
+                    className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'}`}
+                  >
+                    <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    Settings
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setIsGreetingDropdownOpen(false); setIsNameEditorOpen(true); setNameInput(userName); }}
+                    className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'}`}
+                  >
+                    <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    Edit Name
+                  </button>
+                </div>
+              )}
+              {isNameEditorOpen && (
+                <div
+                  ref={nameEditorRef}
+                  id="greeting-name-editor"
+                  className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-sm ring-1 p-3 flex flex-col gap-3 backdrop-blur-sm transition-all ${isDarkMode ? 'bg-black/40 text-white ring-white/5' : 'bg-white/50 text-gray-900 ring-gray-200/30'}`}
+                >
+                  <div className="flex flex-col relative z-10 w-full px-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide opacity-60">Update greeting</span>
+                    <input
+                      ref={nameInputRef}
+                      type="text"
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); handleSaveGreetingName(); }
+                        if (e.key === 'Escape') { e.preventDefault(); handleCancelGreetingEdit(); }
+                      }}
+                      className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400/50 transition-all ${isDarkMode ? 'bg-white/10 text-white placeholder-white/30 border border-white/5' : 'bg-gray-100/50 text-gray-900 placeholder-gray-400 border border-gray-200/50'}`}
+                      placeholder="Enter your name"
+                    />
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
+                    <button type="button" onClick={handleCancelGreetingEdit} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${isDarkMode ? 'text-white/60 hover:text-white/80 hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-500/5'}`}>Cancel</button>
+                    <button type="button" onClick={handleSaveGreetingName} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-500/80 text-white hover:bg-blue-600 transition-colors">Save</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
       )}
-      {/* Greetings pill - top right */}
-      <div ref={greetingDropdownRef} className="fixed top-4 right-4 z-40 flex flex-col items-end gap-2">
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => {
-              setIsGreetingDropdownOpen(prev => !prev);
-              setIsNameEditorOpen(false);
-            }}
-            className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
-              topPillStyle === 'text'
-                ? `bg-transparent hover:opacity-80 ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
-                : `rounded-full ring-1 ${
-                  backgroundImage
-                    ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
-                    : isDarkMode
-                      ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
-                      : 'bg-white text-black ring-gray-200 hover:bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
-                  }`
-              }`}
-            title="Click to see options"
-            aria-expanded={isGreetingDropdownOpen}
-            aria-controls="greeting-dropdown-menu"
-          >
-            {getGreeting()}
-          </button>
-          {isGreetingDropdownOpen && (
-            <div
-              id="greeting-dropdown-menu"
-              className={`absolute right-0 mt-2 w-44 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode
-                ? 'bg-black/40 text-white ring-white/5'
-                : 'bg-white/50 text-gray-900 ring-gray-200/30'
-                }`}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setIsGreetingDropdownOpen(false);
-                  setIsSidebarOpen(true);
-                }}
-                className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode
-                  ? 'text-white/80 hover:text-white hover:bg-white/10'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'
-                  }`}
-              >
-                <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Settings
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsGreetingDropdownOpen(false);
-                  setIsNameEditorOpen(true);
-                  setNameInput(userName);
-                }}
-                className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode
-                  ? 'text-white/80 hover:text-white hover:bg-white/10'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'
-                  }`}
-              >
-                <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit Name
-              </button>
-            </div>
-          )}
-          {isNameEditorOpen && (
-            <div
-              ref={nameEditorRef}
-              id="greeting-name-editor"
-              className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-sm ring-1 p-3 flex flex-col gap-3 backdrop-blur-sm transition-all ${isDarkMode
-                ? 'bg-black/40 text-white ring-white/5'
-                : 'bg-white/50 text-gray-900 ring-gray-200/30'
-                }`}
-            >
-              <div className="flex flex-col relative z-10 w-full px-2">
-                <span className="text-xs font-semibold uppercase tracking-wide opacity-60">Update greeting</span>
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleSaveGreetingName();
-                    }
-                    if (e.key === 'Escape') {
-                      e.preventDefault();
-                      handleCancelGreetingEdit();
-                    }
-                  }}
-                  className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400/50 transition-all ${isDarkMode ? 'bg-white/10 text-white placeholder-white/30 border border-white/5' : 'bg-gray-100/50 text-gray-900 placeholder-gray-400 border border-gray-200/50'
-                    }`}
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div className="flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={handleCancelGreetingEdit}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${isDarkMode ? 'text-white/60 hover:text-white/80 hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-500/5'
-                    }`}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveGreetingName}
-                  className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-500/80 text-white hover:bg-blue-600 transition-colors"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
       <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
         {/* Big Clock Display - Above App Cards */}
         {showBigClock && (
@@ -4456,7 +4583,7 @@ export default function Home() {
       {/* Floating Action Dock Wrapper */}
       <div className="fixed bottom-0 right-0 p-4 sm:p-5 z-30 flex items-end justify-end group" style={{ pointerEvents: dockVisibility === 'hover' && !isEditModalOpen ? 'auto' : 'none', width: '150px', height: '150px' }}>
         <div
-          className={`rounded-full shadow-lg border flex items-center gap-1 transition-all duration-300 pointer-events-auto ${
+          className={`${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} shadow-lg border flex items-center gap-1 transition-all duration-300 pointer-events-auto ${
             topPillSize === 'small' ? 'px-1 py-1 sm:px-1 sm:py-1 gap-0.5' :
             topPillSize === 'large' ? 'px-1.5 py-1.5 sm:px-2 sm:py-2 gap-1.5' :
             'px-1 py-1 sm:px-1.5 sm:py-1.5'
@@ -4696,6 +4823,19 @@ export default function Home() {
         onSetTopPillStyle={(style) => {
           setTopPillStyle(style);
           if (typeof window !== 'undefined') localStorage.setItem('topPillStyle', style);
+        }}
+        mergeTopPillsCenter={mergeTopPillsCenter}
+        onToggleMergeTopPillsCenter={() => {
+          setMergeTopPillsCenter(prev => {
+            const next = !prev;
+            if (typeof window !== 'undefined') localStorage.setItem('mergeTopPillsCenter', next.toString());
+            return next;
+          });
+        }}
+        topPillShape={topPillShape}
+        onSetTopPillShape={(shape) => {
+          setTopPillShape(shape);
+          if (typeof window !== 'undefined') localStorage.setItem('topPillShape', shape);
         }}
         dockVisibility={dockVisibility}
         onSetDockVisibility={(visibility) => {
