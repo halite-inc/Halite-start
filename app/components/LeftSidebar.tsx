@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { saveImageBlob, deleteImageBlob, getImageObjectUrl } from '../lib/idb';
+import { getFaviconUrl } from '../lib/favicon';
 
 
 interface App {
@@ -34,6 +35,10 @@ interface LeftSidebarProps {
   onSetBackgroundImage: (url: string) => void;
   backgroundBlur?: number;
   onSetBackgroundBlur?: (value: number) => void;
+  animatedGradientBackground?: boolean;
+  onToggleAnimatedGradientBackground?: () => void;
+  animatedGradientPreset?: 'default' | 'ocean' | 'sunset' | 'aurora' | 'midnight';
+  onSetAnimatedGradientPreset?: (preset: 'default' | 'ocean' | 'sunset' | 'aurora' | 'midnight') => void;
   glassmorphismEnabled: boolean;
   onToggleGlassmorphism: () => void;
 
@@ -281,6 +286,10 @@ export default function LeftSidebar({
   onSetBackgroundImage,
   backgroundBlur,
   onSetBackgroundBlur,
+  animatedGradientBackground,
+  onToggleAnimatedGradientBackground,
+  animatedGradientPreset = 'default',
+  onSetAnimatedGradientPreset,
   glassmorphismEnabled,
   onToggleGlassmorphism,
 
@@ -783,7 +792,7 @@ export default function LeftSidebar({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed w-[calc(100vw-1rem)] sm:w-[28rem] md:w-[47rem] rounded-3xl overflow-hidden z-50 ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
+        className={`fixed w-[calc(100vw-1rem)] sm:w-[28rem] md:w-[47rem] rounded-3xl overflow-hidden z-50 border ${isDarkMode ? 'border-white/10' : 'border-gray-200'} ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
           ? isDarkMode
             ? 'bg-[#2B2B2B]/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)]'
             : 'bg-white/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.15)]'
@@ -1305,30 +1314,14 @@ export default function LeftSidebar({
                               <SegmentedControl value={dockVisibility || 'always'} onChange={(val) => onSetDockVisibility && onSetDockVisibility(val as any)} options={[{ value: 'always', label: 'Always' }, { value: 'hover', label: 'Hover' }]} isDarkMode={isDarkMode} />
                             </div>
                         </div>
-                        {/* Background Blur */}
-                        {backgroundImage && (
-                          <div className="space-y-2">
-                             <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Background Blur</h4>
-                              <div className="flex items-center justify-between">
-                                <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Blur Amount</label>
-                                <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{backgroundBlur || 0}px</span>
-                              </div>
-                              <input type="range" min="0" max="20" value={backgroundBlur || 0} onChange={(e) => onSetBackgroundBlur && onSetBackgroundBlur(Number(e.target.value))} className={`w-full h-2 rounded-lg appearance-none cursor-pointer slider-with-dots ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
-                          </div>
-                        )}
+
                     </div>
                   </div>
                 )}
 
             {openSection === 'widgets' && (
               <div className={panelClass} >
-                <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'
-                  }`}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                  </svg>
-                  Add Widgets
-                </h3>
+
 ...
 
                 <div className={`space-y-3 ${isDarkMode ? 'text-white' : 'text-gray-800'
@@ -1554,12 +1547,8 @@ export default function LeftSidebar({
                 <h3 className="sr-only">Background</h3>
                 <div className="space-y-2">
                   <div className="space-y-2">
-                    <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Background Image</h4>
                     <div className="space-y-2">
                       <div>
-                        <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          Upload Background Image
-                        </label>
                         <input
                           type="file"
                           accept="image/*"
@@ -1585,38 +1574,41 @@ export default function LeftSidebar({
                           <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                             Current Background
                           </label>
-                          <div className="relative rounded-lg overflow-hidden border-2 border-dashed" style={{ aspectRatio: '16/9' }}>
-                            {previewImageUrl ? (
-                              <img
-                                src={previewImageUrl}
-                                alt="Background preview"
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className={`w-full h-full flex items-center justify-center ${isDarkMode ? 'bg-gray-800/50 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
-                                <span className="text-xs">Loading preview...</span>
-                              </div>
-                            )}
+                          <div className="relative">
+                            <div className="relative rounded-2xl overflow-hidden border-2 border-dashed" style={{ aspectRatio: '16/9' }}>
+                              {previewImageUrl ? (
+                                <img
+                                  src={previewImageUrl}
+                                  alt="Background preview"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className={`w-full h-full flex items-center justify-center ${isDarkMode ? 'bg-gray-800/50 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+                                  <span className="text-xs">Loading preview...</span>
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await deleteImageBlob('backgroundImage');
+                                  console.log('🗑️ Deleted from IndexedDB');
+                                } catch (err) {
+                                  console.error('Failed to delete from IndexedDB:', err);
+                                }
+                                onSetBackgroundImage('');
+                                setBgError(null);
+                                setSelectedFile(null);
+                              }}
+                              className={`absolute -top-2 -right-2 p-1.5 rounded-full shadow-md transition-colors z-10 ${isDarkMode
+                                ? 'bg-red-900/80 text-red-200 hover:bg-red-800 border border-red-500/30 backdrop-blur-md'
+                                : 'bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 border border-red-200'
+                                }`}
+                              title="Remove Background"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
                           </div>
-                          <button
-                            onClick={async () => {
-                              try {
-                                await deleteImageBlob('backgroundImage');
-                                console.log('🗑️ Deleted from IndexedDB');
-                              } catch (err) {
-                                console.error('Failed to delete from IndexedDB:', err);
-                              }
-                              onSetBackgroundImage('');
-                              setBgError(null);
-                              setSelectedFile(null);
-                            }}
-                            className={`text-xs px-3 py-1.5 rounded-full transition-colors ${isDarkMode
-                              ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30'
-                              : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                              }`}
-                          >
-                            Remove Background
-                          </button>
                           {/* Background Settings */}
                           <div className="space-y-3 pt-3 mt-3 border-t border-gray-200 dark:border-white/10">
                             {/* Blur */}
@@ -1638,6 +1630,44 @@ export default function LeftSidebar({
                           </div>
                         </div>
                       )}
+                      
+                      {/* Animated Gradient Option */}
+                      <div className={`mt-4 pt-4 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Animated Gradient</p>
+                            <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Dynamically overrides wallpaper</p>
+                          </div>
+                          <button
+                            onClick={onToggleAnimatedGradientBackground}
+                            className={`w-11 h-6 rounded-full transition-colors relative flex items-center ${animatedGradientBackground ? (isDarkMode ? 'bg-blue-500' : 'bg-blue-500') : (isDarkMode ? 'bg-gray-600' : 'bg-gray-300')}`}
+                          >
+                            <span className={`w-4 h-4 rounded-full bg-white transition-transform ${animatedGradientBackground ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                        {animatedGradientBackground && (
+                          <div className="mt-4 space-y-2">
+                            <p className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gradient Preset</p>
+                            <div className="grid grid-cols-5 gap-2">
+                              {[
+                                { id: 'default', name: 'Default', bg: 'linear-gradient(135deg, #ee7752, #e73c7e, #23a6d5)' },
+                                { id: 'ocean', name: 'Ocean', bg: 'linear-gradient(135deg, #0b486b, #f56217)' },
+                                { id: 'sunset', name: 'Sunset', bg: 'linear-gradient(135deg, #ff512f, #dd2476, #f09819)' },
+                                { id: 'aurora', name: 'Aurora', bg: 'linear-gradient(135deg, #00c6ff, #0072ff, #02aab0)' },
+                                { id: 'midnight', name: 'Midnight', bg: 'linear-gradient(135deg, #141e30, #243b55)' },
+                              ].map((preset) => (
+                                <button
+                                  key={preset.id}
+                                  onClick={() => onSetAnimatedGradientPreset?.(preset.id as any)}
+                                  title={preset.name}
+                                  className={`h-10 w-full rounded-lg border-2 transition-all ${animatedGradientPreset === preset.id ? 'border-blue-500 scale-105 shadow-md' : 'border-transparent hover:scale-105'}`}
+                                  style={{ background: preset.bg }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1650,7 +1680,25 @@ export default function LeftSidebar({
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                     Add New App
                   </h3>
-                   <div className="space-y-4">
+                    <div className="space-y-4">
+                      <div className={`p-2.5 rounded-xl flex items-center gap-3 border ${isDarkMode ? 'bg-[#1a1a1a] border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+                        <img 
+                          src={newApp.href ? getFaviconUrl(newApp.href.startsWith('http') ? newApp.href : `https://${newApp.href}`) : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 10h.01M15 10h.01M9.5 15c.658.658 1.5.94 2.5.94s1.842-.282 2.5-.94" /></svg>'} 
+                          alt="Preview" 
+                          className={`w-8 h-8 rounded-lg ${isDarkMode ? 'bg-white/10' : 'bg-white shadow-sm'}`}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 10h.01M15 10h.01M9.5 15c.658.658 1.5.94 2.5.94s1.842-.282 2.5-.94" /></svg>';
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium truncate ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                            {newApp.title || 'App Name'}
+                          </p>
+                          <p className={`text-xs truncate ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                            {newApp.href || 'URL Preview'}
+                          </p>
+                        </div>
+                      </div>
                     <div>
                       <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Name</label>
                       <input

@@ -451,3 +451,45 @@ input[type="range"].slider-with-dots::-moz-range-track {
     #334155 80px
   );
 }
+
+.animated-gradient-bg {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+.animated-gradient-bg-ocean {
+  background: linear-gradient(-45deg, #0b486b, #f56217, #0b486b, #00c9ff);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+.animated-gradient-bg-sunset {
+  background: linear-gradient(-45deg, #ff512f, #dd2476, #ff512f, #f09819);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+.animated-gradient-bg-aurora {
+  background: linear-gradient(-45deg, #00c6ff, #0072ff, #02aab0, #00cdac);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+.animated-gradient-bg-midnight {
+  background: linear-gradient(-45deg, #141e30, #243b55, #141e30, #0f2027);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

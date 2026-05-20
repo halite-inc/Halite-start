@@ -265,7 +265,11 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
       {isEditModalOpen && (
         <button
           onClick={() => onRemove(app.id)}
-          className="absolute -top-2 -right-2 bg-red-500/60 backdrop-blur-xl hover:bg-red-600/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-all duration-200 z-10 ring-1 ring-white/30 shadow-[0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
+          className={`absolute -top-2 -right-2 ${
+            glassmorphismEnabled 
+              ? (isDark ? 'bg-black/40 backdrop-blur-xl border border-white/20 text-white hover:bg-black/60 hover:text-red-400' : 'bg-white/40 backdrop-blur-xl border border-black/10 text-black hover:bg-white/60 hover:text-red-500')
+              : (isDark ? 'bg-[#1e1e1e] border border-[#333] text-white hover:bg-[#333] hover:text-red-400' : 'bg-white border border-gray-200 text-black hover:bg-gray-100 hover:text-red-500')
+          } rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-all duration-200 z-10 shadow-lg`}
           title="Remove app"
         >
           ×
@@ -502,7 +506,11 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
       {isEditModalOpen && (
         <button
           onClick={() => onRemove(app.id)}
-          className="absolute -top-2 -right-2 bg-red-500/60 backdrop-blur-xl hover:bg-red-600/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-all duration-200 z-10 ring-1 ring-white/30 shadow-[0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
+          className={`absolute -top-2 -right-2 ${
+            glassmorphismEnabled 
+              ? (isDark ? 'bg-black/40 backdrop-blur-xl border border-white/20 text-white hover:bg-black/60 hover:text-red-400' : 'bg-white/40 backdrop-blur-xl border border-black/10 text-black hover:bg-white/60 hover:text-red-500')
+              : (isDark ? 'bg-[#1e1e1e] border border-[#333] text-white hover:bg-[#333] hover:text-red-400' : 'bg-white border border-gray-200 text-black hover:bg-gray-100 hover:text-red-500')
+          } rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-100 transition-all duration-200 z-10 shadow-lg`}
           title="Remove app"
         >
           ×
@@ -1999,6 +2007,8 @@ export default function Home() {
   const [topPillStyle, setTopPillStyle] = useState<'card' | 'text'>('card');
   const [mergeTopPillsCenter, setMergeTopPillsCenter] = useState<boolean>(false);
   const [topPillShape, setTopPillShape] = useState<'pill' | 'squircle'>('pill');
+  const [animatedGradientBackground, setAnimatedGradientBackground] = useState<boolean>(false);
+  const [animatedGradientPreset, setAnimatedGradientPreset] = useState<'default' | 'ocean' | 'sunset' | 'aurora' | 'midnight'>('default');
   const [dockVisibility, setDockVisibility] = useState<'always' | 'hover'>('always');
   const [topClockTime, setTopClockTime] = useState<Date>(new Date());
   const [showBigClock, setShowBigClock] = useState<boolean>(false);
@@ -2538,6 +2548,16 @@ export default function Home() {
         setTopPillShape(savedTopPillShape);
       }
 
+      // Load animated gradient background and preset
+      const savedAnimatedGradient = localStorage.getItem('animatedGradientBackground');
+      if (savedAnimatedGradient === 'true') {
+        setAnimatedGradientBackground(true);
+      }
+      const savedGradientPreset = localStorage.getItem('animatedGradientPreset');
+      if (savedGradientPreset && ['default', 'ocean', 'sunset', 'aurora', 'midnight'].includes(savedGradientPreset)) {
+        setAnimatedGradientPreset(savedGradientPreset as any);
+      }
+
       // Load dock visibility
       const savedDockVisibility = localStorage.getItem('dockVisibility');
       if (savedDockVisibility === 'always' || savedDockVisibility === 'hover') {
@@ -2886,7 +2906,8 @@ export default function Home() {
     }
 
     // Reset visual settings to defaults
-    setIsDarkMode(false);
+    setIsDarkMode(true);
+    setAnimatedGradientBackground(false);
     setShowAppTitles(true);
     setShowSearchBar(false);
     setSearchBarWidth('medium');
@@ -2913,6 +2934,7 @@ export default function Home() {
         localStorage.setItem('showAppTitles', 'true');
         localStorage.setItem('hideAppTitleText', 'false');
         localStorage.setItem('backgroundImage', '');
+        localStorage.setItem('animatedGradientBackground', 'false');
         localStorage.setItem('normalModeEnabled', 'true');
         localStorage.setItem('glassmorphismEnabled', 'false');
         localStorage.setItem('fluidModeEnabled', 'false');
@@ -2922,7 +2944,7 @@ export default function Home() {
         localStorage.setItem('animateIconsEnabled', 'false');
         localStorage.setItem('animateWidgetsEnabled', 'false');
         localStorage.setItem('hoverAnimationStyle', 'scale');
-        localStorage.setItem('appGroupMarginTop', '240');
+        localStorage.setItem('appGroupMarginTop', '180');
         localStorage.setItem('userName', 'user');
         localStorage.setItem('greetingStyle', 'hi');
         localStorage.setItem('showTopTime', 'false');
@@ -2992,6 +3014,7 @@ export default function Home() {
       }
     }
     setIsDarkMode(false);
+    setAnimatedGradientBackground(false);
     setShowAppTitles(true);
     setShowSearchBar(false);
     setBackgroundImage('');
@@ -3004,7 +3027,7 @@ export default function Home() {
     setAnimateIconsEnabled(false);
     setAnimateWidgetsEnabled(false);
     setHoverAnimationStyle('scale');
-    setAppGroupMarginTop(240);
+    setAppGroupMarginTop(180);
 
     setUserName('user');
     setNameInput('user');
@@ -3017,6 +3040,7 @@ export default function Home() {
         localStorage.setItem('showAppTitles', 'true');
         localStorage.setItem('hideAppTitleText', 'false');
         localStorage.setItem('backgroundImage', '');
+        localStorage.setItem('animatedGradientBackground', 'false');
         localStorage.setItem('normalModeEnabled', 'true');
         localStorage.setItem('glassmorphismEnabled', 'false');
         localStorage.setItem('appTitleColor', 'auto');
@@ -3024,7 +3048,7 @@ export default function Home() {
         localStorage.setItem('animateIconsEnabled', 'false');
         localStorage.setItem('animateWidgetsEnabled', 'false');
         localStorage.setItem('hoverAnimationStyle', 'scale');
-        localStorage.setItem('appGroupMarginTop', '240');
+        localStorage.setItem('appGroupMarginTop', '180');
         localStorage.setItem('userName', 'user');
         localStorage.setItem('showTopTime', 'false');
         const appsJson = JSON.stringify(defaultApps);
@@ -3214,7 +3238,7 @@ export default function Home() {
       if (activeWidget && overWidget) {
         setWidgets((items) => {
           const oldIndex = items.findIndex((item) => item.id === active.id);
-          const newIndex = items.findIndex((item) => item.id === over?.id);
+          const newIndex = widgets.findIndex((item) => item.id === over?.id);
           return arrayMove(items, oldIndex, newIndex);
         });
       }
@@ -3295,17 +3319,18 @@ export default function Home() {
   return (
     <main suppressHydrationWarning
       ref={containerRef}
-      className={`min-h-screen px-4 py-8 transition-all duration-300 ${backgroundImage || (!isDarkMode && !backgroundImage) ? 'bg-cover bg-center bg-no-repeat' : ''
-        } ${isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white'} ${backgroundBlur && backgroundImage ? 'relative' : ''}`}
+      className={`min-h-screen px-4 py-8 transition-all duration-300 ${!animatedGradientBackground && (backgroundImage || (!isDarkMode && !backgroundImage)) ? 'bg-cover bg-center bg-no-repeat' : ''
+        } ${animatedGradientBackground ? (animatedGradientPreset === 'default' ? 'animated-gradient-bg' : `animated-gradient-bg-${animatedGradientPreset}`) : (isDarkMode ? 'bg-[#0a0a0a]' : 'bg-white')} ${backgroundBlur && backgroundImage && !animatedGradientBackground ? 'relative' : ''}`}
       style={{
-        backgroundImage: backgroundImage
-          ? `url(${backgroundImage})`
-          : (
-            isDarkMode
-              ? 'radial-gradient(600px circle at 100% 0, rgba(59,130,246,0.12), transparent 40%), radial-gradient(800px circle at 0 100%, rgba(236,72,153,0.10), transparent 40%), linear-gradient(180deg, #0a0a0a 0%, #0f1115 100%)'
-              : 'none'
-          ),
-        backgroundColor: isDarkMode ? '#0a0a0a' : '#f5f5f5',
+        backgroundImage: animatedGradientBackground
+          ? undefined
+          : (backgroundImage
+            ? `url(${backgroundImage})`
+            : (isDarkMode
+                ? 'radial-gradient(600px circle at 100% 0, rgba(59,130,246,0.12), transparent 40%), radial-gradient(800px circle at 0 100%, rgba(236,72,153,0.10), transparent 40%), linear-gradient(180deg, #0a0a0a 0%, #0f1115 100%)'
+                : 'none'
+            )),
+        backgroundColor: animatedGradientBackground ? undefined : (isDarkMode ? '#0a0a0a' : '#f5f5f5'),
         backgroundRepeat: 'no-repeat',
 
       } as React.CSSProperties}
@@ -3338,7 +3363,7 @@ export default function Home() {
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
           {topPillStyle === 'card' ? (
             /* Single unified pill card */
-            <div className={`inline-flex items-center ${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold ${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 overflow-hidden ${
+            <div className={`inline-flex items-center ${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold ${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 ${
               backgroundImage || isDarkMode
                 ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
                 : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
@@ -3346,7 +3371,7 @@ export default function Home() {
               {/* Time section */}
               {showTopTime && (
                 <>
-                  <span className={`${topPillSize === 'small' ? 'px-3 py-1' : topPillSize === 'large' ? 'px-5 py-2' : 'px-4 py-1.5'}`} aria-live="polite">
+                  <span className={`${topPillSize === 'small' ? 'px-2 py-0.5' : topPillSize === 'large' ? 'px-4 py-1.5' : 'px-3 py-1'}`} aria-live="polite">
                     {topClockLabel}
                   </span>
                   {/* Divider */}
@@ -3358,7 +3383,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => { setIsGreetingDropdownOpen(prev => !prev); setIsNameEditorOpen(false); }}
-                  className={`${topPillSize === 'small' ? 'px-3 py-1' : topPillSize === 'large' ? 'px-5 py-2' : 'px-4 py-1.5'} transition-all duration-200 focus:outline-none hover:opacity-80`}
+                  className={`${topPillSize === 'small' ? 'px-2 py-0.5' : topPillSize === 'large' ? 'px-4 py-1.5' : 'px-3 py-1'} transition-all duration-200 focus:outline-none hover:opacity-80`}
                   title="Click to see options"
                   aria-expanded={isGreetingDropdownOpen}
                   aria-controls="greeting-dropdown-menu"
@@ -3366,18 +3391,18 @@ export default function Home() {
                   {getGreeting()}
                 </button>
                 {isGreetingDropdownOpen && (
-                  <div id="greeting-dropdown-menu" className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode ? 'bg-black/40 text-white ring-white/15' : 'bg-white/50 text-gray-900 ring-gray-200'}`}>
+                  <div id="greeting-dropdown-menu" className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode ? 'bg-black/40 text-white ring-white/15' : 'bg-white/50 text-gray-900 ring-gray-200'}`}>
                     {/* Google Quick Links */}
                     <div className={`flex items-center justify-around px-2 pt-2 pb-1.5 mx-1.5 mb-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
                       {[
                         { name: 'Mail',     url: 'https://mail.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png' },
                         { name: 'Drive',    url: 'https://drive.google.com',   icon: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_32dp.png' },
-                                        { name: 'Meet',     url: 'https://meet.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_32dp.png' },
+                        { name: 'Gemini',   url: 'https://gemini.google.com',  icon: 'https://www.gstatic.com/lamda/images/favicon_v1_150160cddff7f294ce30.svg' },
                         { name: 'Calendar', url: 'https://calendar.google.com',icon: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_32dp.png' },
                       ].map(({ name, url, icon }) => (
                         <a key={name} href={url} target="_blank" rel="noopener noreferrer" title={name}
                           className={`flex items-center justify-center p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-500/10'}`}>
-                          <img src={icon} alt={name} title={name} className="w-8 h-8 rounded-md" />
+                          <img src={icon} alt={name} title={name} className="w-6 h-6 rounded-md" />
                         </a>
                       ))}
                     </div>
@@ -3423,18 +3448,18 @@ export default function Home() {
                   {getGreeting()}
                 </button>
                 {isGreetingDropdownOpen && (
-                  <div id="greeting-dropdown-menu" className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode ? 'bg-black/40 text-white ring-white/15' : 'bg-white/50 text-gray-900 ring-gray-200'}`}>
+                  <div id="greeting-dropdown-menu" className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode ? 'bg-black/40 text-white ring-white/15' : 'bg-white/50 text-gray-900 ring-gray-200'}`}>
                     {/* Google Quick Links */}
                     <div className={`flex items-center justify-around px-2 pt-2 pb-1.5 mx-1.5 mb-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
                       {[
                         { name: 'Mail',     url: 'https://mail.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png' },
                         { name: 'Drive',    url: 'https://drive.google.com',   icon: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_32dp.png' },
-                                        { name: 'Meet',     url: 'https://meet.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_32dp.png' },
+                        { name: 'Gemini',   url: 'https://gemini.google.com',  icon: 'https://www.gstatic.com/lamda/images/favicon_v1_150160cddff7f294ce30.svg' },
                         { name: 'Calendar', url: 'https://calendar.google.com',icon: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_32dp.png' },
                       ].map(({ name, url, icon }) => (
                         <a key={name} href={url} target="_blank" rel="noopener noreferrer" title={name}
                           className={`flex items-center justify-center p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-500/10'}`}>
-                          <img src={icon} alt={name} title={name} className="w-8 h-8 rounded-md" />
+                          <img src={icon} alt={name} title={name} className="w-6 h-6 rounded-md" />
                         </a>
                       ))}
                     </div>
@@ -3473,7 +3498,7 @@ export default function Home() {
           {showTopTime && (
             <div className="fixed top-4 left-8 z-40">
               <span
-                className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} font-semibold ${
+                className={`inline-flex items-center ${topPillSize === 'small' ? 'px-2 py-0.5 text-xs' : topPillSize === 'large' ? 'px-4 py-1.5 text-base' : 'px-3 py-1 text-sm'} font-semibold ${
                   topPillStyle === 'text'
                     ? `bg-transparent ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
                     : `${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 ${
@@ -3499,7 +3524,7 @@ export default function Home() {
                   setIsGreetingDropdownOpen(prev => !prev);
                   setIsNameEditorOpen(false);
                 }}
-                className={`inline-flex items-center ${topPillSize === 'small' ? 'px-3 py-1 text-xs' : topPillSize === 'large' ? 'px-5 py-2 text-base' : 'px-4 py-1.5 text-sm'} font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
+                className={`inline-flex items-center ${topPillSize === 'small' ? 'px-2 py-0.5 text-xs' : topPillSize === 'large' ? 'px-4 py-1.5 text-base' : 'px-3 py-1 text-sm'} font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
                   topPillStyle === 'text'
                     ? `bg-transparent hover:opacity-80 ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
                     : `${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 ${
@@ -3519,23 +3544,22 @@ export default function Home() {
               {isGreetingDropdownOpen && (
                 <div
                   id="greeting-dropdown-menu"
-                  className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode
+                  className={`absolute right-0 mt-2 w-48 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode
                     ? 'bg-black/40 text-white ring-white/15'
                     : 'bg-white/50 text-gray-900 ring-gray-200'
                     }`}
                 >
                   {/* Google Quick Links */}
-                  <div className={`flex items-center justify-around px-2 pt-2 pb-1.5 mx-1.5 mb-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
+                  <div className={`flex items-center justify-center gap-1.5 px-2 pt-2 pb-1.5 mx-2 mb-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
                     {[
                       { name: 'Mail',     url: 'https://mail.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png' },
                       { name: 'Drive',    url: 'https://drive.google.com',   icon: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_32dp.png' },
-                                    { name: 'Meet',     url: 'https://meet.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/meet_2020q4_32dp.png' },
+                      { name: 'Gemini',   url: 'https://gemini.google.com',  icon: 'https://www.gstatic.com/lamda/images/favicon_v1_150160cddff7f294ce30.svg' },
                       { name: 'Calendar', url: 'https://calendar.google.com',icon: 'https://www.gstatic.com/images/branding/product/2x/calendar_2020q4_32dp.png' },
                     ].map(({ name, url, icon }) => (
                       <a key={name} href={url} target="_blank" rel="noopener noreferrer" title={name}
-                        className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-500/10'}`}>
-                        <img src={icon} alt={name} className="w-6 h-6 rounded-md" />
-                        <span className={`text-[9px] font-medium leading-none ${isDarkMode ? 'text-white/50' : 'text-gray-500'}`}>{name}</span>
+                        className={`flex items-center justify-center p-1.5 rounded-lg transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-500/10'}`}>
+                        <img src={icon} alt={name} title={name} className="w-5 h-5 rounded-md" />
                       </a>
                     ))}
                   </div>
@@ -4327,7 +4351,25 @@ export default function Home() {
               </div>
               <div className={`w-80 rounded-2xl p-4 shadow-2xl ${glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-white ring-1 ring-gray-200'}`}>
                 <h4 className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-black'}`}>Add Favorite App</h4>
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className={`p-2.5 rounded-xl flex items-center gap-3 ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-50 ring-gray-200'}`}>
+                    <img 
+                      src={quickAppUrlInput ? getFaviconUrl(quickAppUrlInput.startsWith('http') ? quickAppUrlInput : `https://${quickAppUrlInput}`) : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 10h.01M15 10h.01M9.5 15c.658.658 1.5.94 2.5.94s1.842-.282 2.5-.94" /></svg>'} 
+                      alt="Preview" 
+                      className={`w-8 h-8 rounded-lg ${isDarkMode ? 'bg-white/10' : 'bg-white shadow-sm'}`}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%239CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 10h.01M15 10h.01M9.5 15c.658.658 1.5.94 2.5.94s1.842-.282 2.5-.94" /></svg>';
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                        {quickAppTitleInput || 'App Name'}
+                      </p>
+                      <p className={`text-xs truncate ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {quickAppUrlInput || 'URL Preview'}
+                      </p>
+                    </div>
+                  </div>
                   <input
                     type="text"
                     placeholder="App name"
@@ -4595,7 +4637,7 @@ export default function Home() {
       {/* Floating Action Dock Wrapper */}
       <div className="fixed bottom-0 right-0 p-4 sm:p-5 z-30 flex items-end justify-end group" style={{ pointerEvents: dockVisibility === 'hover' && !isEditModalOpen ? 'auto' : 'none', width: '150px', height: '150px' }}>
         <div
-          className={`${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} shadow-lg border flex items-center gap-1 transition-all duration-300 pointer-events-auto ${
+          className={`rounded-full shadow-lg border flex items-center gap-1 transition-all duration-300 pointer-events-auto ${
             topPillSize === 'small' ? 'px-1 py-1 sm:px-1 sm:py-1 gap-0.5' :
             topPillSize === 'large' ? 'px-1.5 py-1.5 sm:px-2 sm:py-2 gap-1.5' :
             'px-1 py-1 sm:px-1.5 sm:py-1.5'
@@ -4768,6 +4810,19 @@ export default function Home() {
         }}
         backgroundBlur={backgroundBlur}
         onSetBackgroundBlur={(value: number) => setBackgroundBlur(value)}
+        animatedGradientBackground={animatedGradientBackground}
+        onToggleAnimatedGradientBackground={() => {
+          setAnimatedGradientBackground(prev => {
+            const next = !prev;
+            if (typeof window !== 'undefined') localStorage.setItem('animatedGradientBackground', next.toString());
+            return next;
+          });
+        }}
+        animatedGradientPreset={animatedGradientPreset}
+        onSetAnimatedGradientPreset={(val: 'default' | 'ocean' | 'sunset' | 'aurora' | 'midnight') => {
+          setAnimatedGradientPreset(val);
+          if (typeof window !== 'undefined') localStorage.setItem('animatedGradientPreset', val);
+        }}
         glassmorphismEnabled={glassmorphismEnabled}
         onToggleGlassmorphism={() => {
           setGlassmorphismEnabled(prev => {
@@ -4980,7 +5035,7 @@ export default function Home() {
             }}
           >
             <div
-              className={`min-w-[160px] rounded-xl shadow-xl ring-1 overflow-hidden ${isDarkMode
+              className={`min-w-[140px] rounded-xl shadow-xl ring-1 overflow-hidden py-1 ${isDarkMode
                 ? glassmorphismEnabled
                   ? 'bg-[#2B2B2B]/90 backdrop-blur-md ring-white/20'
                   : 'bg-[#1e1e1e] ring-white/10'
@@ -4989,38 +5044,12 @@ export default function Home() {
                   : 'bg-white ring-gray-200'
                 }`}
             >
-              {/* Edit option for all apps */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  startEditingApp(contextMenu.appId);
-                }}
-                className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
-                  ? 'text-white hover:bg-white/10'
-                  : 'text-gray-800 hover:bg-gray-100'
-                  }`}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-                Edit App
-              </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleOpenInNewTab();
                 }}
-                className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
+                className={`w-full px-3 py-1.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
                   ? 'text-white hover:bg-white/10'
                   : 'text-gray-800 hover:bg-gray-100'
                   }`}
@@ -5039,6 +5068,32 @@ export default function Home() {
                   />
                 </svg>
                 Open in new tab
+              </button>
+              {/* Edit option for all apps */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startEditingApp(contextMenu.appId);
+                }}
+                className={`w-full px-3 py-1.5 text-left text-sm font-medium transition-colors flex items-center gap-2 ${isDarkMode
+                  ? 'text-white hover:bg-white/10'
+                  : 'text-gray-800 hover:bg-gray-100'
+                  }`}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit App
               </button>
             </div>
           </div>
