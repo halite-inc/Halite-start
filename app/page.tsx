@@ -110,11 +110,14 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
   useEffect(() => {
     let isMounted = true;
     
-    // Check if this is a faceprep.online URL and use custom icon
+    // Check if this is a faceprep.online or examly URL and use custom icon
     const isFaceprep = app.href.includes('faceprep.online');
+    const isExamly = app.href.includes('rec215.examly.io');
     
     if (isFaceprep) {
       setIconSrc('/faceprep.png');
+    } else if (isExamly) {
+      setIconSrc('/raj.png');
     } else if (app.icon?.startsWith('idb:')) {
       const key = app.icon.replace('idb:', '');
       getImageObjectUrl(key).then(url => {
@@ -319,11 +322,13 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
   const haliteUrls = app.haliteUrls || [];
   const haliteIcons = app.haliteIcons || [];
   
-  // Override icons for faceprep.online URLs with custom icon
+  // Override icons for faceprep.online or examly URLs with custom icon
   const displayIcons = haliteIcons.map((icon, idx) => {
     const url = haliteUrls[idx];
     if (url && url.includes('faceprep.online')) {
       return '/faceprep.png';
+    } else if (url && url.includes('rec215.examly.io')) {
+      return '/raj.png';
     }
     return icon;
   });
@@ -1941,6 +1946,7 @@ export default function Home() {
   const [removeAppCardBorders, setRemoveAppCardBorders] = useState<boolean>(false);
   const [appCardSize, setAppCardSize] = useState<'small' | 'normal' | 'large' | 'custom'>('normal');
   const [customAppCardSize, setCustomAppCardSize] = useState<number>(64);
+  const [appCardGapX, setAppCardGapX] = useState<number>(16);
   const [appCardInnerShadow, setAppCardInnerShadow] = useState<'none' | 'small' | 'medium' | 'large'>('none');
   const [appCardBackgroundColor, setAppCardBackgroundColor] = useState<string>('');
 
@@ -2503,6 +2509,15 @@ export default function Home() {
         }
       }
 
+      // Load app card gap x
+      const savedAppCardGapX = localStorage.getItem('appCardGapX');
+      if (savedAppCardGapX) {
+        const parsed = parseInt(savedAppCardGapX, 10);
+        if (!isNaN(parsed)) {
+          setAppCardGapX(parsed);
+        }
+      }
+
       // Load inner shadow
       const savedInnerShadow = localStorage.getItem('appCardInnerShadow');
       if (savedInnerShadow === 'none' || savedInnerShadow === 'small' || savedInnerShadow === 'medium' || savedInnerShadow === 'large') {
@@ -2696,7 +2711,17 @@ export default function Home() {
     }
   }, [fontFamily]);
 
+  useEffect(() => {
+    localStorage.setItem('appCardSize', appCardSize);
+  }, [appCardSize]);
 
+  useEffect(() => {
+    localStorage.setItem('appCardGapX', appCardGapX.toString());
+  }, [appCardGapX]);
+
+  useEffect(() => {
+    localStorage.setItem('customAppCardSize', customAppCardSize.toString());
+  }, [customAppCardSize]);
 
   // Comprehensive save effect for all settings - only save on user changes, not during load/reset
   useEffect(() => {
@@ -2954,6 +2979,7 @@ export default function Home() {
         localStorage.setItem('removeAppCardBorders', 'false');
         localStorage.setItem('appCardSize', 'normal');
         localStorage.setItem('appCardInnerShadow', 'none');
+        localStorage.setItem('appCardGapX', '16');
 
 
         // Save apps and widgets with explicit stringification
@@ -3028,6 +3054,7 @@ export default function Home() {
     setAnimateWidgetsEnabled(false);
     setHoverAnimationStyle('scale');
     setAppGroupMarginTop(180);
+    setAppCardGapX(16);
 
     setUserName('user');
     setNameInput('user');
@@ -3059,6 +3086,7 @@ export default function Home() {
         localStorage.setItem('removeAppCardBorders', 'false');
         localStorage.setItem('appCardSize', 'normal');
         localStorage.setItem('appCardInnerShadow', 'none');
+        localStorage.setItem('appCardGapX', '16');
       } catch { }
     }
     if (typeof document !== 'undefined') {
@@ -3550,7 +3578,7 @@ export default function Home() {
                     }`}
                 >
                   {/* Google Quick Links */}
-                  <div className={`flex items-center justify-center gap-1.5 px-2 pt-2 pb-1.5 mx-2 mb-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
+                  <div className={`flex items-center justify-center gap-1.5 px-2 pt-2 pb-1.5 mx-2 mb-1 mt-1 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-500/5'}`}>
                     {[
                       { name: 'Mail',     url: 'https://mail.google.com',    icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png' },
                       { name: 'Drive',    url: 'https://drive.google.com',   icon: 'https://www.gstatic.com/images/branding/product/2x/drive_2020q4_32dp.png' },
@@ -3598,7 +3626,7 @@ export default function Home() {
                         if (e.key === 'Enter') { e.preventDefault(); handleSaveGreetingName(); }
                         if (e.key === 'Escape') { e.preventDefault(); handleCancelGreetingEdit(); }
                       }}
-                      className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400/50 transition-all ${isDarkMode ? 'bg-white/10 text-white placeholder-white/30 border border-white/5' : 'bg-gray-100/50 text-gray-900 placeholder-gray-400 border border-gray-200/50'}`}
+                      className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400/50 transition-all ${isDarkMode ? 'bg-white/10 text-white placeholder-white/30 border border-white/5' : 'bg-white/50 text-gray-900 placeholder-gray-400 border border-gray-200/50'}`}
                       placeholder="Enter your name"
                     />
                   </div>
@@ -3705,10 +3733,9 @@ export default function Home() {
               <div className={`${centerAppsGroup
                 ? 'grid w-fit mx-auto [grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]'
                 : 'grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'
-                } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px] ${centerAppsGroup
-                  ? (appCardSize === 'small' ? 'gap-x-1 sm:gap-x-1.5 lg:gap-x-2' : 'gap-x-2 sm:gap-x-3 lg:gap-x-4')
-                  : (appCardSize === 'small' ? 'gap-x-0' : 'gap-x-0.5 sm:gap-x-0.5 lg:gap-x-0.5')
-                }`}>
+                } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px]`}
+                style={{ columnGap: `${appCardGapX}px` }}
+              >
                 {apps.map((app, index) => (
                   app.type === 'halite' ? (
                     <HaliteCard
@@ -4736,7 +4763,7 @@ export default function Home() {
           aria-label="Settings"
         >
           <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
@@ -4977,6 +5004,8 @@ export default function Home() {
         monochromeIcons={monochromeIcons}
         appCardBorderRadius={appCardBorderRadius}
         onSetAppCardBorderRadius={setAppCardBorderRadius}
+        appCardGapX={appCardGapX}
+        onSetAppCardGapX={setAppCardGapX}
         onToggleMonochromeIcons={() => {
           setMonochromeIcons(prev => {
             const newValue = !prev;

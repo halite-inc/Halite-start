@@ -120,6 +120,8 @@ interface LeftSidebarProps {
   onSetAppCardInnerShadow?: (shadow: 'none' | 'small' | 'medium' | 'large') => void;
   appCardBackgroundColor?: string;
   onSetAppCardBackgroundColor?: (color: string) => void;
+  appCardGapX?: number;
+  onSetAppCardGapX?: (value: number) => void;
   fontFamily?: 'default' | 'serif' | 'mono' | 'sans' | 'elegant' | 'poppins' | 'fun';
   onSetFontFamily?: (family: 'default' | 'serif' | 'mono' | 'sans' | 'elegant' | 'poppins' | 'fun') => void;
 }
@@ -377,10 +379,11 @@ export default function LeftSidebar({
   customAppCardSize,
   onSetCustomAppCardSize,
   appCardInnerShadow,
-
   onSetAppCardInnerShadow,
   appCardBackgroundColor,
   onSetAppCardBackgroundColor,
+  appCardGapX,
+  onSetAppCardGapX,
   fontFamily,
   onSetFontFamily,
 }: LeftSidebarProps) {
@@ -1187,6 +1190,29 @@ export default function LeftSidebar({
                               { value: 'large', label: 'Lg' },
                             ]}
                             isDarkMode={isDarkMode}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Gap (X)</label>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => onSetAppCardGapX && onSetAppCardGapX(16)}
+                                className={`text-[10px] px-1.5 py-0.5 rounded border ${isDarkMode ? 'border-white/20 text-gray-400 hover:text-white' : 'border-gray-200 text-gray-500 hover:text-gray-800'}`}
+                              >
+                                Reset
+                              </button>
+                              <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{appCardGapX ?? 16}px</span>
+                            </div>
+                          </div>
+                          <input 
+                            type="range" 
+                            min="0" 
+                            max="64" 
+                            step="2"
+                            value={appCardGapX ?? 16}
+                            onChange={(e) => onSetAppCardGapX && onSetAppCardGapX(parseInt(e.target.value))}
+                            className="w-full accent-blue-500"
                           />
                         </div>
                         <div className="flex items-center justify-between">
