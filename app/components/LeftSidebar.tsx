@@ -64,6 +64,8 @@ interface LeftSidebarProps {
   onToggleAnimateWidgets: () => void;
   appGroupMarginTop: number;
   onSetAppGroupMarginTop: (value: number) => void;
+  centerAppsGroup?: boolean;
+  onToggleCenterAppsGroup?: () => void;
   showBookmarks?: boolean;
   onToggleBookmarks?: () => void;
   bookmarkStyle?: 'cards' | 'chips' | 'list' | 'minimal' | 'compact' | 'modern';
@@ -194,14 +196,14 @@ const ModernDropdown = ({ value, onChange, options, isDarkMode }: ModernDropdown
   );
 };
 
-interface SegmentedControlProps<T extends string> {
+interface SegmentedControlProps<T extends string | number> {
   value: T;
   onChange: (value: T) => void;
   options: { value: T; label: string }[];
   isDarkMode: boolean;
 }
 
-const SegmentedControl = <T extends string>({ value, onChange, options, isDarkMode }: SegmentedControlProps<T>) => {
+const SegmentedControl = <T extends string | number>({ value, onChange, options, isDarkMode }: SegmentedControlProps<T>) => {
   const activeIndex = options.findIndex((opt) => opt.value === value);
   const count = options.length;
 
@@ -325,6 +327,8 @@ export default function LeftSidebar({
   onToggleAnimateWidgets,
   appGroupMarginTop,
   onSetAppGroupMarginTop,
+  centerAppsGroup,
+  onToggleCenterAppsGroup,
   showBookmarks,
   onToggleBookmarks,
   bookmarkStyle,
