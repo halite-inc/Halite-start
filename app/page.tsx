@@ -41,7 +41,7 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'top-apps';
   title: string;
 }
 
@@ -1674,124 +1674,104 @@ function PomodoroWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
 }
 
 
-function DiceWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
-  const [value, setValue] = useState(1);
-  const [rolling, setRolling] = useState(false);
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
+function TopAppsWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle, apps, appClickCounts }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; apps: App[]; appClickCounts: Record<string, number> }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: widget.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 50 : 1 };
 
-  const roll = () => {
-    if (rolling) return;
-    setRolling(true);
-    const rolls = Array.from({ length: 10 }, () => Math.floor(Math.random() * 6) + 1);
-    rolls.forEach((roll, i) => {
-      setTimeout(() => setValue(roll), i * 50);
-    });
-    setTimeout(() => setRolling(false), 500);
+  const topApps = [...apps]
+    .sort((a, b) => (appClickCounts[b.id] || 0) - (appClickCounts[a.id] || 0))
+    .slice(0, 4);
+
+  const getHoverClass = () => {
+    if (isEditModalOpen) return '';
+    if (!animateWidgetsEnabled) return 'transition-all duration-300';
+    switch (hoverAnimationStyle) {
+      case 'scale': return 'transition-transform duration-300 hover:scale-105';
+      case 'tilt': return 'transition-all duration-300 hover:rotate-2 hover:scale-105';
+      case 'skew': return 'transition-all duration-300 hover:-skew-x-2 hover:scale-105';
+      case 'spin': return 'transition-all duration-500 hover:rotate-12 hover:scale-105';
+      case 'bounce': return 'transition-all duration-300 hover:-translate-y-2 hover:scale-105';
+      case 'pulse': return 'transition-all duration-300 hover:scale-105 hover:animate-pulse';
+      case 'float': return 'transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl';
+      case 'slide': return 'transition-all duration-300 hover:translate-x-2 hover:scale-105';
+      case 'glow': return `transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_rgba(255,255,255,0.5)]`;
+      default: return 'transition-transform duration-300 hover:scale-105';
+    }
   };
 
-  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
-    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
-      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
-        hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
-          hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
-            hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
-              hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
-                hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
-                  hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-green-400/50' :
-                    'hover:scale-110 hover:-translate-y-0.5'
-    : '';
+  const widgetBgColor = glassmorphismEnabled 
+    ? (isDark ? 'bg-[#2B2B2B]/60' : 'bg-white/60') 
+    : (isDark ? 'bg-[#2B2B2B]' : 'bg-white');
 
   return (
-    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative group ${isDragging ? 'z-50' : ''}`}
+    >
       <div
         {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        onClick={() => !isEditModalOpen && roll()}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col p-2.5 sm:p-3 md:p-3.5 transition-all duration-300 relative overflow-hidden ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
+          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing ' + (jiggleIndex % 2 === 0 ? 'animate-jiggle-1' : 'animate-jiggle-2') : 'cursor-default ' + getHoverClass()
           } ${glassmorphismEnabled
               ? (isDark
-                ? 'bg-green-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
-                : 'bg-green-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
+                ? 'bg-gray-900/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                : 'bg-white/20 backdrop-blur-md text-black border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
               : (isDark
-                ? 'bg-gradient-to-br from-green-500 via-emerald-500 to-green-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm'
-                : 'bg-gradient-to-br from-green-400 via-emerald-400 to-green-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-green-200')
-          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${rolling ? 'animate-spin' : ''}`}
-        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
+                ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-sm'
+                : 'bg-gradient-to-br from-white via-gray-50 to-white text-black shadow-[0_12px_40px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-gray-100')
+          }`}
       >
-        <div className={`text-3xl sm:text-4xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
-          {value}
+        <div className="flex flex-col gap-1 sm:gap-1.5 flex-1 w-full justify-center">
+          {topApps.map((app) => (
+            <div key={app.id} className={`flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 rounded-[8px] sm:rounded-lg ${
+              isDark ? 'bg-white/10' : 'bg-black/5'
+            } hover:scale-105 transition-transform cursor-pointer w-full`}
+            onPointerDown={(e) => {
+              if (!isEditModalOpen) {
+                e.stopPropagation();
+                window.open(app.href, '_blank');
+              }
+            }}>
+              {app.icon ? (
+                <img src={app.icon} alt={app.title} className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-[4px] sm:rounded-[5px] shrink-0 shadow-sm ${animateIconsEnabled ? 'transition-transform duration-300 hover:scale-110' : ''}`} />
+              ) : (
+                <div className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-[4px] sm:rounded-[5px] shrink-0 shadow-sm flex items-center justify-center text-[7px] sm:text-[8px] font-bold ${
+                  isDark ? 'bg-white/10 text-white' : 'bg-black/10 text-black'
+                } ${animateIconsEnabled ? 'transition-transform duration-300 hover:scale-110' : ''}`}>
+                  {app.title.substring(0, 1).toUpperCase()}
+                </div>
+              )}
+              <span className={`text-[8px] sm:text-[9px] md:text-[10px] font-medium truncate w-full text-left ${
+                widgetTextColor === 'auto' ? (isDark ? 'text-white/90' : 'text-gray-700') : `text-${widgetTextColor}`
+              }`}>{app.title}</span>
+            </div>
+          ))}
+          
+          {/* Fill empty spots if less than 4 apps */}
+          {Array.from({ length: Math.max(0, 4 - topApps.length) }).map((_, i) => (
+            <div key={`empty-${i}`} className={`flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 rounded-[8px] sm:rounded-lg ${
+              isDark ? 'bg-white/5 opacity-50' : 'bg-black/5 opacity-50'
+            } w-full`}>
+              <div className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-[4px] sm:rounded-[5px] shrink-0 ${isDark ? 'bg-white/10' : 'bg-black/10'}`}></div>
+              <div className={`w-12 sm:w-16 h-1.5 sm:h-2 rounded-full ${isDark ? 'bg-white/10' : 'bg-black/10'}`}></div>
+            </div>
+          ))}
         </div>
       </div>
+
       {isEditModalOpen && (
-        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
-      )}
-    </div>
-  );
-}
-
-function CoinFlipWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
-  const [side, setSide] = useState<'H' | 'T'>('H');
-  const [flipping, setFlipping] = useState(false);
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: widget.id, disabled: !isEditModalOpen });
-
-  const flip = () => {
-    if (flipping) return;
-    setFlipping(true);
-    setTimeout(() => {
-      setSide(Math.random() > 0.5 ? 'H' : 'T');
-      setFlipping(false);
-    }, 500);
-  };
-
-  const widgetHoverClass = animateWidgetsEnabled && animateIconsEnabled
-    ? hoverAnimationStyle === 'tilt' ? 'hover:-rotate-3 hover:translate-y-[-2px]' :
-      hoverAnimationStyle === 'skew' ? 'hover:skew-x-3 hover:skew-y-1' :
-        hoverAnimationStyle === 'spin' ? 'hover:rotate-180' :
-          hoverAnimationStyle === 'bounce' ? 'hover:animate-bounce' :
-            hoverAnimationStyle === 'pulse' ? 'hover:animate-pulse' :
-              hoverAnimationStyle === 'float' ? 'hover:-translate-y-2' :
-                hoverAnimationStyle === 'slide' ? 'hover:translate-x-2' :
-                  hoverAnimationStyle === 'glow' ? 'hover:shadow-lg hover:shadow-yellow-400/50' :
-                    'hover:scale-110 hover:-translate-y-0.5'
-    : '';
-
-  return (
-    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`relative group ${isDragging ? 'z-50' : ''}`}>
-      <div
-        {...(isEditModalOpen ? { ...attributes, ...listeners } : {})}
-        onClick={() => !isEditModalOpen && flip()}
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-3xl flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden ${widgetHoverClass} ${isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-          } ${isEditModalOpen ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-          } ${glassmorphismEnabled
-              ? (isDark
-                ? 'bg-yellow-400/20 backdrop-blur-md text-white border-[1.5px] border-white/15 hover:border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
-                : 'bg-yellow-300/20 backdrop-blur-md text-white border-[1.5px] border-white/30 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]')
-              : (isDark
-                ? 'bg-gradient-to-br from-yellow-500 via-amber-500 to-yellow-600 text-white shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm'
-                : 'bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-500 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm border border-yellow-200')
-          } ${isEditModalOpen && !isDragging ? 'ios-jiggle' : ''} ${flipping ? 'animate-spin' : ''}`}
-        style={{ animationDelay: isEditModalOpen ? `${(jiggleIndex % 8) * 60}ms` : undefined }}
-      >
-        <div className={`text-2xl sm:text-3xl font-bold ${widgetTextColor === 'auto' ? (isDark ? 'text-white' : 'text-white') : widgetTextColor === 'black' ? 'text-black' : 'text-white'}`}>
-          {side}
-        </div>
-      </div>
-      {isEditModalOpen && (
-        <button onClick={onRemove} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold z-10">×</button>
+        <button
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className={`absolute -top-2 -right-2 p-1 sm:p-1.5 rounded-full shadow-md z-10 hover:scale-110 transition-transform ${
+            isDark ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-600'
+          }`}
+        >
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
       )}
     </div>
   );
@@ -1958,6 +1938,7 @@ export default function Home() {
   const [highlightIndex, setHighlightIndex] = useState<number>(-1);
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [backgroundBlur, setBackgroundBlur] = useState<number>(0);
+  const [bgContrast, setBgContrast] = useState<number>(100);
   const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(false);
   const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>('auto');
   const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>('auto');
@@ -1970,7 +1951,7 @@ export default function Home() {
   const [animateIconsEnabled, setAnimateIconsEnabled] = useState<boolean>(false);
   const [hoverAnimationStyle, setHoverAnimationStyle] = useState<'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'>('scale');
   const [animateWidgetsEnabled, setAnimateWidgetsEnabled] = useState<boolean>(false);
-  const [centerAppsGroup, setCenterAppsGroup] = useState<boolean>(false);
+  const [centerAppsGroup, setCenterAppsGroup] = useState<boolean>(true);
 
   const [fullRoundedIconsEnabled, setFullRoundedIconsEnabled] = useState<boolean>(false);
 
@@ -2349,6 +2330,9 @@ export default function Home() {
       if (savedCenterAppsGroup !== null) {
         setCenterAppsGroup(savedCenterAppsGroup === 'true');
         console.log('✅ Center apps group loaded:', savedCenterAppsGroup === 'true');
+      } else {
+        setCenterAppsGroup(true);
+        console.log('✅ Center apps group defaulted to true');
       }
 
       // Always start with an empty search term on load
@@ -2377,6 +2361,13 @@ export default function Home() {
       }
 
       // Load background blur
+      // Load background contrast
+      const savedBgContrast = localStorage.getItem('bgContrast');
+      if (savedBgContrast !== null) {
+        const contrastValue = parseInt(savedBgContrast, 10);
+        setBgContrast(isNaN(contrastValue) ? 100 : contrastValue);
+      }
+
       const savedBackgroundBlur = localStorage.getItem('backgroundBlur');
       if (savedBackgroundBlur !== null) {
         const blurValue = parseInt(savedBackgroundBlur, 10);
@@ -2556,7 +2547,6 @@ export default function Home() {
       if (savedMergeTopPillsCenter === 'true') {
         setMergeTopPillsCenter(true);
       }
-
       // Load top pill shape
       const savedTopPillShape = localStorage.getItem('topPillShape');
       if (savedTopPillShape === 'pill' || savedTopPillShape === 'squircle') {
@@ -2711,17 +2701,7 @@ export default function Home() {
     }
   }, [fontFamily]);
 
-  useEffect(() => {
-    localStorage.setItem('appCardSize', appCardSize);
-  }, [appCardSize]);
 
-  useEffect(() => {
-    localStorage.setItem('appCardGapX', appCardGapX.toString());
-  }, [appCardGapX]);
-
-  useEffect(() => {
-    localStorage.setItem('customAppCardSize', customAppCardSize.toString());
-  }, [customAppCardSize]);
 
   // Comprehensive save effect for all settings - only save on user changes, not during load/reset
   useEffect(() => {
@@ -2758,6 +2738,7 @@ export default function Home() {
         localStorage.setItem('backgroundImage', backgroundImage);
       }
       localStorage.setItem('backgroundBlur', backgroundBlur.toString());
+      localStorage.setItem('bgContrast', bgContrast.toString());
 
       // Save visual modes
       localStorage.setItem('normalModeEnabled', normalModeEnabled.toString());
@@ -2775,6 +2756,8 @@ export default function Home() {
       localStorage.setItem('appCardInnerShadow', appCardInnerShadow);
       localStorage.setItem('bookmarkStyle', bookmarkStyle);
       localStorage.setItem('appGroupMarginTop', appGroupMarginTop.toString());
+      localStorage.setItem('appCardGapX', appCardGapX.toString());
+      localStorage.setItem('customAppCardSize', customAppCardSize.toString());
       localStorage.setItem('userName', userName);
       localStorage.setItem('greetingStyle', greetingStyle);
       localStorage.setItem('showTopTime', showTopTime.toString());
@@ -2825,6 +2808,8 @@ export default function Home() {
     appCardInnerShadow,
     bookmarkStyle,
     centerAppsGroup,
+    appCardGapX,
+    customAppCardSize,
     showBookmarks,
     showBookmarksTitle,
     centerBookmarksGroup,
@@ -3115,11 +3100,11 @@ export default function Home() {
     }
   };
 
-  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip') => {
+  const addWidget = (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'top-apps') => {
     const widget: Widget = {
       id: Date.now().toString(),
       type,
-      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : type === 'fidget-spinner' ? 'Fidget Spinner' : type === 'pomodoro' ? 'Pomodoro Timer' : type === 'dice' ? 'Dice Roller' : type === 'coin-flip' ? 'Coin Flip' : 'Spacer'
+      title: type === 'clock' ? 'Clock Widget' : type === 'weather' ? 'Weather Widget' : type === 'calendar' ? 'Calendar Widget' : type === 'analog-clock' ? 'Analog Clock Widget' : type === 'water-tracker' ? 'Water Tracker Widget' : type === 'quick-notes' ? 'Quick Notes Widget' : type === 'photo' ? 'Photo Widget' : type === 'fidget-spinner' ? 'Fidget Spinner' : type === 'pomodoro' ? 'Pomodoro Timer' : type === 'top-apps' ? 'Top Apps' : 'Spacer'
     };
     setWidgets([...widgets, widget]);
   };
@@ -3364,12 +3349,13 @@ export default function Home() {
       } as React.CSSProperties}
     >
       {/* Background blur overlay */}
-      {backgroundBlur > 0 && backgroundImage && (
+      {((backgroundBlur > 0 || bgContrast !== 100) && backgroundImage && !animatedGradientBackground) && (
         <div
-          className="fixed inset-0 pointer-events-none z-0"
+          className="absolute inset-0 z-[-1]"
           style={{
-            backdropFilter: `blur(${backgroundBlur}px)`,
-            WebkitBackdropFilter: `blur(${backgroundBlur}px)`,
+            backdropFilter: `${backgroundBlur > 0 ? `blur(${backgroundBlur}px) ` : ''}${bgContrast !== 100 ? `contrast(${bgContrast}%)` : ''}`.trim(),
+            WebkitBackdropFilter: `${backgroundBlur > 0 ? `blur(${backgroundBlur}px) ` : ''}${bgContrast !== 100 ? `contrast(${bgContrast}%)` : ''}`.trim(),
+            backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)'
           }}
         />
       )}
@@ -3572,7 +3558,7 @@ export default function Home() {
               {isGreetingDropdownOpen && (
                 <div
                   id="greeting-dropdown-menu"
-                  className={`absolute right-0 mt-2 w-48 rounded-2xl shadow-sm ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode
+                  className={`absolute right-0 mt-2 w-48 rounded-2xl shadow-lg ring-1 overflow-hidden backdrop-blur-sm transition-all py-1 ${isDarkMode
                     ? 'bg-black/40 text-white ring-white/15'
                     : 'bg-white/50 text-gray-900 ring-gray-200'
                     }`}
@@ -3591,6 +3577,14 @@ export default function Home() {
                       </a>
                     ))}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => { setIsGreetingDropdownOpen(false); setIsStatisticsOpen(true); }}
+                    className={`w-[calc(100%-12px)] mx-1.5 my-1 text-left px-3 py-2 text-sm font-medium transition-all flex items-center gap-2.5 rounded-xl ${isDarkMode ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-500/10'}`}
+                  >
+                    <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    Statistics
+                  </button>
                   <button
                     type="button"
                     onClick={() => { setIsGreetingDropdownOpen(false); setIsSidebarOpen(true); }}
@@ -3961,8 +3955,8 @@ export default function Home() {
                               animateWidgetsEnabled={animateWidgetsEnabled}
                               hoverAnimationStyle={hoverAnimationStyle}
                             />
-                          ) : widget.type === 'dice' ? (
-                            <DiceWidget
+                          ) : widget.type === 'top-apps' ? (
+                            <TopAppsWidget
                               key={widget.id}
                               widget={widget}
                               isDark={isDarkMode}
@@ -3977,23 +3971,8 @@ export default function Home() {
                               animateIconsEnabled={animateIconsEnabled}
                               animateWidgetsEnabled={animateWidgetsEnabled}
                               hoverAnimationStyle={hoverAnimationStyle}
-                            />
-                          ) : widget.type === 'coin-flip' ? (
-                            <CoinFlipWidget
-                              key={widget.id}
-                              widget={widget}
-                              isDark={isDarkMode}
-                              onRemove={() => {
-                                setWidgets(widgets.filter(w => w.id !== widget.id));
-                              }}
-                              isEditModalOpen={isEditModalOpen}
-                              backgroundImage={backgroundImage}
-                              glassmorphismEnabled={glassmorphismEnabled}
-                              widgetTextColor={widgetTextColor}
-                              jiggleIndex={index}
-                              animateIconsEnabled={animateIconsEnabled}
-                              animateWidgetsEnabled={animateWidgetsEnabled}
-                              hoverAnimationStyle={hoverAnimationStyle}
+                              apps={apps}
+                              appClickCounts={appClickCounts}
                             />
                           ) : (
                             <AnalogClockWidget
@@ -4837,6 +4816,8 @@ export default function Home() {
         }}
         backgroundBlur={backgroundBlur}
         onSetBackgroundBlur={(value: number) => setBackgroundBlur(value)}
+        bgContrast={bgContrast}
+        onSetBgContrast={(value: number) => setBgContrast(value)}
         animatedGradientBackground={animatedGradientBackground}
         onToggleAnimatedGradientBackground={() => {
           setAnimatedGradientBackground(prev => {

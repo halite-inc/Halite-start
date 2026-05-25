@@ -14,7 +14,7 @@ interface App {
 
 interface Widget {
   id: string;
-  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip';
+  type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'top-apps';
   title: string;
 }
 
@@ -35,6 +35,8 @@ interface LeftSidebarProps {
   onSetBackgroundImage: (url: string) => void;
   backgroundBlur?: number;
   onSetBackgroundBlur?: (value: number) => void;
+  bgContrast?: number;
+  onSetBgContrast?: (value: number) => void;
   animatedGradientBackground?: boolean;
   onToggleAnimatedGradientBackground?: () => void;
   animatedGradientPreset?: 'default' | 'ocean' | 'sunset' | 'aurora' | 'midnight';
@@ -52,7 +54,7 @@ interface LeftSidebarProps {
   onSetAppTitleColor: (color: 'auto' | 'black' | 'white') => void;
   widgetTextColor: 'auto' | 'black' | 'white';
   onSetWidgetTextColor: (color: 'auto' | 'black' | 'white') => void;
-  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'dice' | 'coin-flip') => void;
+  addWidget: (type: 'clock' | 'weather' | 'calendar' | 'analog-clock' | 'water-tracker' | 'quick-notes' | 'spacer' | 'photo' | 'fidget-spinner' | 'pomodoro' | 'top-apps') => void;
   onResetSettings: () => void;
   hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow';
   onSetHoverAnimationStyle: (style: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow') => void;
@@ -60,8 +62,6 @@ interface LeftSidebarProps {
   onToggleAnimateIcons: () => void;
   animateWidgetsEnabled: boolean;
   onToggleAnimateWidgets: () => void;
-  centerAppsGroup?: boolean;
-  onToggleCenterAppsGroup?: () => void;
   appGroupMarginTop: number;
   onSetAppGroupMarginTop: (value: number) => void;
   showBookmarks?: boolean;
@@ -116,6 +116,12 @@ interface LeftSidebarProps {
   onSetAppCardSize?: (size: 'small' | 'normal' | 'large' | 'custom') => void;
   customAppCardSize?: number;
   onSetCustomAppCardSize?: (size: number) => void;
+  boardLikeAppCards?: boolean;
+  onToggleBoardLikeAppCards?: () => void;
+  boardColumns?: number;
+  onSetBoardColumns?: (cols: number) => void;
+  appTitlePosition?: 'inside' | 'outside';
+  onSetAppTitlePosition?: (pos: 'inside' | 'outside') => void;
   appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large';
   onSetAppCardInnerShadow?: (shadow: 'none' | 'small' | 'medium' | 'large') => void;
   appCardBackgroundColor?: string;
@@ -288,6 +294,8 @@ export default function LeftSidebar({
   onSetBackgroundImage,
   backgroundBlur,
   onSetBackgroundBlur,
+  bgContrast = 100,
+  onSetBgContrast,
   animatedGradientBackground,
   onToggleAnimatedGradientBackground,
   animatedGradientPreset = 'default',
@@ -315,10 +323,6 @@ export default function LeftSidebar({
   onToggleAnimateIcons,
   animateWidgetsEnabled,
   onToggleAnimateWidgets,
-  centerAppsGroup,
-  onToggleCenterAppsGroup,
-  // centerWidgetsGroup,
-  // onToggleCenterWidgetsGroup,
   appGroupMarginTop,
   onSetAppGroupMarginTop,
   showBookmarks,
@@ -378,6 +382,12 @@ export default function LeftSidebar({
   onSetAppCardSize,
   customAppCardSize,
   onSetCustomAppCardSize,
+  boardLikeAppCards,
+  onToggleBoardLikeAppCards,
+  boardColumns,
+  onSetBoardColumns,
+  appTitlePosition,
+  onSetAppTitlePosition,
   appCardInnerShadow,
   onSetAppCardInnerShadow,
   appCardBackgroundColor,
@@ -400,8 +410,9 @@ export default function LeftSidebar({
   const [customIconError, setCustomIconError] = useState<string | null>(null);
 
   // Section Navigation
-  const [openSection, setOpenSection] = useState<'widgets' | 'background' | 'addApp' | 'bookmarks' | 'layout' | 'search' | 'customization' | null>('layout');
+  const [openSection, setOpenSection] = useState<'widgets' | 'background' | 'addApp' | 'bookmarks' | 'layout' | 'search' | 'customization' | 'accessibility' | 'animations' | null>('layout');
   const [isHoverDropdownOpen, setIsHoverDropdownOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Removed top tabs; sections are independent toggles now
 
@@ -795,7 +806,7 @@ export default function LeftSidebar({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className={`fixed w-[calc(100vw-1rem)] sm:w-[28rem] md:w-[47rem] rounded-3xl overflow-hidden z-50 border ${isDarkMode ? 'border-white/10' : 'border-gray-200'} ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
+        className={`fixed w-[calc(100vw-1rem)] sm:w-[28rem] md:w-[47rem] rounded-[32px] overflow-hidden z-50 border ${isDarkMode ? 'border-white/10' : 'border-gray-200'} ${isDragging ? '' : 'transition-opacity duration-300'} ${glassmorphismEnabled
           ? isDarkMode
             ? 'bg-[#2B2B2B]/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)]'
             : 'bg-white/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.15)]'
@@ -815,7 +826,7 @@ export default function LeftSidebar({
 
         <div className="flex relative z-10 h-full gap-2 p-2">
           {/* Left Sidebar - Full Height */}
-          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-2.5 overflow-y-auto custom-scrollbar rounded-2xl ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-100/50 ring-gray-200/50'}`}>
+          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-2.5 overflow-y-auto custom-scrollbar rounded-3xl ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-100/50 ring-gray-200/50'}`}>
               <NavButton
                 label="App & Widget"
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>}
@@ -864,6 +875,22 @@ export default function LeftSidebar({
                 isDarkMode={isDarkMode}
                 iconColor="text-emerald-500"
               />
+              <NavButton
+                label="Accessibility"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}
+                isActive={openSection === 'accessibility'}
+                onClick={() => setOpenSection('accessibility')}
+                isDarkMode={isDarkMode}
+                iconColor="text-teal-500"
+              />
+              <NavButton
+                label="Animations"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                isActive={openSection === 'animations'}
+                onClick={() => setOpenSection('animations')}
+                isDarkMode={isDarkMode}
+                iconColor="text-indigo-500"
+              />
               {/* Spacer to push theme toggle to bottom */}
               <div className="flex-1" />
               {/* Theme Toggle - Bottom Left */}
@@ -903,6 +930,8 @@ export default function LeftSidebar({
                     : openSection === 'customization' ? 'Customization'
                     : openSection === 'widgets' ? 'Widgets'
                     : openSection === 'background' ? 'Background'
+                    : openSection === 'accessibility' ? 'Accessibility'
+                    : openSection === 'animations' ? 'Animations & Effects'
                     : 'Dashboard Settings'}
                 </h2>
                 <button
@@ -963,22 +992,11 @@ export default function LeftSidebar({
                 {openSection === 'layout' && (
                   <div className={panelClass}>
                      <div className="space-y-4">
+
                         <div className="flex items-center justify-between">
-                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show App Titles</label>
-                           <button onClick={onToggleShowAppTitles} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showAppTitles ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showAppTitles ? 'translate-x-6' : 'translate-x-1'}`} />
-                          </button>
-                        </div>
-                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hide App Title Text</label>
                            <button onClick={() => onToggleHideAppTitleText && onToggleHideAppTitleText()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hideAppTitleText ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideAppTitleText ? 'translate-x-6' : 'translate-x-1'}`} />
-                          </button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Center App Group</label>
-                           <button onClick={onToggleCenterAppsGroup} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${centerAppsGroup ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${centerAppsGroup ? 'translate-x-6' : 'translate-x-1'}`} />
                           </button>
                         </div>
                          <div>
@@ -989,13 +1007,13 @@ export default function LeftSidebar({
                           </div>
                         </div>
                          <div className="flex items-center justify-between">
-                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show Big Clock</label>
+                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show Clock</label>
                            <button onClick={() => onToggleBigClock && onToggleBigClock()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showBigClock ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showBigClock ? 'translate-x-6' : 'translate-x-1'}`} />
                            </button>
                          </div>
                          {showBigClock && (
-                           <div className="space-y-4 border-t pt-4 mt-4 border-gray-200 dark:border-white/10">
+                           <div className="space-y-4 mt-4">
                               {/* Margin */}
                              <div>
                                <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Top Margin</label>
@@ -1013,9 +1031,7 @@ export default function LeftSidebar({
                                   onChange={(val) => onSetBigClockSize && onSetBigClockSize(val)} 
                                   options={[
                                     { value: 'small', label: 'S' }, 
-                                    { value: 'medium', label: 'M' }, 
-                                    { value: 'large', label: 'L' },
-                                    { value: 'huge', label: 'XL' }
+                                    { value: 'medium', label: 'M' }
                                   ]} 
                                   isDarkMode={isDarkMode} 
                                 />
@@ -1166,6 +1182,42 @@ export default function LeftSidebar({
                           />
                         </div>
                         <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Board-like App Cards</label>
+                          <button onClick={() => onToggleBoardLikeAppCards?.()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${boardLikeAppCards ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${boardLikeAppCards ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                        {boardLikeAppCards && (
+                          <div className="flex items-center justify-between">
+                            <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Board Columns</label>
+                            <SegmentedControl
+                              value={boardColumns || 5}
+                              onChange={(val) => onSetBoardColumns && onSetBoardColumns(val as number)}
+                              options={[
+                                { value: 4, label: '4' },
+                                { value: 5, label: '5' },
+                                { value: 6, label: '6' },
+                                { value: 7, label: '7' },
+                              ]}
+                              isDarkMode={isDarkMode}
+                            />
+                          </div>
+                        )}
+                        {boardLikeAppCards && (
+                          <div className="flex items-center justify-between">
+                            <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Title Position</label>
+                            <SegmentedControl
+                              value={appTitlePosition || 'outside'}
+                              onChange={(val) => onSetAppTitlePosition && onSetAppTitlePosition(val as 'inside' | 'outside')}
+                              options={[
+                                { value: 'inside', label: 'Inside' },
+                                { value: 'outside', label: 'Outside' },
+                              ]}
+                              isDarkMode={isDarkMode}
+                            />
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Radius</label>
                           <SegmentedControl
                             value={appCardBorderRadius || 'medium'}
@@ -1259,7 +1311,42 @@ export default function LeftSidebar({
                         </div>
                       </div>
 
-                      {/* Animations & Effects */}
+
+                      {/* Greeting */}
+                        <div className="space-y-2">
+                           <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Greeting</h4>
+                           <div className="flex items-center justify-between">
+                             <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Greeting Style</label>
+                             <ModernDropdown value={greetingStyle || 'hi'} onChange={(val) => onSetGreetingStyle && onSetGreetingStyle(val as any)} options={[{ value: 'hi', label: 'Hi' }, { value: 'welcome', label: 'Welcome' }, { value: 'time-based', label: 'Time Based' }]} isDarkMode={isDarkMode} />
+                           </div>
+                            <div className="space-y-1.5">
+                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Style</label>
+                               <SegmentedControl value={topPillStyle || 'card'} onChange={(val) => onSetTopPillStyle && onSetTopPillStyle(val as any)} options={[{ value: 'card', label: 'Card' }, { value: 'text', label: 'Text Only' }]} isDarkMode={isDarkMode} />
+                             </div>
+                             <div className="space-y-1.5">
+                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Shape</label>
+                               <SegmentedControl value={topPillShape || 'pill'} onChange={(val) => onSetTopPillShape && onSetTopPillShape(val as 'pill' | 'squircle')} options={[{ value: 'pill', label: 'Pill' }, { value: 'squircle', label: 'Squircle' }]} isDarkMode={isDarkMode} />
+                             </div>
+                            <div className="flex items-center justify-between">
+                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Merge Top Pills Center</label>
+                              <button onClick={() => onToggleMergeTopPillsCenter && onToggleMergeTopPillsCenter()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${mergeTopPillsCenter ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${mergeTopPillsCenter ? 'translate-x-6' : 'translate-x-1'}`} />
+                              </button>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Bottom Right Pill</label>
+                              <SegmentedControl value={dockVisibility || 'always'} onChange={(val) => onSetDockVisibility && onSetDockVisibility(val as any)} options={[{ value: 'always', label: 'Always' }, { value: 'hover', label: 'Hover' }]} isDarkMode={isDarkMode} />
+                            </div>
+                        </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* Animations Section */}
+                {openSection === 'animations' && (
+                  <div className={panelClass}>
+                    <div className="space-y-6">
                       <div className="space-y-2">
                         <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Animations &amp; Effects</h4>
                         <div className={`rounded-xl p-3 ${isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
@@ -1302,45 +1389,20 @@ export default function LeftSidebar({
                           )}
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
 
-                      {/* Accessibility */}
-                      <div className="space-y-2">
-                        <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Accessibility</h4>
-                        <div className="flex items-center justify-between">
-                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Monochrome Icons</label>
-                          <button onClick={() => onToggleMonochromeIcons && onToggleMonochromeIcons()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${monochromeIcons ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${monochromeIcons ? 'translate-x-6' : 'translate-x-1'}`} />
-                          </button>
-                        </div>
+                {/* Accessibility Section */}
+                {openSection === 'accessibility' && (
+                  <div className={panelClass}>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Monochrome Icons</label>
+                        <button onClick={() => onToggleMonochromeIcons && onToggleMonochromeIcons()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${monochromeIcons ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${monochromeIcons ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
                       </div>
-
-                      {/* Greeting */}
-                        <div className="space-y-2">
-                           <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Greeting</h4>
-                           <div className="flex items-center justify-between">
-                             <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Greeting Style</label>
-                             <ModernDropdown value={greetingStyle || 'hi'} onChange={(val) => onSetGreetingStyle && onSetGreetingStyle(val as any)} options={[{ value: 'hi', label: 'Hi' }, { value: 'welcome', label: 'Welcome' }, { value: 'time-based', label: 'Time Based' }]} isDarkMode={isDarkMode} />
-                           </div>
-                            <div className="space-y-1.5">
-                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Style</label>
-                               <SegmentedControl value={topPillStyle || 'card'} onChange={(val) => onSetTopPillStyle && onSetTopPillStyle(val as any)} options={[{ value: 'card', label: 'Card' }, { value: 'text', label: 'Text Only' }]} isDarkMode={isDarkMode} />
-                             </div>
-                             <div className="space-y-1.5">
-                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Shape</label>
-                               <SegmentedControl value={topPillShape || 'pill'} onChange={(val) => onSetTopPillShape && onSetTopPillShape(val as 'pill' | 'squircle')} options={[{ value: 'pill', label: 'Pill' }, { value: 'squircle', label: 'Squircle' }]} isDarkMode={isDarkMode} />
-                             </div>
-                            <div className="flex items-center justify-between">
-                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Merge Top Pills Center</label>
-                              <button onClick={() => onToggleMergeTopPillsCenter && onToggleMergeTopPillsCenter()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${mergeTopPillsCenter ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${mergeTopPillsCenter ? 'translate-x-6' : 'translate-x-1'}`} />
-                              </button>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Bottom Right Pill</label>
-                              <SegmentedControl value={dockVisibility || 'always'} onChange={(val) => onSetDockVisibility && onSetDockVisibility(val as any)} options={[{ value: 'always', label: 'Always' }, { value: 'hover', label: 'Hover' }]} isDarkMode={isDarkMode} />
-                            </div>
-                        </div>
-
                     </div>
                   </div>
                 )}
@@ -1529,34 +1591,18 @@ export default function LeftSidebar({
                         <p className="text-xs font-medium">Pomodoro</p>
                       </div>
                     </button>
-
-                    {/* Dice Widget Preview */}
+                    {/* Top Apps Widget Preview */}
                     <button
-                      onClick={() => addWidget('dice')}
-                      className={`p-3 rounded-xl transition-all duration-300 hover:border-green-400 hover:text-green-400 hover:skew-x-3 hover:skew-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                      onClick={() => addWidget('top-apps')}
+                      className={`p-3 rounded-xl transition-all duration-300 hover:border-purple-400 hover:text-purple-400 hover:skew-x-3 hover:skew-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
                         }`}
                     >
                       <div className="text-center">
-                        <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${isDarkMode ? 'bg-green-900 text-white border-green-700' : 'bg-green-100 text-green-800 border-green-300'
+                        <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${isDarkMode ? 'bg-purple-900 text-white border-purple-700' : 'bg-purple-100 text-purple-800 border-purple-300'
                           }`}>
-                          <span className="text-2xl font-bold">6</span>
+                          <span className="text-2xl font-bold">🏆</span>
                         </div>
-                        <p className="text-xs font-medium">Dice</p>
-                      </div>
-                    </button>
-
-                    {/* Coin Flip Widget Preview */}
-                    <button
-                      onClick={() => addWidget('coin-flip')}
-                      className={`p-3 rounded-xl transition-all duration-300 hover:border-yellow-400 hover:text-yellow-400 hover:skew-x-3 hover:skew-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}
-                    >
-                      <div className="text-center">
-                        <div className={`w-20 h-20 rounded-xl shadow border-2 mx-auto mb-2 flex items-center justify-center transition-transform duration-300 hover:scale-105 ${isDarkMode ? 'bg-yellow-900 text-white border-yellow-700' : 'bg-yellow-100 text-yellow-800 border-yellow-300'
-                          }`}>
-                          <span className="text-2xl font-bold">H</span>
-                        </div>
-                        <p className="text-xs font-medium">Coin Flip</p>
+                        <p className="text-xs font-medium">Top Apps</p>
                       </div>
                     </button>
 
@@ -1653,6 +1699,25 @@ export default function LeftSidebar({
                                 className="w-full accent-blue-500 slider-with-dots" 
                               />
                             </div>
+                            
+                            {/* Contrast */}
+                            {onSetBgContrast && (
+                              <div className="pt-2">
+                                <label className={`block text-sm font-medium mb-2 flex items-center justify-between ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                  <span>Contrast</span>
+                                  <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{bgContrast}%</span>
+                                </label>
+                                <input 
+                                  type="range" 
+                                  min={50} 
+                                  max={150} 
+                                  step={1} 
+                                  value={bgContrast} 
+                                  onChange={(e) => onSetBgContrast(Number(e.target.value))} 
+                                  className="w-full accent-blue-500 slider-with-dots" 
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -1702,10 +1767,19 @@ export default function LeftSidebar({
               {/* Add App Section (New) */}
               {openSection === 'addApp' && (
                 <div className={panelClass}>
-                  <h3 className={`text-lg font-medium mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                    Add New App
-                  </h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className={`text-lg font-medium flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                      Add New App
+                    </h3>
+                    <button 
+                      onClick={() => setShowSuggestions(!showSuggestions)}
+                      className={`text-xs px-3 py-1.5 rounded-full ring-1 transition-colors font-medium ${showSuggestions ? 'bg-blue-500 text-white ring-blue-500 hover:bg-blue-600' : isDarkMode ? 'bg-white/5 text-gray-300 ring-white/10 hover:bg-white/10' : 'bg-white text-gray-700 ring-gray-200 hover:bg-gray-50'}`}
+                    >
+                      {showSuggestions ? 'Hide Suggestions' : 'Show Suggestions'}
+                    </button>
+                  </div>
+                  <div className={`grid gap-6 ${showSuggestions ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
                     <div className="space-y-4">
                       <div className={`p-2.5 rounded-xl flex items-center gap-3 border ${isDarkMode ? 'bg-[#1a1a1a] border-white/10' : 'bg-gray-50 border-gray-200'}`}>
                         <img 
@@ -1780,6 +1854,36 @@ export default function LeftSidebar({
                     >
                       Add Application
                     </button>
+                  </div>
+                  {showSuggestions && (
+                      <div className={`space-y-3 pl-0 lg:pl-6 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                        <h4 className={`text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Popular Apps</h4>
+                        <div className="grid grid-cols-2 gap-2 max-h-[360px] overflow-y-auto pr-2 custom-scrollbar">
+                           {[
+                              { id: 'youtube', title: 'YouTube', href: 'https://youtube.com', icon: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=32' },
+                              { id: 'github', title: 'GitHub', href: 'https://github.com', icon: 'https://www.google.com/s2/favicons?domain=github.com&sz=32' },
+                              { id: 'pinterest', title: 'Pinterest', href: 'https://pinterest.com', icon: 'https://www.google.com/s2/favicons?domain=pinterest.com&sz=32' },
+                              { id: 'dribbble', title: 'Dribbble', href: 'https://dribbble.com', icon: 'https://www.google.com/s2/favicons?domain=dribbble.com&sz=32' },
+                              { id: 'flipkart', title: 'Flipkart', href: 'https://flipkart.com', icon: 'https://www.google.com/s2/favicons?domain=flipkart.com&sz=32' },
+                              { id: 'amazon', title: 'Amazon', href: 'https://amazon.com', icon: 'https://www.google.com/s2/favicons?domain=amazon.com&sz=32' },
+                              { id: 'booking', title: 'Booking.com', href: 'https://booking.com', icon: 'https://www.google.com/s2/favicons?domain=booking.com&sz=32' },
+                              { id: 'google', title: 'Google', href: 'https://google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=32' },
+                              { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=32' },
+                              { id: 'twitter', title: 'Twitter', href: 'https://twitter.com', icon: 'https://www.google.com/s2/favicons?domain=twitter.com&sz=32' },
+                              { id: 'netfree2', title: 'NetFree2', href: 'https://netfree2.cc/home', icon: 'https://www.google.com/s2/favicons?domain=netfree2.cc&sz=32' },
+                           ].map(app => (
+                             <button
+                               key={app.id}
+                               onClick={() => setNewApp({ title: app.title, href: app.href.replace('https://', '') })}
+                               className={`flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors border ${isDarkMode ? 'border-white/5 hover:bg-white/10 text-gray-200' : 'border-gray-100 hover:bg-gray-100 text-gray-700'}`}
+                             >
+                               <img src={app.icon} className="w-5 h-5 rounded shadow-sm" alt="" />
+                               <span className="text-xs font-medium truncate">{app.title}</span>
+                             </button>
+                           ))}
+                        </div>
+                      </div>
+                  )}
                   </div>
                 </div>
               )}

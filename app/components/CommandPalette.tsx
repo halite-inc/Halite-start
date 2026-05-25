@@ -288,11 +288,11 @@ export default function CommandPalette({
         className={`relative w-full max-w-[95vw] sm:max-w-xl rounded-full shadow-2xl ${
             glassmorphismEnabled
               ? isDarkMode
-                ? 'bg-[#1a1a1a]/90 backdrop-blur-xl ring-1 ring-white/15'
-                : 'bg-white/90 backdrop-blur-xl ring-1 ring-gray-200/40'
+                ? 'bg-[#2B2B2B]/80 backdrop-blur-md border border-[#444]'
+                : 'bg-white/80 backdrop-blur-md border border-gray-400'
               : isDarkMode
-                ? 'bg-[#1a1a1a] ring-1 ring-white/10'
-                : 'bg-white ring-1 ring-gray-200'
+                ? 'bg-[#121212] border border-[#444]'
+                : 'bg-white border border-gray-400'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -323,11 +323,11 @@ export default function CommandPalette({
         className={`relative w-full max-w-[95vw] sm:max-w-xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden ${
             glassmorphismEnabled
               ? isDarkMode
-                ? 'bg-[#1a1a1a]/90 backdrop-blur-xl ring-1 ring-white/15'
-                : 'bg-white/90 backdrop-blur-xl ring-1 ring-gray-200/40'
+                ? 'bg-[#2B2B2B]/80 backdrop-blur-md border border-[#444]'
+                : 'bg-white/80 backdrop-blur-md border border-gray-400'
               : isDarkMode
-                ? 'bg-[#1a1a1a] ring-1 ring-white/10'
-                : 'bg-white ring-1 ring-gray-200'
+                ? 'bg-[#121212] border border-[#444]'
+                : 'bg-white border border-gray-400'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
