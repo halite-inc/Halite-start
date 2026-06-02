@@ -113,11 +113,14 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
     // Check if this is a faceprep.online or examly URL and use custom icon
     const isFaceprep = app.href.includes('faceprep.online');
     const isExamly = app.href.includes('rec215.examly.io');
+    const isVektorcad = app.href.includes('rec.vektorcad.com');
     
     if (isFaceprep) {
       setIconSrc('/faceprep.png');
     } else if (isExamly) {
       setIconSrc('/raj.png');
+    } else if (isVektorcad) {
+      setIconSrc('/vlogo2.svg');
     } else if (app.icon?.startsWith('idb:')) {
       const key = app.icon.replace('idb:', '');
       getImageObjectUrl(key).then(url => {
@@ -329,6 +332,8 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
       return '/faceprep.png';
     } else if (url && url.includes('rec215.examly.io')) {
       return '/raj.png';
+    } else if (url && url.includes('rec.vektorcad.com')) {
+      return '/vlogo2.svg';
     }
     return icon;
   });
@@ -2890,6 +2895,19 @@ export default function Home() {
     }));
   };
 
+  const resetStatistics = () => {
+    if (confirm('Are you sure you want to reset all usage statistics?')) {
+      setAppClickCounts({});
+      setAppLastClicked({});
+      setTotalTimeSpent(0);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('appClickCounts');
+        localStorage.removeItem('appLastClicked');
+        localStorage.removeItem('totalTimeSpent');
+      }
+    }
+  };
+
   const resetSettings = () => {
     setShowResetModal(true);
     return;
@@ -4742,8 +4760,8 @@ export default function Home() {
           aria-label="Settings"
         >
           <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         </div>
@@ -5136,6 +5154,7 @@ export default function Home() {
         appLastClicked={appLastClicked}
         totalTimeSpent={totalTimeSpent}
         isDarkMode={isDarkMode}
+        onResetStatistics={resetStatistics}
       />
 
     </main>

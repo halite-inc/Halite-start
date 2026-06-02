@@ -1780,7 +1780,7 @@ export default function LeftSidebar({
                       onClick={() => setShowSuggestions(!showSuggestions)}
                       className={`text-xs px-3 py-1.5 rounded-full ring-1 transition-colors font-medium ${showSuggestions ? 'bg-blue-500 text-white ring-blue-500 hover:bg-blue-600' : isDarkMode ? 'bg-white/5 text-gray-300 ring-white/10 hover:bg-white/10' : 'bg-white text-gray-700 ring-gray-200 hover:bg-gray-50'}`}
                     >
-                      {showSuggestions ? 'Hide Suggestions' : 'Show Suggestions'}
+                      {showSuggestions ? 'Hide Apps' : 'Show Apps'}
                     </button>
                   </div>
                   <div className={`grid gap-6 ${showSuggestions ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
