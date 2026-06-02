@@ -1010,6 +1010,12 @@ export default function LeftSidebar({
                             <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{appGroupMarginTop}px</span>
                           </div>
                         </div>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Center App Group</label>
+                          <button onClick={() => onToggleCenterAppsGroup && onToggleCenterAppsGroup()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${centerAppsGroup ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${centerAppsGroup ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
                          <div className="flex items-center justify-between">
                            <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show Clock</label>
                            <button onClick={() => onToggleBigClock && onToggleBigClock()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showBigClock ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
@@ -1882,7 +1888,12 @@ export default function LeftSidebar({
                                className={`flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors border ${isDarkMode ? 'border-white/5 hover:bg-white/10 text-gray-200' : 'border-gray-100 hover:bg-gray-100 text-gray-700'}`}
                              >
                                <img src={app.icon} className="w-5 h-5 rounded shadow-sm" alt="" />
-                               <span className="text-xs font-medium truncate">{app.title}</span>
+                               <span className="text-xs font-medium truncate flex-1">{app.title}</span>
+                               {apps.some(userApp => userApp.id === app.id || userApp.href.includes(app.href.replace('https://', '').replace('http://', '').split('/')[0])) && (
+                                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                 </svg>
+                               )}
                              </button>
                            ))}
                         </div>

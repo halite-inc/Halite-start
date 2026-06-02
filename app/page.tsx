@@ -94,7 +94,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 };
 
-function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', customAppCardSize = 64, appCardInnerShadow = 'none', appCardBackgroundColor, onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large' | 'custom'; customAppCardSize?: number; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; onAppClick?: (appId: string) => void }) {
+function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', customAppCardSize = 64, appCardInnerShadow = 'none', appCardBackgroundColor, appTitlePosition = 'outside', onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large' | 'custom'; customAppCardSize?: number; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; appTitlePosition?: 'inside' | 'outside'; onAppClick?: (appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -248,15 +248,27 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
             />
           ) : null}
           {/* Fallback icon if no image or image fails to load */}
-          <div className={`${showAppTitles ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm flex items-center justify-center text-lg ${iconBgClass} ${iconSrc ? 'hidden' : ''} ${isDark ? 'text-gray-600' : 'text-gray-600'
+          <div className={`${showAppTitles && appTitlePosition === 'outside' ? 'w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8' : 'w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10'} rounded-full shadow-sm flex items-center justify-center text-lg ${iconBgClass} ${iconSrc ? 'hidden' : ''} ${isDark ? 'text-gray-600' : 'text-gray-600'
             }`}>
             🔗
           </div>
         </div>
+        
+        {/* Inner App Title - Inside the card */}
+        {showAppTitles && appTitlePosition === 'inside' && (
+          <div className={`absolute bottom-0.5 sm:bottom-1 left-0 right-0 text-center z-20 ${hideAppTitleText ? 'invisible' : ''}`}>
+            <span className={`block max-w-[95%] mx-auto truncate text-[9px] sm:text-[10px] font-bold ${appTitleColor === 'auto'
+              ? (isDark ? 'text-white drop-shadow-md' : 'text-gray-800 drop-shadow-sm')
+              : appTitleColor === 'black'
+                ? 'text-black drop-shadow-sm'
+                : 'text-white drop-shadow-md'
+              }`}>{app.title}</span>
+          </div>
+        )}
       </div>
 
       {/* App Title - Below the card */}
-      {showAppTitles && (
+      {showAppTitles && appTitlePosition === 'outside' && (
         <div className={`mt-2 text-center w-full ${hideAppTitleText ? 'invisible' : ''}`}>
           <span className={`block max-w-full truncate text-xs font-medium ${appTitleColor === 'auto'
             ? (isDark ? 'text-white' : 'text-gray-800')
@@ -285,7 +297,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
   );
 }
 
-function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', customAppCardSize = 64, appCardInnerShadow = 'none', appCardBackgroundColor, onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large' | 'custom'; customAppCardSize?: number; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; onAppClick?: (appId: string) => void }) {
+function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, backgroundImage, glassmorphismEnabled, appTitleColor, isEditModalOpen, jiggleIndex, animateIconsEnabled, hoverAnimationStyle, monochromeIcons, onContextMenu, appCardBorderRadius, removeAppCardBorders, appCardSize = 'normal', customAppCardSize = 64, appCardInnerShadow = 'none', appCardBackgroundColor, appTitlePosition = 'outside', onAppClick }: { app: App; onRemove: (id: string) => void; isDark: boolean; showAppTitles: boolean; hideAppTitleText: boolean; backgroundImage: string; glassmorphismEnabled: boolean; appTitleColor: 'auto' | 'black' | 'white'; isEditModalOpen: boolean; jiggleIndex: number; animateIconsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'; monochromeIcons: boolean; onContextMenu: (e: React.MouseEvent, appId: string) => void; appCardBorderRadius: 'small' | 'medium' | 'full'; removeAppCardBorders: boolean; appCardSize?: 'small' | 'normal' | 'large' | 'custom'; customAppCardSize?: number; appCardInnerShadow?: 'none' | 'small' | 'medium' | 'large'; appCardBackgroundColor?: string; appTitlePosition?: 'inside' | 'outside'; onAppClick?: (appId: string) => void }) {
   const {
     attributes,
     listeners,
@@ -498,10 +510,22 @@ function HaliteCard({ app, onRemove, isDark, showAppTitles, hideAppTitleText, ba
             })}
           </div>
         )}
+        
+        {/* Inner App Title - Inside the card */}
+        {showAppTitles && appTitlePosition === 'inside' && app.haliteName && (
+          <div className={`absolute bottom-0.5 sm:bottom-1 left-0 right-0 text-center z-20 ${hideAppTitleText ? 'invisible' : ''}`}>
+            <span className={`block max-w-[95%] mx-auto truncate text-[9px] sm:text-[10px] font-bold ${appTitleColor === 'auto'
+              ? (isDark ? 'text-white drop-shadow-md' : 'text-gray-800 drop-shadow-sm')
+              : appTitleColor === 'black'
+                ? 'text-black drop-shadow-sm'
+                : 'text-white drop-shadow-md'
+              }`}>{app.haliteName}</span>
+          </div>
+        )}
       </div>
 
       {/* App Title - Below the card (shown for halite if name is set) */}
-      {showAppTitles && app.haliteName && (
+      {showAppTitles && appTitlePosition === 'outside' && app.haliteName && (
         <div className={`mt-2 text-center w-full ${hideAppTitleText ? 'invisible' : ''}`}>
           <span className={`truncate text-xs font-medium ${appTitleColor === 'auto'
             ? (isDark ? 'text-white' : 'text-gray-800')
@@ -1957,6 +1981,9 @@ export default function Home() {
   const [hoverAnimationStyle, setHoverAnimationStyle] = useState<'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow'>('scale');
   const [animateWidgetsEnabled, setAnimateWidgetsEnabled] = useState<boolean>(false);
   const [centerAppsGroup, setCenterAppsGroup] = useState<boolean>(true);
+  const [boardLikeAppCards, setBoardLikeAppCards] = useState<boolean>(false);
+  const [boardColumns, setBoardColumns] = useState<number>(5);
+  const [appTitlePosition, setAppTitlePosition] = useState<'inside' | 'outside'>('outside');
 
   const [fullRoundedIconsEnabled, setFullRoundedIconsEnabled] = useState<boolean>(false);
 
@@ -2339,6 +2366,15 @@ export default function Home() {
         setCenterAppsGroup(true);
         console.log('✅ Center apps group defaulted to true');
       }
+
+      const savedBoardLike = localStorage.getItem('boardLikeAppCards');
+      if (savedBoardLike !== null) setBoardLikeAppCards(savedBoardLike === 'true');
+
+      const savedBoardCols = localStorage.getItem('boardColumns');
+      if (savedBoardCols !== null) setBoardColumns(Number(savedBoardCols));
+
+      const savedAppTitlePos = localStorage.getItem('appTitlePosition');
+      if (savedAppTitlePos !== null) setAppTitlePosition(savedAppTitlePos as 'inside' | 'outside');
 
       // Always start with an empty search term on load
 
@@ -2732,6 +2768,9 @@ export default function Home() {
       localStorage.setItem('compactSearchBar', compactSearchBar.toString());
       localStorage.setItem('monochromeIcons', monochromeIcons.toString());
       localStorage.setItem('centerAppsGroup', centerAppsGroup.toString());
+      localStorage.setItem('boardLikeAppCards', boardLikeAppCards.toString());
+      localStorage.setItem('boardColumns', boardColumns.toString());
+      localStorage.setItem('appTitlePosition', appTitlePosition);
       localStorage.setItem('showBookmarks', showBookmarks.toString());
       localStorage.setItem('showBookmarksTitle', showBookmarksTitle.toString());
       localStorage.setItem('centerBookmarksGroup', centerBookmarksGroup.toString());
@@ -2813,6 +2852,9 @@ export default function Home() {
     appCardInnerShadow,
     bookmarkStyle,
     centerAppsGroup,
+    boardLikeAppCards,
+    boardColumns,
+    appTitlePosition,
     appCardGapX,
     customAppCardSize,
     showBookmarks,
@@ -3742,11 +3784,11 @@ export default function Home() {
         >
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
             <div className="mb-6" style={{ marginTop: appGroupMarginTop }}>
-              <div className={`${centerAppsGroup
-                ? 'grid w-fit mx-auto [grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]'
-                : 'grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'
-                } gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px]`}
-                style={{ columnGap: `${appCardGapX}px` }}
+              <div className={`${boardLikeAppCards ? `grid w-fit mx-auto bg-white/30 dark:bg-black/40 backdrop-blur-3xl p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-white/40 shadow-xl dark:shadow-2xl` : centerAppsGroup
+                ? 'grid w-fit mx-auto'
+                : 'grid'
+                } ${boardLikeAppCards ? '' : centerAppsGroup ? '[grid-template-columns:repeat(3,max-content)] xs:[grid-template-columns:repeat(4,max-content)] sm:[grid-template-columns:repeat(5,max-content)] md:[grid-template-columns:repeat(6,max-content)] lg:[grid-template-columns:repeat(8,max-content)] xl:[grid-template-columns:repeat(10,max-content)] 2xl:[grid-template-columns:repeat(12,max-content)] 3xl:[grid-template-columns:repeat(14,max-content)]' : 'grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 3xl:grid-cols-14'} gap-y-10 sm:gap-y-11 auto-rows-[40px] sm:auto-rows-[48px] lg:auto-rows-[60px]`}
+                style={{ columnGap: `${appCardGapX}px`, ...(boardLikeAppCards ? { gridTemplateColumns: `repeat(${boardColumns}, max-content)` } : {}) }}
               >
                 {apps.map((app, index) => (
                   app.type === 'halite' ? (
@@ -3771,6 +3813,7 @@ export default function Home() {
                       customAppCardSize={customAppCardSize}
                       appCardInnerShadow={appCardInnerShadow}
                       appCardBackgroundColor={appCardBackgroundColor}
+                      appTitlePosition={appTitlePosition}
                       onContextMenu={handleContextMenu}
                       onAppClick={trackAppClick}
                     />
@@ -3796,6 +3839,7 @@ export default function Home() {
                       customAppCardSize={customAppCardSize}
                       appCardInnerShadow={appCardInnerShadow}
                       appCardBackgroundColor={appCardBackgroundColor}
+                      appTitlePosition={appTitlePosition}
                       onContextMenu={handleContextMenu}
                       onAppClick={trackAppClick}
                     />
@@ -4369,6 +4413,9 @@ export default function Home() {
                         }}
                       />
                       <span>{site.title}</span>
+                      {apps.some(userApp => userApp.href.includes(site.url)) && (
+                        <span className="ml-auto text-green-500 text-sm">✅</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -4896,6 +4943,12 @@ export default function Home() {
         onToggleAnimateWidgets={() => setAnimateWidgetsEnabled(prev => !prev)}
         centerAppsGroup={centerAppsGroup}
         onToggleCenterAppsGroup={() => setCenterAppsGroup(prev => !prev)}
+        boardLikeAppCards={boardLikeAppCards}
+        onToggleBoardLikeAppCards={() => setBoardLikeAppCards(prev => !prev)}
+        boardColumns={boardColumns}
+        onSetBoardColumns={setBoardColumns}
+        appTitlePosition={appTitlePosition}
+        onSetAppTitlePosition={setAppTitlePosition}
         showBookmarks={showBookmarks}
         onToggleBookmarks={() => setShowBookmarks(prev => !prev)}
         bookmarkStyle={bookmarkStyle}
