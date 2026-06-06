@@ -1965,6 +1965,12 @@ export default function Home() {
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [isSuggestOpen, setIsSuggestOpen] = useState<boolean>(false);
   const [highlightIndex, setHighlightIndex] = useState<number>(-1);
+  const [quickAppSuggestionView, setQuickAppSuggestionView] = useState<'grid' | 'list'>('grid');
+  const [quickAppShowTicks, setQuickAppShowTicks] = useState<boolean>(true);
+  const [quickAppShowCategories, setQuickAppShowCategories] = useState<boolean>(false);
+  const [quickAppShowSuggestions, setQuickAppShowSuggestions] = useState<boolean>(false);
+  const [quickAppHideTicked, setQuickAppHideTicked] = useState<boolean>(false);
+  const [quickAppTitlePlaceholder, setQuickAppTitlePlaceholder] = useState<string>('App Name');
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [backgroundBlur, setBackgroundBlur] = useState<number>(0);
   const [bgContrast, setBgContrast] = useState<number>(100);
@@ -1998,6 +2004,29 @@ export default function Home() {
   const [isQuickAppOpen, setIsQuickAppOpen] = useState<boolean>(false);
   const [quickAppTitleInput, setQuickAppTitleInput] = useState<string>('');
   const [quickAppUrlInput, setQuickAppUrlInput] = useState<string>('');
+
+  useEffect(() => {
+    if (!quickAppUrlInput) {
+      setQuickAppTitlePlaceholder('App Name');
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/fetch-title?url=${encodeURIComponent(quickAppUrlInput)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.title) {
+            setQuickAppTitlePlaceholder(data.title);
+          } else {
+            setQuickAppTitlePlaceholder('App Name');
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [quickAppUrlInput]);
   const [isHaliteModalOpen, setIsHaliteModalOpen] = useState<boolean>(false);
   const [haliteUrls, setHaliteUrls] = useState<string[]>(['', '', '', '']);
   const [appGroupMarginTop, setAppGroupMarginTop] = useState<number>(240);
@@ -2018,6 +2047,7 @@ export default function Home() {
   const [appClickCounts, setAppClickCounts] = useState<Record<string, number>>({});
   const [appLastClicked, setAppLastClicked] = useState<Record<string, number>>({});
   const [totalTimeSpent, setTotalTimeSpent] = useState<number>(0); // in seconds (cumulative)
+  const [clicksToday, setClicksToday] = useState<{date: string, count: number}>({ date: new Date().toDateString(), count: 0 });
   const [previousTimeSpent, setPreviousTimeSpent] = useState<number>(0); // time from previous sessions
   const [sessionStartTime] = useState<number>(Date.now());
 
@@ -2686,6 +2716,14 @@ export default function Home() {
         const savedClickCounts = localStorage.getItem('appClickCounts');
         const savedLastClicked = localStorage.getItem('appLastClicked');
         const savedTotalTime = localStorage.getItem('totalTimeSpent');
+        const savedClicksToday = localStorage.getItem('clicksToday');
+
+        if (savedClicksToday) {
+          const parsed = JSON.parse(savedClicksToday);
+          if (parsed.date === new Date().toDateString()) {
+            setClicksToday(parsed);
+          }
+        }
 
         if (savedClickCounts) {
           setAppClickCounts(JSON.parse(savedClickCounts));
@@ -2710,8 +2748,9 @@ export default function Home() {
       localStorage.setItem('appClickCounts', JSON.stringify(appClickCounts));
       localStorage.setItem('appLastClicked', JSON.stringify(appLastClicked));
       localStorage.setItem('totalTimeSpent', totalTimeSpent.toString());
+      localStorage.setItem('clicksToday', JSON.stringify(clicksToday));
     }
-  }, [appClickCounts, appLastClicked, totalTimeSpent, isLoading]);
+  }, [appClickCounts, appLastClicked, totalTimeSpent, clicksToday, isLoading]);
 
   // Track total time spent (accumulate with previous sessions)
   useEffect(() => {
@@ -2935,6 +2974,8 @@ export default function Home() {
       ...prev,
       [appId]: Date.now()
     }));
+    const todayStr = new Date().toDateString();
+    setClicksToday(prev => prev.date === todayStr ? { date: todayStr, count: prev.count + 1 } : { date: todayStr, count: 1 });
   };
 
   const resetStatistics = () => {
@@ -2942,10 +2983,12 @@ export default function Home() {
       setAppClickCounts({});
       setAppLastClicked({});
       setTotalTimeSpent(0);
+      setClicksToday({ date: new Date().toDateString(), count: 0 });
       if (typeof window !== 'undefined') {
         localStorage.removeItem('appClickCounts');
         localStorage.removeItem('appLastClicked');
         localStorage.removeItem('totalTimeSpent');
+        localStorage.removeItem('clicksToday');
       }
     }
   };
@@ -3411,7 +3454,7 @@ export default function Home() {
       {/* Background blur overlay */}
       {((backgroundBlur > 0 || bgContrast !== 100) && backgroundImage && !animatedGradientBackground) && (
         <div
-          className="absolute inset-0 z-[-1]"
+          className="absolute inset-0 z-0 pointer-events-none"
           style={{
             backdropFilter: `${backgroundBlur > 0 ? `blur(${backgroundBlur}px) ` : ''}${bgContrast !== 100 ? `contrast(${bgContrast}%)` : ''}`.trim(),
             WebkitBackdropFilter: `${backgroundBlur > 0 ? `blur(${backgroundBlur}px) ` : ''}${bgContrast !== 100 ? `contrast(${bgContrast}%)` : ''}`.trim(),
@@ -4349,79 +4392,150 @@ export default function Home() {
         {isQuickAppOpen && (
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/40" onClick={() => setIsQuickAppOpen(false)} />
-            <div className="absolute bottom-20 right-4 z-10 flex gap-4">
-              <div className={`w-80 lg:w-[30rem] rounded-[28px] p-4 shadow-2xl max-h-96 overflow-y-auto custom-scrollbar ${glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-white ring-1 ring-gray-200'} text-white`}>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                  {[
-                    { title: 'YouTube', url: 'youtube.com' },
-                    { title: 'GitHub', url: 'github.com' },
-                    { title: 'Twitter', url: 'twitter.com' },
-                    { title: 'Reddit', url: 'reddit.com' },
-                    { title: 'Instagram', url: 'instagram.com' },
-                    { title: 'LinkedIn', url: 'linkedin.com' },
-                    { title: 'Facebook', url: 'facebook.com' },
-                    { title: 'Netflix', url: 'netflix.com' },
-                    { title: 'Spotify', url: 'spotify.com' },
-                    { title: 'Discord', url: 'discord.com' },
-                    { title: 'Notion', url: 'notion.so' },
-                    { title: 'Figma', url: 'figma.com' },
-                    { title: 'Amazon', url: 'amazon.com' },
-                    { title: 'Google', url: 'google.com' },
-                    { title: 'Gmail', url: 'gmail.com' },
-                    { title: 'Twitch', url: 'twitch.tv' },
-                    { title: 'ChatGPT', url: 'chatgpt.com' },
-                    { title: 'Apple', url: 'apple.com' },
-                    { title: 'Wikipedia', url: 'wikipedia.org' },
-                    { title: 'BBC', url: 'bbc.com' },
-                    { title: 'CNN', url: 'cnn.com' },
-                    { title: 'Pinterest', url: 'pinterest.com' },
-                    { title: 'TikTok', url: 'tiktok.com' },
-                    { title: 'eBay', url: 'ebay.com' },
-                    { title: 'AliExpress', url: 'aliexpress.com' },
-                    { title: 'Airbnb', url: 'airbnb.com' },
-                    { title: 'Booking.com', url: 'booking.com' },
-                    { title: 'IMDb', url: 'imdb.com' },
-                    { title: 'Trello', url: 'trello.com' },
-                    { title: 'Slack', url: 'slack.com' },
-                    { title: 'Zoom', url: 'zoom.us' },
-                    { title: 'Dropbox', url: 'dropbox.com' },
-                    { title: 'Adobe', url: 'adobe.com' },
-                    { title: 'Canva', url: 'canva.com' },
-                  ].map((site) => (
-                    <button
-                      key={site.url}
-                      onClick={() => {
-                        addApp({
-                          id: Date.now().toString(),
-                          title: site.title,
-                          href: `https://${site.url}`,
-                          icon: getFaviconUrl(`https://${site.url}`)
-                        });
-                        setIsQuickAppOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-2xl text-sm transition-colors flex items-center gap-2 ${isDarkMode
-                        ? 'bg-white/5 hover:bg-white/10 text-white'
-                        : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
-                        }`}
-                    >
-                      <img
-                        src={getFaviconUrl(`https://${site.url}`)}
-                        alt=""
-                        className="w-4 h-4"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
+            <div className="absolute bottom-20 right-4 z-10 flex items-end gap-4">
+              {quickAppShowSuggestions && (
+              <div className={`w-80 lg:w-[30rem] rounded-[28px] p-4 shadow-2xl max-h-96 flex flex-col ${glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-gray-900 ring-1 ring-gray-200'}`}>
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-3 shrink-0">
+                  <h4 className={`text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Popular Apps</h4>
+                  <div className={`flex items-center gap-1.5 text-xs p-1 rounded-full ${isDarkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+                    <div className={`flex rounded-full overflow-hidden ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`}>
+                      <button onClick={() => setQuickAppSuggestionView('list')} className={`px-2 py-1 transition-colors ${quickAppSuggestionView === 'list' ? (isDarkMode ? 'bg-white/20 text-white rounded-full' : 'bg-white text-gray-900 shadow-sm rounded-full') : (isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')}`}>List</button>
+                      <button onClick={() => setQuickAppSuggestionView('grid')} className={`px-2 py-1 transition-colors ${quickAppSuggestionView === 'grid' ? (isDarkMode ? 'bg-white/20 text-white rounded-full' : 'bg-white text-gray-900 shadow-sm rounded-full') : (isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')}`}>Grid</button>
+                    </div>
+                    <button onClick={() => setQuickAppShowTicks(!quickAppShowTicks)} className={`px-2 py-1 rounded-full transition-colors ${quickAppShowTicks ? (isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700') : (isDarkMode ? 'text-gray-400 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-200')}`}>Ticks</button>
+                    <button onClick={() => setQuickAppHideTicked(!quickAppHideTicked)} className={`px-2 py-1 rounded-full transition-colors ${quickAppHideTicked ? (isDarkMode ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-700') : (isDarkMode ? 'text-gray-400 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-200')}`}>Hide Ticked</button>
+                    <button onClick={() => setQuickAppShowCategories(!quickAppShowCategories)} className={`px-2 py-1 rounded-full transition-colors ${quickAppShowCategories ? (isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700') : (isDarkMode ? 'text-gray-400 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-200')}`}>Categories</button>
+                  </div>
+                </div>
+                <div className={`overflow-y-auto custom-scrollbar flex-1 pr-2`}>
+                  {(() => {
+                    const popularAppsList = [
+                      { title: 'YouTube', url: 'youtube.com', category: 'Entertainment' },
+                      { title: 'GitHub', url: 'github.com', category: 'Development' },
+                      { title: 'Twitter', url: 'twitter.com', category: 'Social' },
+                      { title: 'Reddit', url: 'reddit.com', category: 'Social' },
+                      { title: 'Instagram', url: 'instagram.com', category: 'Social' },
+                      { title: 'LinkedIn', url: 'linkedin.com', category: 'Social' },
+                      { title: 'Facebook', url: 'facebook.com', category: 'Social' },
+                      { title: 'Netflix', url: 'netflix.com', category: 'Entertainment' },
+                      { title: 'Spotify', url: 'spotify.com', category: 'Entertainment' },
+                      { title: 'Discord', url: 'discord.com', category: 'Social' },
+                      { title: 'Notion', url: 'notion.so', category: 'Productivity' },
+                      { title: 'Figma', url: 'figma.com', category: 'Design' },
+                      { title: 'Amazon', url: 'amazon.com', category: 'Shopping' },
+                      { title: 'Google', url: 'google.com', category: 'Productivity' },
+                      { title: 'Gmail', url: 'gmail.com', category: 'Productivity' },
+                      { title: 'Twitch', url: 'twitch.tv', category: 'Entertainment' },
+                      { title: 'ChatGPT', url: 'chatgpt.com', category: 'Productivity' },
+                      { title: 'Apple', url: 'apple.com', category: 'Other' },
+                      { title: 'Wikipedia', url: 'wikipedia.org', category: 'Education' },
+                      { title: 'BBC', url: 'bbc.com', category: 'News' },
+                      { title: 'CNN', url: 'cnn.com', category: 'News' },
+                      { title: 'Pinterest', url: 'pinterest.com', category: 'Social' },
+                      { title: 'TikTok', url: 'tiktok.com', category: 'Entertainment' },
+                      { title: 'eBay', url: 'ebay.com', category: 'Shopping' },
+                      { title: 'AliExpress', url: 'aliexpress.com', category: 'Shopping' },
+                      { title: 'Airbnb', url: 'airbnb.com', category: 'Travel' },
+                      { title: 'Booking.com', url: 'booking.com', category: 'Travel' },
+                      { title: 'IMDb', url: 'imdb.com', category: 'Entertainment' },
+                      { title: 'Trello', url: 'trello.com', category: 'Productivity' },
+                      { title: 'Slack', url: 'slack.com', category: 'Productivity' },
+                      { title: 'Zoom', url: 'zoom.us', category: 'Productivity' },
+                      { title: 'Dropbox', url: 'dropbox.com', category: 'Productivity' },
+                      { title: 'Adobe', url: 'adobe.com', category: 'Design' },
+                      { title: 'Canva', url: 'canva.com', category: 'Design' },
+                      { title: 'WhatsApp', url: 'whatsapp.com', category: 'Social' },
+                      { title: 'Outlook', url: 'outlook.live.com', category: 'Productivity' },
+                      { title: 'Binance', url: 'binance.com', category: 'Finance' },
+                      { title: 'TradingView', url: 'tradingview.com', category: 'Finance' },
+                      { title: 'Shopify', url: 'shopify.com', category: 'Business' },
+                      { title: 'WordPress', url: 'wordpress.com', category: 'Business' },
+                      { title: 'WSJ', url: 'wsj.com', category: 'News' },
+                      { title: 'ESPN', url: 'espn.com', category: 'Sports' },
+                      { title: 'Hulu', url: 'hulu.com', category: 'Entertainment' },
+                      { title: 'HBO Max', url: 'max.com', category: 'Entertainment' },
+                      { title: 'Asana', url: 'asana.com', category: 'Productivity' },
+                      { title: 'Jira', url: 'atlassian.com/software/jira', category: 'Development' },
+                      { title: 'Stack Overflow', url: 'stackoverflow.com', category: 'Development' },
+                      { title: 'Medium', url: 'medium.com', category: 'News' },
+                      { title: 'Quora', url: 'quora.com', category: 'Social' },
+                      { title: 'Yahoo', url: 'yahoo.com', category: 'News' }
+                    ];
+
+                    let filteredAppsList = popularAppsList;
+                    if (quickAppHideTicked) {
+                      filteredAppsList = filteredAppsList.filter(site => !apps.some(userApp => userApp.href.includes(site.url)));
+                    }
+
+                    const renderSiteButton = (site: { title: string; url: string }) => (
+                      <button
+                        key={site.url}
+                        onClick={() => {
+                          addApp({
+                            id: Date.now().toString(),
+                            title: site.title,
+                            href: `https://${site.url}`,
+                            icon: getFaviconUrl(`https://${site.url}`)
+                          });
+                          setIsQuickAppOpen(false);
                         }}
-                      />
-                      <span>{site.title}</span>
-                      {apps.some(userApp => userApp.href.includes(site.url)) && (
-                        <span className="ml-auto text-green-500 text-sm">✅</span>
-                      )}
-                    </button>
-                  ))}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors flex items-center gap-3 ${isDarkMode
+                          ? 'bg-white/5 hover:bg-white/10 text-white'
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
+                          } border border-transparent hover:border-gray-200 dark:hover:border-white/10`}
+                      >
+                        <img
+                          src={getFaviconUrl(`https://${site.url}`)}
+                          alt=""
+                          className="w-5 h-5 rounded flex-shrink-0"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        <span className="truncate flex-1">{site.title}</span>
+                        {quickAppShowTicks && apps.some(userApp => userApp.href.includes(site.url)) && (
+                          <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+
+                    if (quickAppShowCategories) {
+                      const categories = Array.from(new Set(filteredAppsList.map(a => a.category)));
+                      return (
+                        <div className="space-y-4">
+                          {categories.map(cat => (
+                            <div key={cat}>
+                              <h5 className={`text-xs font-semibold mb-2 ml-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{cat}</h5>
+                              <div className={`grid ${quickAppSuggestionView === 'grid' ? 'grid-cols-2 lg:grid-cols-3 gap-2' : 'grid-cols-1 gap-1.5'}`}>
+                                {filteredAppsList.filter(a => a.category === cat).map(renderSiteButton)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className={`grid ${quickAppSuggestionView === 'grid' ? 'grid-cols-2 lg:grid-cols-3 gap-2' : 'grid-cols-1 gap-1.5'}`}>
+                        {filteredAppsList.map(renderSiteButton)}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
-              <div className={`w-80 rounded-2xl p-4 shadow-2xl ${glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-white ring-1 ring-gray-200'}`}>
-                <h4 className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-black'}`}>Add Favorite App</h4>
+              )}
+              <div className={`w-80 rounded-[28px] p-4 shadow-2xl transition-all duration-300 ease-in-out ${glassmorphismEnabled ? (isDarkMode ? 'bg-[#2B2B2B]/80 backdrop-blur-md' : 'bg-white/80 backdrop-blur-md') : isDarkMode ? 'bg-[#121212] text-white ring-1 ring-white/10' : 'bg-white text-white ring-1 ring-gray-200'}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-black'}`}>Add Favorite App</h4>
+                  <button 
+                    onClick={() => setQuickAppShowSuggestions(!quickAppShowSuggestions)}
+                    className={`text-xs px-3 py-1.5 rounded-full ring-1 transition-colors font-medium ${quickAppShowSuggestions ? 'bg-blue-500 text-white ring-blue-500 hover:bg-blue-600' : isDarkMode ? 'bg-white/5 text-gray-300 ring-white/10 hover:bg-white/10' : 'bg-white text-gray-700 ring-gray-200 hover:bg-gray-50'}`}
+                  >
+                    {quickAppShowSuggestions ? 'Hide Apps' : 'Show Apps'}
+                  </button>
+                </div>
                 <div className="space-y-3">
                   <div className={`p-2.5 rounded-xl flex items-center gap-3 ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-50 ring-gray-200'}`}>
                     <img 
@@ -4434,7 +4548,7 @@ export default function Home() {
                     />
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium truncate ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                        {quickAppTitleInput || 'App Name'}
+                        {quickAppTitleInput || quickAppTitlePlaceholder}
                       </p>
                       <p className={`text-xs truncate ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                         {quickAppUrlInput || 'URL Preview'}
@@ -4443,7 +4557,7 @@ export default function Home() {
                   </div>
                   <input
                     type="text"
-                    placeholder="App name"
+                    placeholder={quickAppTitlePlaceholder}
                     value={quickAppTitleInput}
                     onChange={(e) => setQuickAppTitleInput(e.target.value)}
                     className={`w-full px-3 py-2 rounded-full text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 text-gray-200 placeholder-gray-400' : 'bg-white ring-gray-200 text-gray-500 placeholder-gray-500'}`}
@@ -5206,6 +5320,7 @@ export default function Home() {
         appClickCounts={appClickCounts}
         appLastClicked={appLastClicked}
         totalTimeSpent={totalTimeSpent}
+        clicksToday={clicksToday.count}
         isDarkMode={isDarkMode}
         onResetStatistics={resetStatistics}
       />

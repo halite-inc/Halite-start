@@ -15,6 +15,7 @@ interface UsageStatisticsProps {
   appClickCounts: Record<string, number>;
   appLastClicked: Record<string, number>;
   totalTimeSpent: number;
+  clicksToday?: number;
   isDarkMode: boolean;
   glassmorphismEnabled?: boolean;
   onResetStatistics?: () => void;
@@ -27,6 +28,7 @@ export default function UsageStatistics({
   appClickCounts,
   appLastClicked,
   totalTimeSpent,
+  clicksToday = 0,
   isDarkMode,
   glassmorphismEnabled = false,
   onResetStatistics,
@@ -148,7 +150,27 @@ export default function UsageStatistics({
         <div className="overflow-y-auto max-h-[calc(85vh-80px)] custom-scrollbar">
           <div className="p-6 space-y-6">
             {/* Overview Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className={`p-4 rounded-3xl relative overflow-hidden ${
+                isDarkMode ? 'bg-white/5' : 'bg-gray-50'
+              }`}>
+                <div className="absolute -right-4 -bottom-4 opacity-[0.03] pointer-events-none">
+                  <svg className="w-28 h-28" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13 2v4h-2V2h2zm-1 20c-4.411 0-8-3.589-8-8s3.589-8 8-8c1.558 0 3.018.45 4.258 1.218l-1.157 1.693A5.962 5.962 0 0012 8c-3.309 0-6 2.691-6 6s2.691 6 6 6 6-2.691 6-6h2c0 4.411-3.589 8-8 8zm9.707-13.293l-4-4-1.414 1.414L18.586 9H13v2h5.586l-2.293 2.293 1.414 1.414 4-4a.999.999 0 000-1.414z" />
+                  </svg>
+                </div>
+                <div className={`text-sm font-medium mb-1 relative z-10 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
+                  ⏱️ Total Clicks Today
+                </div>
+                <div className={`text-2xl font-bold relative z-10 ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  {clicksToday.toLocaleString()}
+                </div>
+              </div>
+
               <div className={`p-4 rounded-3xl relative overflow-hidden ${
                 isDarkMode ? 'bg-white/5' : 'bg-gray-50'
               }`}>

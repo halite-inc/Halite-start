@@ -417,6 +417,39 @@ export default function LeftSidebar({
   const [openSection, setOpenSection] = useState<'widgets' | 'background' | 'addApp' | 'bookmarks' | 'layout' | 'search' | 'customization' | 'accessibility' | 'animations' | null>('layout');
   const [isHoverDropdownOpen, setIsHoverDropdownOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionView, setSuggestionView] = useState<'grid' | 'list'>('list');
+  const [showSuggestionTicks, setShowSuggestionTicks] = useState(true);
+  const [showSuggestionCategories, setShowSuggestionCategories] = useState(false);
+
+  const popApps = [
+    { id: 'youtube', title: 'YouTube', href: 'https://youtube.com', icon: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=32', category: 'Entertainment' },
+    { id: 'github', title: 'GitHub', href: 'https://github.com', icon: 'https://www.google.com/s2/favicons?domain=github.com&sz=32', category: 'Development' },
+    { id: 'pinterest', title: 'Pinterest', href: 'https://pinterest.com', icon: 'https://www.google.com/s2/favicons?domain=pinterest.com&sz=32', category: 'Social' },
+    { id: 'dribbble', title: 'Dribbble', href: 'https://dribbble.com', icon: 'https://www.google.com/s2/favicons?domain=dribbble.com&sz=32', category: 'Social' },
+    { id: 'flipkart', title: 'Flipkart', href: 'https://flipkart.com', icon: 'https://www.google.com/s2/favicons?domain=flipkart.com&sz=32', category: 'Shopping' },
+    { id: 'amazon', title: 'Amazon', href: 'https://amazon.com', icon: 'https://www.google.com/s2/favicons?domain=amazon.com&sz=32', category: 'Shopping' },
+    { id: 'booking', title: 'Booking.com', href: 'https://booking.com', icon: 'https://www.google.com/s2/favicons?domain=booking.com&sz=32', category: 'Travel' },
+    { id: 'google', title: 'Google', href: 'https://google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=32', category: 'Productivity' },
+    { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=32', category: 'Productivity' },
+    { id: 'twitter', title: 'Twitter', href: 'https://twitter.com', icon: 'https://www.google.com/s2/favicons?domain=twitter.com&sz=32', category: 'Social' },
+    { id: 'netfree2', title: 'NetFree2', href: 'https://netfree2.cc/home', icon: 'https://www.google.com/s2/favicons?domain=netfree2.cc&sz=32', category: 'Other' },
+  ];
+
+  const renderAppCard = (app: any) => (
+    <button
+      key={app.id}
+      onClick={() => setNewApp({ title: app.title, href: app.href.replace('https://', '') })}
+      className={`relative flex items-center gap-2 p-2.5 rounded-lg transition-colors border ${isDarkMode ? 'border-white/5 hover:bg-white/10 text-gray-200' : 'border-gray-100 hover:bg-gray-100 text-gray-700'} ${suggestionView === 'grid' ? 'flex-col justify-center text-center' : 'text-left'}`}
+    >
+      <img src={app.icon} className={`${suggestionView === 'grid' ? 'w-8 h-8 mb-1' : 'w-5 h-5'} rounded shadow-sm`} alt="" />
+      <span className="text-xs font-medium truncate w-full">{app.title}</span>
+      {showSuggestionTicks && apps.some(userApp => userApp.id === app.id || userApp.href.includes(app.href.replace('https://', '').replace('http://', '').split('/')[0])) && (
+        <svg className={`w-4 h-4 text-green-500 ${suggestionView === 'grid' ? 'absolute top-2 right-2 bg-white/10 rounded-full' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+    </button>
+  );
 
   // Removed top tabs; sections are independent toggles now
 
@@ -814,7 +847,7 @@ export default function LeftSidebar({
           ? isDarkMode
             ? 'bg-[#2B2B2B]/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)]'
             : 'bg-white/85 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.15)]'
-          : isDarkMode ? 'bg-[#1e1e1e] shadow-[0_16px_40px_rgba(0,0,0,0.5)]' : 'bg-[#fafafa] shadow-[0_16px_40px_rgba(0,0,0,0.12)]'
+          : isDarkMode ? 'bg-[#121212] shadow-[0_16px_40px_rgba(0,0,0,0.5)] border border-[#444]' : 'bg-white shadow-[0_16px_40px_rgba(0,0,0,0.12)] border border-gray-400'
           }`}
         style={{
           left: `${position.left}px`,
@@ -830,7 +863,7 @@ export default function LeftSidebar({
 
         <div className="flex relative z-10 h-full gap-2 p-2">
           {/* Left Sidebar - Full Height */}
-          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-2.5 overflow-y-auto custom-scrollbar rounded-3xl ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10' : 'bg-gray-100/50 ring-gray-200/50'}`}>
+          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-2.5 overflow-y-auto custom-scrollbar rounded-3xl`}>
               <NavButton
                 label="App & Widget"
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>}
@@ -1191,42 +1224,7 @@ export default function LeftSidebar({
                             isDarkMode={isDarkMode}
                           />
                         </div>
-                        <div className="flex items-center justify-between">
-                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Board-like App Cards</label>
-                          <button onClick={() => onToggleBoardLikeAppCards?.()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${boardLikeAppCards ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${boardLikeAppCards ? 'translate-x-6' : 'translate-x-1'}`} />
-                          </button>
-                        </div>
-                        {boardLikeAppCards && (
-                          <div className="flex items-center justify-between">
-                            <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Board Columns</label>
-                            <SegmentedControl
-                              value={boardColumns || 5}
-                              onChange={(val) => onSetBoardColumns && onSetBoardColumns(val as number)}
-                              options={[
-                                { value: 4, label: '4' },
-                                { value: 5, label: '5' },
-                                { value: 6, label: '6' },
-                                { value: 7, label: '7' },
-                              ]}
-                              isDarkMode={isDarkMode}
-                            />
-                          </div>
-                        )}
-                        {boardLikeAppCards && (
-                          <div className="flex items-center justify-between">
-                            <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Title Position</label>
-                            <SegmentedControl
-                              value={appTitlePosition || 'outside'}
-                              onChange={(val) => onSetAppTitlePosition && onSetAppTitlePosition(val as 'inside' | 'outside')}
-                              options={[
-                                { value: 'inside', label: 'Inside' },
-                                { value: 'outside', label: 'Outside' },
-                              ]}
-                              isDarkMode={isDarkMode}
-                            />
-                          </div>
-                        )}
+
                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Radius</label>
                           <SegmentedControl
@@ -1329,14 +1327,14 @@ export default function LeftSidebar({
                              <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Greeting Style</label>
                              <ModernDropdown value={greetingStyle || 'hi'} onChange={(val) => onSetGreetingStyle && onSetGreetingStyle(val as any)} options={[{ value: 'hi', label: 'Hi' }, { value: 'welcome', label: 'Welcome' }, { value: 'time-based', label: 'Time Based' }]} isDarkMode={isDarkMode} />
                            </div>
-                            <div className="space-y-1.5">
-                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Style</label>
-                               <SegmentedControl value={topPillStyle || 'card'} onChange={(val) => onSetTopPillStyle && onSetTopPillStyle(val as any)} options={[{ value: 'card', label: 'Card' }, { value: 'text', label: 'Text Only' }]} isDarkMode={isDarkMode} />
-                             </div>
-                             <div className="space-y-1.5">
-                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Shape</label>
-                               <SegmentedControl value={topPillShape || 'pill'} onChange={(val) => onSetTopPillShape && onSetTopPillShape(val as 'pill' | 'squircle')} options={[{ value: 'pill', label: 'Pill' }, { value: 'squircle', label: 'Squircle' }]} isDarkMode={isDarkMode} />
-                             </div>
+                           <div className="flex items-center justify-between">
+                             <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Style</label>
+                             <SegmentedControl value={topPillStyle || 'card'} onChange={(val) => onSetTopPillStyle && onSetTopPillStyle(val as any)} options={[{ value: 'card', label: 'Card' }, { value: 'text', label: 'Text Only' }]} isDarkMode={isDarkMode} />
+                           </div>
+                           <div className="flex items-center justify-between">
+                             <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Pill Shape</label>
+                             <SegmentedControl value={topPillShape || 'pill'} onChange={(val) => onSetTopPillShape && onSetTopPillShape(val as 'pill' | 'squircle')} options={[{ value: 'pill', label: 'Pill' }, { value: 'squircle', label: 'Squircle' }]} isDarkMode={isDarkMode} />
+                           </div>
                             <div className="flex items-center justify-between">
                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Merge Top Pills Center</label>
                               <button onClick={() => onToggleMergeTopPillsCenter && onToggleMergeTopPillsCenter()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${mergeTopPillsCenter ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
@@ -1697,7 +1695,10 @@ export default function LeftSidebar({
                             <div>
                               <label className={`block text-sm font-medium mb-2 flex items-center justify-between ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                 <span>Blur Effect</span>
-                                <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{backgroundBlur || 0}px</span>
+                                <div className="flex items-center gap-2">
+                                  <button onClick={() => onSetBackgroundBlur && onSetBackgroundBlur(0)} className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${isDarkMode ? 'border-white/20 text-gray-400 hover:text-white' : 'border-gray-200 text-gray-500 hover:text-gray-800'}`}>Default</button>
+                                  <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{backgroundBlur || 0}px</span>
+                                </div>
                               </label>
                               <input 
                                 type="range" 
@@ -1715,7 +1716,10 @@ export default function LeftSidebar({
                               <div className="pt-2">
                                 <label className={`block text-sm font-medium mb-2 flex items-center justify-between ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                   <span>Contrast</span>
-                                  <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{bgContrast}%</span>
+                                  <div className="flex items-center gap-2">
+                                    <button onClick={() => onSetBgContrast(100)} className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${isDarkMode ? 'border-white/20 text-gray-400 hover:text-white' : 'border-gray-200 text-gray-500 hover:text-gray-800'}`}>Default</button>
+                                    <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{bgContrast}%</span>
+                                  </div>
                                 </label>
                                 <input 
                                   type="range" 
@@ -1790,6 +1794,39 @@ export default function LeftSidebar({
                     </button>
                   </div>
                   <div className={`grid gap-6 ${showSuggestions ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+                      {showSuggestions && (
+                      <div className={`flex flex-col space-y-3 pr-0 lg:pr-6 border-b lg:border-b-0 lg:border-r pb-4 lg:pb-0 ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <h4 className={`text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Popular Apps</h4>
+                          <div className={`flex items-center gap-1.5 text-xs p-1 rounded-lg ${isDarkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+                            <div className={`flex rounded overflow-hidden ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`}>
+                              <button onClick={() => setSuggestionView('list')} className={`px-2 py-1 transition-colors ${suggestionView === 'list' ? (isDarkMode ? 'bg-white/20 text-white' : 'bg-white text-gray-900 shadow-sm') : (isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')}`}>List</button>
+                              <button onClick={() => setSuggestionView('grid')} className={`px-2 py-1 transition-colors ${suggestionView === 'grid' ? (isDarkMode ? 'bg-white/20 text-white' : 'bg-white text-gray-900 shadow-sm') : (isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')}`}>Grid</button>
+                            </div>
+                            <button onClick={() => setShowSuggestionTicks(!showSuggestionTicks)} className={`px-2 py-1 rounded transition-colors ${showSuggestionTicks ? (isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700') : (isDarkMode ? 'text-gray-400 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-200')}`}>Ticks</button>
+                            <button onClick={() => setShowSuggestionCategories(!showSuggestionCategories)} className={`px-2 py-1 rounded transition-colors ${showSuggestionCategories ? (isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700') : (isDarkMode ? 'text-gray-400 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-200')}`}>Categories</button>
+                          </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar max-h-[360px]">
+                          {showSuggestionCategories ? (
+                            <div className="space-y-4">
+                              {Array.from(new Set(popApps.map(a => a.category))).map(cat => (
+                                <div key={cat}>
+                                  <h5 className={`text-xs font-semibold mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{cat}</h5>
+                                  <div className={`grid gap-2 ${suggestionView === 'grid' ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                                    {popApps.filter(a => a.category === cat).map(renderAppCard)}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className={`grid gap-2 ${suggestionView === 'grid' ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                              {popApps.map(renderAppCard)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      )}
                     <div className="space-y-4">
                       <div className={`p-2.5 rounded-xl flex items-center gap-3 border ${isDarkMode ? 'bg-[#1a1a1a] border-white/10' : 'bg-gray-50 border-gray-200'}`}>
                         <img 
@@ -1864,41 +1901,7 @@ export default function LeftSidebar({
                     >
                       Add Application
                     </button>
-                  </div>
-                  {showSuggestions && (
-                      <div className={`space-y-3 pl-0 lg:pl-6 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
-                        <h4 className={`text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Popular Apps</h4>
-                        <div className="grid grid-cols-2 gap-2 max-h-[360px] overflow-y-auto pr-2 custom-scrollbar">
-                           {[
-                              { id: 'youtube', title: 'YouTube', href: 'https://youtube.com', icon: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=32' },
-                              { id: 'github', title: 'GitHub', href: 'https://github.com', icon: 'https://www.google.com/s2/favicons?domain=github.com&sz=32' },
-                              { id: 'pinterest', title: 'Pinterest', href: 'https://pinterest.com', icon: 'https://www.google.com/s2/favicons?domain=pinterest.com&sz=32' },
-                              { id: 'dribbble', title: 'Dribbble', href: 'https://dribbble.com', icon: 'https://www.google.com/s2/favicons?domain=dribbble.com&sz=32' },
-                              { id: 'flipkart', title: 'Flipkart', href: 'https://flipkart.com', icon: 'https://www.google.com/s2/favicons?domain=flipkart.com&sz=32' },
-                              { id: 'amazon', title: 'Amazon', href: 'https://amazon.com', icon: 'https://www.google.com/s2/favicons?domain=amazon.com&sz=32' },
-                              { id: 'booking', title: 'Booking.com', href: 'https://booking.com', icon: 'https://www.google.com/s2/favicons?domain=booking.com&sz=32' },
-                              { id: 'google', title: 'Google', href: 'https://google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=32' },
-                              { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=32' },
-                              { id: 'twitter', title: 'Twitter', href: 'https://twitter.com', icon: 'https://www.google.com/s2/favicons?domain=twitter.com&sz=32' },
-                              { id: 'netfree2', title: 'NetFree2', href: 'https://netfree2.cc/home', icon: 'https://www.google.com/s2/favicons?domain=netfree2.cc&sz=32' },
-                           ].map(app => (
-                             <button
-                               key={app.id}
-                               onClick={() => setNewApp({ title: app.title, href: app.href.replace('https://', '') })}
-                               className={`flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors border ${isDarkMode ? 'border-white/5 hover:bg-white/10 text-gray-200' : 'border-gray-100 hover:bg-gray-100 text-gray-700'}`}
-                             >
-                               <img src={app.icon} className="w-5 h-5 rounded shadow-sm" alt="" />
-                               <span className="text-xs font-medium truncate flex-1">{app.title}</span>
-                               {apps.some(userApp => userApp.id === app.id || userApp.href.includes(app.href.replace('https://', '').replace('http://', '').split('/')[0])) && (
-                                 <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                 </svg>
-                               )}
-                             </button>
-                           ))}
-                        </div>
-                      </div>
-                  )}
+                    </div>
                   </div>
                 </div>
               )}

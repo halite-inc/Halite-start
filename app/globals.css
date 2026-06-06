@@ -355,9 +355,9 @@ input[type="range"]::-webkit-slider-runnable-track {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
+  width: 24px;
   height: 14px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: #3b82f6;
   cursor: pointer;
   margin-top: -5.5px;
@@ -389,9 +389,9 @@ input[type="range"]::-moz-range-track {
 
 /* Firefox thumb */
 input[type="range"]::-moz-range-thumb {
-  width: 14px;
+  width: 24px;
   height: 14px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: #3b82f6;
   cursor: pointer;
   border: none;
