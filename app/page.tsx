@@ -22,6 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import LeftSidebar from './components/LeftSidebar';
+import RightSidebar from './components/RightSidebar';
 import CommandPalette from './components/CommandPalette';
 import UsageStatistics from './components/UsageStatistics';
 import { getImageObjectUrl, deleteImageBlob, saveImageBlob } from './lib/idb';
@@ -2001,6 +2002,32 @@ export default function Home() {
   const [isAddBookmarkOpen, setIsAddBookmarkOpen] = useState<boolean>(false);
   const [bookmarkTitleInput, setBookmarkTitleInput] = useState<string>('');
   const [bookmarkUrlInput, setBookmarkUrlInput] = useState<string>('');
+  const [bookmarkTitlePlaceholder, setBookmarkTitlePlaceholder] = useState<string>('Title');
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!bookmarkUrlInput) {
+      setBookmarkTitlePlaceholder('Title');
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/fetch-title?url=${encodeURIComponent(bookmarkUrlInput)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.title) {
+            setBookmarkTitlePlaceholder(data.title);
+          } else {
+            setBookmarkTitlePlaceholder('Title');
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching bookmark title:', e);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [bookmarkUrlInput]);
+
   const [isQuickAppOpen, setIsQuickAppOpen] = useState<boolean>(false);
   const [quickAppTitleInput, setQuickAppTitleInput] = useState<string>('');
   const [quickAppUrlInput, setQuickAppUrlInput] = useState<string>('');
@@ -3737,7 +3764,7 @@ export default function Home() {
           </div>
         </>
       )}
-      <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3">
+      <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3 relative z-10">
         {/* Big Clock Display - Above App Cards */}
         {showBigClock && (
           <div 
@@ -4354,7 +4381,7 @@ export default function Home() {
               <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Title"
+                  placeholder={bookmarkTitlePlaceholder}
                   value={bookmarkTitleInput}
                   onChange={(e) => setBookmarkTitleInput(e.target.value)}
                   className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
@@ -4371,7 +4398,7 @@ export default function Home() {
                 <button onClick={() => setIsAddBookmarkOpen(false)} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
                 <button
                   onClick={() => {
-                    const t = bookmarkTitleInput.trim();
+                    const t = bookmarkTitleInput.trim() || (bookmarkTitlePlaceholder !== 'Title' ? bookmarkTitlePlaceholder : '');
                     const raw = bookmarkUrlInput.trim();
                     if (!t || !raw) return;
                     const href = raw.startsWith('http') ? raw : `https://${raw}`;
@@ -4906,6 +4933,25 @@ export default function Home() {
         </button>
         )}
 
+        {/* Bookmarks Button */}
+        <button
+          onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+          className={`${
+            topPillSize === 'small' ? 'w-6 h-6 sm:w-7 sm:h-7' :
+            topPillSize === 'large' ? 'w-8 h-8 sm:w-10 sm:h-10' :
+            'w-7 h-7 sm:w-8 sm:h-8'
+          } rounded-full transition-all duration-300 flex items-center justify-center ring-1 ${glassmorphismEnabled
+              ? (isDarkMode ? 'bg-white/10 text-white ring-white/10 hover:bg-white/15' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+              : (isDarkMode ? 'bg-[#1b1b1b] text-white ring-white/10 hover:bg-[#222]' : 'bg-white text-gray-800 ring-gray-200 hover:bg-gray-50')
+            } shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0`}
+          title="Bookmarks"
+          aria-label="Bookmarks"
+        >
+          <svg className={`${topPillSize === 'small' ? 'w-3.5 h-3.5' : topPillSize === 'large' ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          </svg>
+        </button>
+
         {/* Settings Button */}
         <button
           onClick={() => setIsSidebarOpen(true)}
@@ -4928,6 +4974,17 @@ export default function Home() {
         </div>
       </div>
 
+
+      {/* Right Sidebar for Bookmarks */}
+      <RightSidebar
+        isOpen={isRightSidebarOpen}
+        onClose={() => setIsRightSidebarOpen(false)}
+        bookmarks={bookmarks}
+        onRemoveBookmark={(id) => setBookmarks(prev => prev.filter(b => b.id !== id))}
+        onAddBookmarkClick={() => { setIsRightSidebarOpen(false); setBookmarkTitleInput(''); setBookmarkUrlInput(''); setIsAddBookmarkOpen(true); }}
+        isDarkMode={isDarkMode}
+        glassmorphismEnabled={glassmorphismEnabled}
+      />
 
       {/* Left Sidebar */}
       <LeftSidebar
