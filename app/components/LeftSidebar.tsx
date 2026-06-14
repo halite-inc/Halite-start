@@ -82,6 +82,8 @@ interface LeftSidebarProps {
   greetingStyle?: 'hi' | 'welcome' | 'time-based';
   onSetGreetingStyle?: (style: 'hi' | 'welcome' | 'time-based') => void;
   bigClockMarginTop?: number;
+  bigClockStandardPosition?: boolean;
+  onToggleBigClockStandardPosition?: () => void;
   onSetBigClockMarginTop?: (value: number) => void;
   bigClockColor?: string;
   onSetBigClockColor?: (color: string) => void;
@@ -349,6 +351,8 @@ export default function LeftSidebar({
   greetingStyle,
   onSetGreetingStyle,
   bigClockMarginTop,
+  bigClockStandardPosition,
+  onToggleBigClockStandardPosition,
   onSetBigClockMarginTop,
   bigClockColor,
   onSetBigClockColor,
@@ -1056,15 +1060,25 @@ export default function LeftSidebar({
                            </button>
                          </div>
                          {showBigClock && (
-                           <div className="space-y-4 mt-4">
-                              {/* Margin */}
-                             <div>
-                               <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Top Margin</label>
-                               <div className="mt-2 flex items-center gap-3">
-                                 <input type="range" min={0} max={600} step={4} value={bigClockMarginTop ?? 128} onChange={(e) => onSetBigClockMarginTop && onSetBigClockMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500 slider-with-dots" />
-                                 <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{bigClockMarginTop ?? 128}px</span>
+                             <div className="space-y-4 mt-4">
+                               {/* Standard Position Toggle */}
+                               <div className="flex items-center justify-between">
+                                 <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Use Standard Position</label>
+                                 <button onClick={() => onToggleBigClockStandardPosition && onToggleBigClockStandardPosition()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${bigClockStandardPosition ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${bigClockStandardPosition ? 'translate-x-6' : 'translate-x-1'}`} />
+                                 </button>
                                </div>
-                             </div>
+
+                               {/* Margin */}
+                               {!bigClockStandardPosition && (
+                                 <div>
+                                   <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Top Margin</label>
+                                   <div className="mt-2 flex items-center gap-3">
+                                     <input type="range" min={-600} max={600} step={1} value={bigClockMarginTop ?? 128} onChange={(e) => onSetBigClockMarginTop && onSetBigClockMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500 slider-with-dots" />
+                                     <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{bigClockMarginTop ?? 128}px</span>
+                                   </div>
+                                 </div>
+                               )}
 
                               {/* Size */}
                               <div className="flex items-center justify-between">

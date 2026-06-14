@@ -2090,6 +2090,7 @@ export default function Home() {
   const [showBigClock, setShowBigClock] = useState<boolean>(false);
   const [bigClockTime, setBigClockTime] = useState<Date>(new Date());
   const [bigClockMarginTop, setBigClockMarginTop] = useState<number>(128);
+  const [bigClockStandardPosition, setBigClockStandardPosition] = useState<boolean>(false);
   const [bigClockColor, setBigClockColor] = useState<string>('');
   const [bigClockFont, setBigClockFont] = useState<string>('default');
   const [bigClockSize, setBigClockSize] = useState<'small' | 'medium' | 'large' | 'huge'>('medium');
@@ -2385,6 +2386,10 @@ export default function Home() {
       if (savedBigClockMarginTop !== null) {
         const margin = parseInt(savedBigClockMarginTop, 10);
         setBigClockMarginTop(isNaN(margin) ? 128 : margin);
+      }
+      const savedBigClockStandardPosition = localStorage.getItem('bigClockStandardPosition');
+      if (savedBigClockStandardPosition !== null) {
+        setBigClockStandardPosition(savedBigClockStandardPosition === 'true');
       }
 
       const savedBigClockColor = localStorage.getItem('bigClockColor');
@@ -3459,6 +3464,77 @@ export default function Home() {
     );
   }
 
+  const renderBigClockContent = () => (
+    <div className="flex flex-col items-center justify-center transition-all duration-300">
+      <span 
+        className={`font-bold tracking-tight leading-none transition-all duration-300 ${
+          bigClockSize === 'small' ? 'text-5xl sm:text-6xl md:text-7xl' :
+          bigClockSize === 'large' ? 'text-8xl sm:text-9xl md:text-[10rem]' :
+          bigClockSize === 'huge' ? 'text-9xl sm:text-[10rem] md:text-[12rem]' :
+          'text-7xl sm:text-8xl md:text-9xl' // medium
+        } ${
+          bigClockGlassMode 
+            ? 'bg-clip-text text-transparent drop-shadow-lg' 
+            : ''
+        }`}
+        style={{
+           ...(bigClockGlassMode ? {
+             backgroundImage: `linear-gradient(to bottom, ${bigClockColor || 'white'}cc, ${bigClockColor || 'white'}33)`,
+             backgroundClip: 'text',
+           } : {}),
+           color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined,
+           fontFamily: bigClockFont === 'default' ? undefined :
+                       bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
+                       bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
+                       bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
+                       bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' :
+                       bigClockFont === 'poppins' ? 'Poppins, sans-serif' :
+                       bigClockFont === 'playfair' ? 'var(--font-playfair), "Playfair Display", Georgia, serif' :
+                       bigClockFont === 'raleway' ? 'var(--font-raleway), Raleway, sans-serif' :
+                       bigClockFont === 'space' ? 'var(--font-space-grotesk), "Space Grotesk", sans-serif' :
+                       bigClockFont === 'bebas' ? 'var(--font-bebas-neue), "Bebas Neue", sans-serif' :
+                       bigClockFont === 'pacifico' ? 'var(--font-pacifico), Pacifico, cursive' :
+                       bigClockFont === 'outfit' ? 'var(--font-outfit), Outfit, sans-serif' : undefined
+        }}
+      >
+        {bigClockTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+      </span>
+      <span 
+        className={`font-medium tracking-wide opacity-80 mt-2 transition-all duration-300 ${
+          bigClockSize === 'small' ? 'text-lg sm:text-xl' :
+          bigClockSize === 'large' ? 'text-2xl sm:text-3xl' :
+          bigClockSize === 'huge' ? 'text-3xl sm:text-4xl' :
+          'text-xl sm:text-2xl' // medium
+        } ${
+          bigClockGlassMode 
+            ? 'bg-clip-text text-transparent drop-shadow-md' 
+            : ''
+        }`}
+        style={{
+           ...(bigClockGlassMode ? {
+             backgroundImage: `linear-gradient(to bottom, ${bigClockColor || 'white'}cc, ${bigClockColor || 'white'}33)`,
+             backgroundClip: 'text',
+           } : {}),
+           color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined,
+           fontFamily: bigClockFont === 'default' ? undefined :
+                       bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
+                       bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
+                       bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
+                       bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' :
+                       bigClockFont === 'poppins' ? 'Poppins, sans-serif' :
+                       bigClockFont === 'playfair' ? 'var(--font-playfair), "Playfair Display", Georgia, serif' :
+                       bigClockFont === 'raleway' ? 'var(--font-raleway), Raleway, sans-serif' :
+                       bigClockFont === 'space' ? 'var(--font-space-grotesk), "Space Grotesk", sans-serif' :
+                       bigClockFont === 'bebas' ? 'var(--font-bebas-neue), "Bebas Neue", sans-serif' :
+                       bigClockFont === 'pacifico' ? 'var(--font-pacifico), Pacifico, cursive' :
+                       bigClockFont === 'outfit' ? 'var(--font-outfit), Outfit, sans-serif' : undefined
+        }}
+      >
+        {bigClockTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+      </span>
+    </div>
+  );
+
   return (
     <main suppressHydrationWarning
       ref={containerRef}
@@ -3766,82 +3842,16 @@ export default function Home() {
       )}
       <div className="max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto mt-24 px-1 sm:px-2 lg:px-3 relative z-10">
         {/* Big Clock Display - Above App Cards */}
-        {showBigClock && (
+        {/* Big Clock Display - Absolute Position */}
+        {showBigClock && !bigClockStandardPosition && (
           <div 
-            className="absolute left-1/2 -translate-x-1/2 z-0 pointer-events-none transition-all duration-300" 
+            className="absolute left-1/2 -translate-x-1/2 z-0 pointer-events-none" 
             style={{ 
               top: `${bigClockMarginTop}px`,
             }} 
             suppressHydrationWarning
           >
-            <div className="flex flex-col items-center justify-center transition-all duration-300">
-              <span 
-                className={`font-bold tracking-tight leading-none transition-all duration-300 ${
-                  bigClockSize === 'small' ? 'text-5xl sm:text-6xl md:text-7xl' :
-                  bigClockSize === 'large' ? 'text-8xl sm:text-9xl md:text-[10rem]' :
-                  bigClockSize === 'huge' ? 'text-9xl sm:text-[10rem] md:text-[12rem]' :
-                  'text-7xl sm:text-8xl md:text-9xl' // medium
-                } ${
-                  bigClockGlassMode 
-                    ? 'bg-clip-text text-transparent drop-shadow-lg' 
-                    : ''
-                }`}
-                style={{
-                   ...(bigClockGlassMode ? {
-                     backgroundImage: `linear-gradient(to bottom, ${bigClockColor || 'white'}cc, ${bigClockColor || 'white'}33)`,
-                     backgroundClip: 'text',
-                   } : {}),
-                   color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined,
-                   fontFamily: bigClockFont === 'default' ? undefined :
-                               bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
-                               bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
-                               bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
-                               bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' :
-                               bigClockFont === 'poppins' ? 'Poppins, sans-serif' :
-                               bigClockFont === 'playfair' ? 'var(--font-playfair), "Playfair Display", Georgia, serif' :
-                               bigClockFont === 'raleway' ? 'var(--font-raleway), Raleway, sans-serif' :
-                               bigClockFont === 'space' ? 'var(--font-space-grotesk), "Space Grotesk", sans-serif' :
-                               bigClockFont === 'bebas' ? 'var(--font-bebas-neue), "Bebas Neue", sans-serif' :
-                               bigClockFont === 'pacifico' ? 'var(--font-pacifico), Pacifico, cursive' :
-                               bigClockFont === 'outfit' ? 'var(--font-outfit), Outfit, sans-serif' : undefined
-                }}
-              >
-                {bigClockTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-              </span>
-              <span 
-                className={`font-medium tracking-wide opacity-80 mt-2 transition-all duration-300 ${
-                  bigClockSize === 'small' ? 'text-lg sm:text-xl' :
-                  bigClockSize === 'large' ? 'text-2xl sm:text-3xl' :
-                  bigClockSize === 'huge' ? 'text-3xl sm:text-4xl' :
-                  'text-xl sm:text-2xl' // medium
-                } ${
-                  bigClockGlassMode 
-                    ? 'bg-clip-text text-transparent drop-shadow-md' 
-                    : ''
-                }`}
-                style={{
-                   ...(bigClockGlassMode ? {
-                     backgroundImage: `linear-gradient(to bottom, ${bigClockColor || 'white'}cc, ${bigClockColor || 'white'}33)`,
-                     backgroundClip: 'text',
-                   } : {}),
-                   color: !bigClockGlassMode ? (bigClockColor || (backgroundImage || isDarkMode ? 'white' : '#111827')) : undefined,
-                   fontFamily: bigClockFont === 'default' ? undefined :
-                               bigClockFont === 'serif' ? 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' :
-                               bigClockFont === 'mono' ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' :
-                               bigClockFont === 'elegant' ? '"Helvetica Neue Thin", "Helvetica Neue Light", "Segoe UI Light", "Roboto Light", sans-serif' :
-                               bigClockFont === 'fun' ? '"Comic Sans MS", "Chalkboard SE", cursive' :
-                               bigClockFont === 'poppins' ? 'Poppins, sans-serif' :
-                               bigClockFont === 'playfair' ? 'var(--font-playfair), "Playfair Display", Georgia, serif' :
-                               bigClockFont === 'raleway' ? 'var(--font-raleway), Raleway, sans-serif' :
-                               bigClockFont === 'space' ? 'var(--font-space-grotesk), "Space Grotesk", sans-serif' :
-                               bigClockFont === 'bebas' ? 'var(--font-bebas-neue), "Bebas Neue", sans-serif' :
-                               bigClockFont === 'pacifico' ? 'var(--font-pacifico), Pacifico, cursive' :
-                               bigClockFont === 'outfit' ? 'var(--font-outfit), Outfit, sans-serif' : undefined
-                }}
-              >
-                {bigClockTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-              </span>
-            </div>
+            {renderBigClockContent()}
           </div>
         )}
 
@@ -3854,6 +3864,11 @@ export default function Home() {
         >
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
             <div className="mb-6" style={{ marginTop: appGroupMarginTop }}>
+              {showBigClock && bigClockStandardPosition && (
+                 <div className="w-full flex justify-center mb-8 pointer-events-none">
+                    {renderBigClockContent()}
+                 </div>
+              )}
               <div className={`${boardLikeAppCards ? `grid w-fit mx-auto bg-white/30 dark:bg-black/40 backdrop-blur-3xl p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-white/40 shadow-xl dark:shadow-2xl` : centerAppsGroup
                 ? 'grid w-fit mx-auto'
                 : 'grid'
@@ -5180,6 +5195,14 @@ export default function Home() {
           });
         }}
         bigClockMarginTop={bigClockMarginTop}
+        bigClockStandardPosition={bigClockStandardPosition}
+        onToggleBigClockStandardPosition={() => {
+          setBigClockStandardPosition(prev => {
+            const next = !prev;
+            if (typeof window !== 'undefined') localStorage.setItem('bigClockStandardPosition', next.toString());
+            return next;
+          });
+        }}
         onSetBigClockMarginTop={(value) => {
           setBigClockMarginTop(value);
           if (typeof window !== 'undefined') {
