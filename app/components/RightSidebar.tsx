@@ -53,7 +53,7 @@ export default function RightSidebar({
 
       {/* Sidebar Panel */}
       <div
-        className={`fixed top-4 right-4 bottom-4 w-80 max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl z-50 transform transition-transform duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] flex flex-col overflow-hidden ${isOpen ? 'translate-x-0' : 'translate-x-[120%]'} ${
+        className={`fixed top-4 right-4 bottom-4 w-96 max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl z-50 transform transition-transform duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] flex flex-col overflow-hidden ${isOpen ? 'translate-x-0' : 'translate-x-[120%]'} ${
           glassmorphismEnabled
             ? (isDarkMode ? 'bg-[#121212]/80 backdrop-blur-xl border border-white/10' : 'bg-white/80 backdrop-blur-xl border border-black/5')
             : (isDarkMode ? 'bg-[#121212] border border-white/10' : 'bg-white border border-gray-200')
@@ -68,16 +68,6 @@ export default function RightSidebar({
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
-        </div>
-
-        <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-end">
-          <button
-            onClick={onAddBookmarkClick}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Add Bookmark
           </button>
         </div>
 
@@ -109,6 +99,16 @@ export default function RightSidebar({
               </div>
             ))
           )}
+        </div>
+        
+        <div className={`p-4 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-200'} flex justify-start`}>
+          <button
+            onClick={onAddBookmarkClick}
+            className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-500 transition-colors shadow-lg"
+            title="Add Bookmark"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          </button>
         </div>
       </div>
     </>

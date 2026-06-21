@@ -436,6 +436,9 @@ export default function LeftSidebar({
     { id: 'google', title: 'Google', href: 'https://google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=32', category: 'Productivity' },
     { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=32', category: 'Productivity' },
     { id: 'twitter', title: 'Twitter', href: 'https://twitter.com', icon: 'https://www.google.com/s2/favicons?domain=twitter.com&sz=32', category: 'Social' },
+    { id: 'chatgpt', title: 'ChatGPT', href: 'https://chatgpt.com', icon: 'https://www.google.com/s2/favicons?domain=chatgpt.com&sz=32', category: 'AI' },
+    { id: 'claude', title: 'Claude', href: 'https://claude.ai', icon: 'https://www.google.com/s2/favicons?domain=claude.ai&sz=32', category: 'AI' },
+    { id: 'perplexity', title: 'Perplexity', href: 'https://perplexity.ai', icon: 'https://www.google.com/s2/favicons?domain=perplexity.ai&sz=32', category: 'AI' },
     { id: 'netfree2', title: 'NetFree2', href: 'https://netfree2.cc/home', icon: 'https://www.google.com/s2/favicons?domain=netfree2.cc&sz=32', category: 'Other' },
   ];
 
@@ -867,7 +870,7 @@ export default function LeftSidebar({
 
         <div className="flex relative z-10 h-full gap-2 p-2">
           {/* Left Sidebar - Full Height */}
-          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-2.5 overflow-y-auto custom-scrollbar rounded-3xl`}>
+          <div className={`w-[180px] sm:w-[240px] shrink-0 flex flex-col gap-1 p-2.5 overflow-y-auto custom-scrollbar rounded-l-3xl border-r ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
               <NavButton
                 label="App & Widget"
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>}

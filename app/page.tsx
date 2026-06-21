@@ -3856,6 +3856,13 @@ export default function Home() {
         )}
 
 
+        {/* Big Clock Display - Standard Position */}
+        {showBigClock && bigClockStandardPosition && (
+           <div className="w-full flex justify-center mb-8 pointer-events-none relative z-10">
+              {renderBigClockContent()}
+           </div>
+        )}
+
         {/* Apps Grid with Drag and Drop */}
         <DndContext
           sensors={sensors}
@@ -3864,11 +3871,6 @@ export default function Home() {
         >
           <SortableContext items={apps.map(app => app.id)} strategy={rectSortingStrategy}>
             <div className="mb-6" style={{ marginTop: appGroupMarginTop }}>
-              {showBigClock && bigClockStandardPosition && (
-                 <div className="w-full flex justify-center mb-8 pointer-events-none">
-                    {renderBigClockContent()}
-                 </div>
-              )}
               <div className={`${boardLikeAppCards ? `grid w-fit mx-auto bg-white/30 dark:bg-black/40 backdrop-blur-3xl p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-white/40 shadow-xl dark:shadow-2xl` : centerAppsGroup
                 ? 'grid w-fit mx-auto'
                 : 'grid'
