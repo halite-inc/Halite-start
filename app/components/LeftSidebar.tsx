@@ -418,7 +418,7 @@ export default function LeftSidebar({
   const [customIconError, setCustomIconError] = useState<string | null>(null);
 
   // Section Navigation
-  const [openSection, setOpenSection] = useState<'widgets' | 'background' | 'addApp' | 'bookmarks' | 'layout' | 'search' | 'customization' | 'accessibility' | 'animations' | null>('layout');
+  const [openSection, setOpenSection] = useState<'widgets' | 'background' | 'addApp' | 'bookmarks' | 'layout' | 'search' | 'customization' | 'accessibility' | 'animations' | 'advanced' | null>('layout');
   const [isHoverDropdownOpen, setIsHoverDropdownOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionView, setSuggestionView] = useState<'grid' | 'list'>('list');
@@ -920,20 +920,20 @@ export default function LeftSidebar({
                 iconColor="text-emerald-500"
               />
               <NavButton
-                label="Accessibility"
-                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}
-                isActive={openSection === 'accessibility'}
-                onClick={() => setOpenSection('accessibility')}
-                isDarkMode={isDarkMode}
-                iconColor="text-teal-500"
-              />
-              <NavButton
                 label="Animations"
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                 isActive={openSection === 'animations'}
                 onClick={() => setOpenSection('animations')}
                 isDarkMode={isDarkMode}
                 iconColor="text-indigo-500"
+              />
+              <NavButton
+                label="Advanced"
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
+                isActive={openSection === 'advanced'}
+                onClick={() => setOpenSection('advanced')}
+                isDarkMode={isDarkMode}
+                iconColor="text-red-500"
               />
               {/* Spacer to push theme toggle to bottom */}
               <div className="flex-1" />
@@ -959,7 +959,7 @@ export default function LeftSidebar({
                 </button>
               </div>
             </div>
-
+ 
             {/* Right Column: Title Bar + Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
               {/* Title Bar */}
@@ -974,8 +974,8 @@ export default function LeftSidebar({
                     : openSection === 'customization' ? 'Customization'
                     : openSection === 'widgets' ? 'Widgets'
                     : openSection === 'background' ? 'Background'
-                    : openSection === 'accessibility' ? 'Accessibility'
                     : openSection === 'animations' ? 'Animations & Effects'
+                    : openSection === 'advanced' ? 'Advanced Settings'
                     : 'Dashboard Settings'}
                 </h2>
                 <button
@@ -1049,12 +1049,6 @@ export default function LeftSidebar({
                             <input type="range" min={0} max={800} step={1} value={appGroupMarginTop} onChange={(e) => onSetAppGroupMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500 slider-with-dots" />
                             <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{appGroupMarginTop}px</span>
                           </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Center App Group</label>
-                          <button onClick={() => onToggleCenterAppsGroup && onToggleCenterAppsGroup()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${centerAppsGroup ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${centerAppsGroup ? 'translate-x-6' : 'translate-x-1'}`} />
-                          </button>
                         </div>
                          <div className="flex items-center justify-between">
                            <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Show Clock</label>
@@ -1256,66 +1250,10 @@ export default function LeftSidebar({
                           />
                         </div>
                         <div className="flex items-center justify-between">
-                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Inner Shadow</label>
-                          <SegmentedControl
-                            value={appCardInnerShadow || 'none'}
-                            onChange={(val) => onSetAppCardInnerShadow && onSetAppCardInnerShadow(val)}
-                            options={[
-                              { value: 'none', label: 'None' },
-                              { value: 'small', label: 'Sm' },
-                              { value: 'medium', label: 'Md' },
-                              { value: 'large', label: 'Lg' },
-                            ]}
-                            isDarkMode={isDarkMode}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center justify-between">
-                            <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Gap (X)</label>
-                            <div className="flex items-center gap-2">
-                              <button 
-                                onClick={() => onSetAppCardGapX && onSetAppCardGapX(16)}
-                                className={`text-[10px] px-1.5 py-0.5 rounded border ${isDarkMode ? 'border-white/20 text-gray-400 hover:text-white' : 'border-gray-200 text-gray-500 hover:text-gray-800'}`}
-                              >
-                                Reset
-                              </button>
-                              <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{appCardGapX ?? 16}px</span>
-                            </div>
-                          </div>
-                          <input 
-                            type="range" 
-                            min="0" 
-                            max="64" 
-                            step="2"
-                            value={appCardGapX ?? 16}
-                            onChange={(e) => onSetAppCardGapX && onSetAppCardGapX(parseInt(e.target.value))}
-                            className="w-full accent-blue-500"
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Remove Borders</label>
                           <button onClick={() => onToggleRemoveAppCardBorders && onToggleRemoveAppCardBorders()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${removeAppCardBorders ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${removeAppCardBorders ? 'translate-x-6' : 'translate-x-1'}`} />
                           </button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Background</label>
-                          <div className="flex items-center gap-2">
-                             <button
-                               onClick={() => onSetAppCardBackgroundColor && onSetAppCardBackgroundColor('')}
-                               className={`px-2 py-1 text-xs rounded border ${!appCardBackgroundColor ? (isDarkMode ? 'bg-white/10 border-white/20 text-white' : 'bg-gray-100 border-gray-300 text-gray-800') : (isDarkMode ? 'text-gray-400 border-transparent hover:text-white' : 'text-gray-500 border-transparent hover:text-gray-800')}`}
-                             >
-                               Auto
-                             </button>
-                             <div className="flex items-center gap-2 border rounded-md p-1 border-gray-200 dark:border-white/10">
-                               <input
-                                 type="color"
-                                 value={appCardBackgroundColor || '#ffffff'}
-                                 onChange={(e) => onSetAppCardBackgroundColor && onSetAppCardBackgroundColor(e.target.value)}
-                                 className="h-6 w-8 rounded cursor-pointer bg-transparent"
-                               />
-                             </div>
-                          </div>
                         </div>
                       </div>
 
@@ -1418,14 +1356,108 @@ export default function LeftSidebar({
                   </div>
                 )}
 
-                {/* Accessibility Section */}
-                {openSection === 'accessibility' && (
+                {/* Advanced Section */}
+                {openSection === 'advanced' && (
                   <div className={panelClass}>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Monochrome Icons</label>
-                        <button onClick={() => onToggleMonochromeIcons && onToggleMonochromeIcons()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${monochromeIcons ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${monochromeIcons ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <div className="space-y-6">
+                      {/* App Card Customization Group */}
+                      <div className="space-y-4">
+                        <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Advanced App Card Options</h4>
+                        
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Center App Group</label>
+                          <button onClick={() => onToggleCenterAppsGroup && onToggleCenterAppsGroup()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${centerAppsGroup ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${centerAppsGroup ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Background</label>
+                          <div className="flex items-center gap-2">
+                             <button
+                               onClick={() => onSetAppCardBackgroundColor && onSetAppCardBackgroundColor('')}
+                               className={`px-2 py-1 text-xs rounded border ${!appCardBackgroundColor ? (isDarkMode ? 'bg-white/10 border-white/20 text-white' : 'bg-gray-100 border-gray-300 text-gray-800') : (isDarkMode ? 'text-gray-400 border-transparent hover:text-white' : 'text-gray-500 border-transparent hover:text-gray-800')}`}
+                             >
+                               Auto
+                             </button>
+                             <div className="flex items-center gap-2 border rounded-md p-1 border-gray-200 dark:border-white/10">
+                               <input
+                                 type="color"
+                                 value={appCardBackgroundColor || '#ffffff'}
+                                 onChange={(e) => onSetAppCardBackgroundColor && onSetAppCardBackgroundColor(e.target.value)}
+                                 className="h-6 w-8 rounded cursor-pointer bg-transparent"
+                               />
+                             </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>App Card Gap (X)</label>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => onSetAppCardGapX && onSetAppCardGapX(16)}
+                                className={`text-[10px] px-1.5 py-0.5 rounded border ${isDarkMode ? 'border-white/20 text-gray-400 hover:text-white' : 'border-gray-200 text-gray-500 hover:text-gray-800'}`}
+                              >
+                                Reset
+                              </button>
+                              <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{appCardGapX ?? 16}px</span>
+                            </div>
+                          </div>
+                          <input 
+                            type="range" 
+                            min="0" 
+                            max="64" 
+                            step="2"
+                            value={appCardGapX ?? 16}
+                            onChange={(e) => onSetAppCardGapX && onSetAppCardGapX(parseInt(e.target.value))}
+                            className="w-full accent-blue-500"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Inner Shadow</label>
+                          <SegmentedControl
+                            value={appCardInnerShadow || 'none'}
+                            onChange={(val) => onSetAppCardInnerShadow && onSetAppCardInnerShadow(val)}
+                            options={[
+                              { value: 'none', label: 'None' },
+                              { value: 'small', label: 'Sm' },
+                              { value: 'medium', label: 'Md' },
+                              { value: 'large', label: 'Lg' },
+                            ]}
+                            isDarkMode={isDarkMode}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Icons Customization */}
+                      <div className="space-y-4 border-t border-gray-200 dark:border-white/10 pt-4">
+                        <h4 className={`text-xs font-semibold uppercase tracking-wide ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>Accessibility Options</h4>
+                        <div className="flex items-center justify-between">
+                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Monochrome Icons</label>
+                          <button onClick={() => onToggleMonochromeIcons && onToggleMonochromeIcons()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${monochromeIcons ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${monochromeIcons ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-2xl border border-red-500/20 bg-red-500/5 space-y-3">
+                        <div className="flex flex-col gap-1">
+                          <h4 className="text-sm font-semibold text-red-500 dark:text-red-400">Reset Dashboard</h4>
+                          <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            This will restore all dashboard settings, layouts, widgets, and customization back to their default values. This action cannot be undone.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm('Are you sure you want to reset all dashboard settings? This will restore everything back to default.')) {
+                              onResetSettings();
+                            }
+                          }}
+                          className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition-colors shadow-md"
+                        >
+                          Reset All Settings
                         </button>
                       </div>
                     </div>

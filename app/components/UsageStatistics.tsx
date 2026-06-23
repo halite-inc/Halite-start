@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface App {
   id: string;
@@ -19,6 +19,7 @@ interface UsageStatisticsProps {
   isDarkMode: boolean;
   glassmorphismEnabled?: boolean;
   onResetStatistics?: () => void;
+  dailyStatsHistory?: Record<string, { clicksToday: number, appClickCounts: Record<string, number> }>;
 }
 
 export default function UsageStatistics({
@@ -32,13 +33,27 @@ export default function UsageStatistics({
   isDarkMode,
   glassmorphismEnabled = false,
   onResetStatistics,
+  dailyStatsHistory = {},
 }: UsageStatisticsProps) {
+  const [dateOffset, setDateOffset] = useState(0);
+
+  const selectedDateStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + dateOffset);
+    return d.toDateString();
+  }, [dateOffset]);
+
+  const isToday = dateOffset === 0;
+
+  const currentClicksToday = isToday ? clicksToday : (dailyStatsHistory[selectedDateStr]?.clicksToday || 0);
+  const currentAppClickCounts = isToday ? appClickCounts : (dailyStatsHistory[selectedDateStr]?.appClickCounts || {});
+
   // Get most clicked apps
   const mostClickedApps = useMemo(() => {
     const appsWithClicks = apps
       .map(app => ({
         ...app,
-        clicks: appClickCounts[app.id] || 0,
+        clicks: currentAppClickCounts[app.id] || 0,
         lastClicked: appLastClicked[app.id] || 0,
       }))
       .filter(app => app.clicks > 0)
@@ -46,7 +61,7 @@ export default function UsageStatistics({
       .slice(0, 10);
 
     return appsWithClicks;
-  }, [apps, appClickCounts, appLastClicked]);
+  }, [apps, currentAppClickCounts, appLastClicked]);
 
   // Format time
   const formatTime = (seconds: number) => {
@@ -81,7 +96,7 @@ export default function UsageStatistics({
   };
 
   // Calculate total clicks
-  const totalClicks = Object.values(appClickCounts).reduce((sum, count) => sum + count, 0);
+  const totalClicks = Object.values(currentAppClickCounts).reduce((sum, count) => sum + count, 0);
 
   if (!isOpen) return null;
 
@@ -91,44 +106,65 @@ export default function UsageStatistics({
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
 
       {/* Statistics Panel */}
       <div
-        className={`relative w-full max-w-4xl max-h-[85vh] rounded-[32px] shadow-2xl overflow-hidden ${
-          glassmorphismEnabled
-            ? isDarkMode
-              ? 'bg-[#2B2B2B]/80 backdrop-blur-md border border-[#444]'
-              : 'bg-white/80 backdrop-blur-md border border-gray-400'
-            : isDarkMode
-              ? 'bg-[#121212] border border-[#444]'
-              : 'bg-white border border-gray-400'
+        className={`relative w-full max-w-4xl max-h-[85vh] rounded-[24px] overflow-hidden backdrop-blur-xl border shadow-2xl ring-1 ${
+          isDarkMode
+            ? 'bg-[#1A1A1A]/80 border-white/10 ring-white/10'
+            : 'bg-white/80 border-black/10 ring-black/5'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`px-6 py-4 border-b flex items-center justify-between ${
+        <div className={`px-6 py-4 border-b grid grid-cols-3 items-center ${
           isDarkMode ? 'border-white/10' : 'border-gray-200'
         }`}>
-          <div className="flex items-center gap-4">
-            <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          {/* Left: Title */}
+          <div className="flex items-center">
+            <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               📊 Usage Statistics
             </h2>
-            <p className={`text-sm font-medium pt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Track your app usage and time spent
-            </p>
           </div>
-          <div className="flex items-center gap-3">
+
+          {/* Center: Date Switcher */}
+          <div className="flex justify-center">
+            <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 rounded-full p-1">
+              <button 
+                onClick={() => setDateOffset(prev => prev - 1)}
+                className={`p-1 rounded-full transition-colors ${isDarkMode ? 'hover:bg-white/10 text-gray-400 hover:text-white' : 'hover:bg-gray-200 text-gray-600 hover:text-gray-900'}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <span className={`text-sm font-medium px-2 min-w-[80px] text-center ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                {isToday ? 'Today' : selectedDateStr.split(' ').slice(1, 3).join(' ')}
+              </span>
+              <button 
+                onClick={() => setDateOffset(prev => prev < 0 ? prev + 1 : 0)}
+                disabled={isToday}
+                className={`p-1 rounded-full transition-colors ${isToday ? 'opacity-25 cursor-not-allowed text-gray-400 dark:text-gray-600' : isDarkMode ? 'hover:bg-white/10 text-gray-400 hover:text-white' : 'hover:bg-gray-200 text-gray-600 hover:text-gray-900'}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Right: Reset & Close */}
+          <div className="flex items-center justify-end gap-3">
             {onResetStatistics && (
               <button
                 onClick={onResetStatistics}
-                className={`text-sm px-3 py-1.5 rounded-lg transition-colors font-medium ${
+                title="Reset Statistics"
+                className={`p-2 rounded-full transition-colors ${
                   isDarkMode
                     ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400'
                     : 'bg-red-50 hover:bg-red-100 text-red-600'
                 }`}
               >
-                Reset
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
               </button>
             )}
             <button
@@ -150,7 +186,7 @@ export default function UsageStatistics({
         <div className="overflow-y-auto max-h-[calc(85vh-80px)] custom-scrollbar">
           <div className="p-6 space-y-6">
             {/* Overview Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className={`p-4 rounded-3xl relative overflow-hidden ${
                 isDarkMode ? 'bg-white/5' : 'bg-gray-50'
               }`}>
@@ -162,12 +198,12 @@ export default function UsageStatistics({
                 <div className={`text-sm font-medium mb-1 relative z-10 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
-                  ⏱️ Total Clicks Today
+                  📈 Clicks Today
                 </div>
                 <div className={`text-2xl font-bold relative z-10 ${
                   isDarkMode ? 'text-white' : 'text-gray-900'
                 }`}>
-                  {clicksToday.toLocaleString()}
+                  {currentClicksToday.toLocaleString()}
                 </div>
               </div>
 
@@ -190,31 +226,11 @@ export default function UsageStatistics({
                   {totalClicks.toLocaleString()}
                 </div>
               </div>
-
-              <div className={`p-4 rounded-3xl relative overflow-hidden ${
-                isDarkMode ? 'bg-white/5' : 'bg-gray-50'
-              }`}>
-                <div className="absolute -right-4 -bottom-4 opacity-[0.03] pointer-events-none">
-                  <svg className="w-28 h-28" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z" />
-                  </svg>
-                </div>
-                <div className={`text-sm font-medium mb-1 relative z-10 ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  📱 Apps Used
-                </div>
-                <div className={`text-2xl font-bold relative z-10 ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {mostClickedApps.length}
-                </div>
-              </div>
             </div>
 
             {/* Most Clicked Apps */}
             <div>
-              <h3 className={`text-lg font-semibold mb-4 ${
+              <h3 className={`text-base font-semibold mb-3 ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
                 🏆 Most Clicked Apps
@@ -228,18 +244,18 @@ export default function UsageStatistics({
                   <p className="text-sm mt-2">Start clicking apps to see statistics</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {mostClickedApps.map((app, index) => (
                     <div
                       key={app.id}
-                      className={`flex items-center gap-4 p-4 rounded-3xl transition-colors ${
+                      className={`flex items-center gap-3 p-2.5 px-3.5 rounded-2xl transition-colors ${
                         isDarkMode
                           ? 'bg-white/5 hover:bg-white/10'
                           : 'bg-gray-50 hover:bg-gray-100'
                       }`}
                     >
                       {/* Rank */}
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                      <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${
                         index === 0
                           ? 'bg-yellow-500 text-white'
                           : index === 1
@@ -255,21 +271,21 @@ export default function UsageStatistics({
 
                       {/* Icon */}
                       {app.icon ? (
-                        <img src={app.icon} alt={app.title} className="w-8 h-8 rounded-lg flex-shrink-0 object-cover" />
+                        <img src={app.icon} alt={app.title} className="w-7 h-7 rounded-lg flex-shrink-0 object-cover" />
                       ) : (
-                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-semibold ${isDarkMode ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500'}`}>
+                        <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-semibold ${isDarkMode ? 'bg-white/10 text-white/50' : 'bg-gray-200 text-gray-500'}`}>
                           {app.title.charAt(0).toUpperCase()}
                         </div>
                       )}
 
                       {/* App Info */}
                       <div className="flex-1 min-w-0">
-                        <div className={`font-medium truncate ${
+                        <div className={`text-sm font-medium truncate ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}>
                           {app.title}
                         </div>
-                        <div className={`text-xs truncate ${
+                        <div className={`text-[11px] truncate ${
                           isDarkMode ? 'text-gray-500' : 'text-gray-400'
                         }`}>
                           {app.href}
@@ -278,12 +294,12 @@ export default function UsageStatistics({
 
                       {/* Stats */}
                       <div className="flex-shrink-0 text-right">
-                        <div className={`font-semibold ${
+                        <div className={`text-sm font-semibold ${
                           isDarkMode ? 'text-blue-400' : 'text-blue-600'
                         }`}>
                           {app.clicks} clicks
                         </div>
-                        <div className={`text-xs ${
+                        <div className={`text-[11px] ${
                           isDarkMode ? 'text-gray-500' : 'text-gray-400'
                         }`}>
                           {formatDate(app.lastClicked)}
@@ -291,8 +307,8 @@ export default function UsageStatistics({
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="flex-shrink-0 w-24">
-                        <div className={`h-2 rounded-full overflow-hidden ${
+                      <div className="flex-shrink-0 w-20">
+                        <div className={`h-1.5 rounded-full overflow-hidden ${
                           isDarkMode ? 'bg-white/10' : 'bg-gray-200'
                         }`}>
                           <div

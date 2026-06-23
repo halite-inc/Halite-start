@@ -4410,6 +4410,24 @@ export default function Home() {
                   onChange={(e) => setBookmarkUrlInput(e.target.value)}
                   className={`w-full px-3 py-2 rounded-lg text-sm outline-none ring-1 ${isDarkMode ? 'bg-white/5 ring-white/10 placeholder-gray-400' : 'bg-white ring-gray-200 placeholder-gray-500'}`}
                 />
+                <div className="flex justify-start px-0.5">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        if (text) {
+                          setBookmarkUrlInput(text.trim());
+                        }
+                      } catch (err) {
+                        console.error('Failed to read clipboard contents: ', err);
+                      }
+                    }}
+                    className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                  >
+                    📋 Paste from link
+                  </button>
+                </div>
               </div>
               <div className="mt-3 flex justify-end gap-2">
                 <button onClick={() => setIsAddBookmarkOpen(false)} className={`px-3 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>Cancel</button>
