@@ -64,7 +64,7 @@ const defaultApps: App[] = [
   { id: 'booking', title: 'Booking.com', href: 'https://booking.com', icon: 'https://www.google.com/s2/favicons?domain=booking.com&sz=32' },
 
   { id: 'google', title: 'Google', href: 'https://google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=32' },
-  { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=32' },
+  { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png' },
   { id: 'twitter', title: 'Twitter', href: 'https://twitter.com', icon: 'https://www.google.com/s2/favicons?domain=twitter.com&sz=32' },
   { id: 'netfree2', title: 'NetFree2', href: 'https://netfree2.cc/home', icon: 'https://www.google.com/s2/favicons?domain=netfree2.cc&sz=32' },
 ];
@@ -74,10 +74,6 @@ const defaultWidgets: Widget[] = [
   { id: 'weather-1', type: 'weather', title: 'Weather Widget' },
   { id: 'calendar-1', type: 'calendar', title: 'Calendar Widget' },
   { id: 'analog-clock-1', type: 'analog-clock', title: 'Analog Clock Widget' },
-  { id: 'water-tracker-1', type: 'water-tracker', title: 'Water Tracker Widget' },
-  { id: 'quick-notes-1', type: 'quick-notes', title: 'Quick Notes Widget' },
-  { id: 'photo-1', type: 'photo', title: 'Photo Widget' },
-  { id: 'fidget-spinner-1', type: 'fidget-spinner', title: 'Fidget Spinner Widget' },
   // Sticky note is optional by default
 ];
 
@@ -115,6 +111,7 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
     const isFaceprep = app.href.includes('faceprep.online');
     const isExamly = app.href.includes('rec215.examly.io');
     const isVektorcad = app.href.includes('rec.vektorcad.com');
+    const isGmail = app.href.includes('gmail.com');
     
     if (isFaceprep) {
       setIconSrc('/faceprep.png');
@@ -122,6 +119,8 @@ function SortableLinkCard({ app, onRemove, isDark, showAppTitles, hideAppTitleTe
       setIconSrc('/raj.png');
     } else if (isVektorcad) {
       setIconSrc('/vlogo2.svg');
+    } else if (isGmail) {
+      setIconSrc('https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png');
     } else if (app.icon?.startsWith('idb:')) {
       const key = app.icon.replace('idb:', '');
       getImageObjectUrl(key).then(url => {
@@ -672,11 +671,97 @@ function SortableClockWidget({ widget, isDark, onRemove, isEditModalOpen, backgr
   );
 }
 
-function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundImage, glassmorphismEnabled, widgetTextColor, jiggleIndex, animateIconsEnabled, animateWidgetsEnabled, hoverAnimationStyle }: { widget: Widget; isDark: boolean; onRemove: () => void; isEditModalOpen: boolean; backgroundImage: string; glassmorphismEnabled: boolean; widgetTextColor: 'auto' | 'black' | 'white'; jiggleIndex: number; animateIconsEnabled: boolean; animateWidgetsEnabled: boolean; hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow' }) {
-  const [weather, setWeather] = useState({ temp: '22°', condition: 'Sunny', location: 'Loading...' });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+function WeatherDropdownContent({
+  weatherState,
+  weatherLoading,
+  weatherError,
+  glassmorphismEnabled,
+  isDarkMode,
+}: {
+  weatherState: { temp: string; condition: string; location: string } | null;
+  weatherLoading: boolean;
+  weatherError: boolean;
+  glassmorphismEnabled: boolean;
+  isDarkMode: boolean;
+}) {
+  const isDarkText = glassmorphismEnabled && !isDarkMode;
+
+  return (
+    <div className="flex flex-col justify-center items-start relative z-10 w-full text-left">
+      <div suppressHydrationWarning className={`text-xs sm:text-sm font-bold leading-none mb-1.5 ${
+        isDarkText ? 'text-black' : 'text-white'
+      }`}>
+        {weatherLoading ? 'Loading...' : weatherError ? 'Location unavailable' : weatherState?.location || 'Unknown'}
+      </div>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <div className="text-sm">
+          {weatherLoading ? '⏳' : weatherError ? '⚠️' :
+            weatherState?.condition === 'Sunny' ? '☀️' :
+              weatherState?.condition === 'Cloudy' ? '☁️' :
+                weatherState?.condition === 'Rainy' ? '🌧️' :
+                  weatherState?.condition === 'Partly Cloudy' ? '⛅' :
+                    weatherState?.condition === 'Clear' ? '🌙' : '⚡'}
+        </div>
+        <div suppressHydrationWarning className={`text-xs font-medium leading-none ${
+          isDarkText ? 'text-black/90' : 'text-white/95'
+        }`}>
+          {weatherLoading ? 'Getting weather...' : weatherError ? 'Check permissions' : weatherState?.condition}
+        </div>
+      </div>
+      <div suppressHydrationWarning className={`text-[10px] leading-none mb-2.5 ${
+        isDarkText ? 'text-black/70' : 'text-white/75'
+      }`}>
+        {new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+      </div>
+      <div className={`text-2xl font-bold leading-none ${
+        isDarkText ? 'text-blue-900' : 'text-blue-200'
+      }`}>
+        {weatherLoading ? '...' : weatherState?.temp}
+      </div>
+    </div>
+  );
+}
+
+function WeatherWidget({
+  widget,
+  isDark,
+  onRemove,
+  isEditModalOpen,
+  backgroundImage,
+  glassmorphismEnabled,
+  widgetTextColor,
+  jiggleIndex,
+  animateIconsEnabled,
+  animateWidgetsEnabled,
+  hoverAnimationStyle,
+  sharedWeather,
+  sharedLoading,
+  sharedError
+}: {
+  widget: Widget;
+  isDark: boolean;
+  onRemove: () => void;
+  isEditModalOpen: boolean;
+  backgroundImage: string;
+  glassmorphismEnabled: boolean;
+  widgetTextColor: 'auto' | 'black' | 'white';
+  jiggleIndex: number;
+  animateIconsEnabled: boolean;
+  animateWidgetsEnabled: boolean;
+  hoverAnimationStyle: 'scale' | 'tilt' | 'skew' | 'spin' | 'bounce' | 'pulse' | 'float' | 'slide' | 'glow';
+  sharedWeather?: { temp: string; condition: string; location: string } | null;
+  sharedLoading?: boolean;
+  sharedError?: boolean;
+}) {
+  const [localWeather, setLocalWeather] = useState({ temp: '22°', condition: 'Sunny', location: 'Loading...' });
+  const [localLoading, setLocalLoading] = useState(true);
+  const [localError, setLocalError] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const weather = sharedWeather !== undefined ? (sharedWeather || { temp: '22°', condition: 'Sunny', location: 'Location unavailable' }) : localWeather;
+  const loading = sharedLoading !== undefined ? sharedLoading : localLoading;
+  const error = sharedError !== undefined ? sharedError : localError;
+
   const {
     attributes,
     listeners,
@@ -689,10 +774,14 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
+    if (sharedWeather !== undefined) {
+      setMounted(true);
+      return;
+    }
     const fetchLocationAndWeather = async () => {
       try {
-        setLoading(true);
-        setError(false);
+        setLocalLoading(true);
+        setLocalError(false);
 
         // Check if we're in browser environment
         if (typeof window === 'undefined') {
@@ -731,21 +820,21 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         const mockConditions = ['Sunny', 'Cloudy', 'Rainy', 'Partly Cloudy', 'Clear'];
         const mockCondition = mockConditions[Math.floor(Math.random() * mockConditions.length)];
 
-        setWeather({
+        setLocalWeather({
           temp: `${Math.round(15 + Math.random() * 20)}°`, // More realistic temperature range
           condition: mockCondition,
           location: locationData.city || locationData.locality || locationData.countryName || 'Unknown'
         });
-        setLoading(false);
+        setLocalLoading(false);
       } catch (error) {
         console.error('Error fetching location/weather:', error);
-        setError(true);
-        setWeather({
+        setLocalError(true);
+        setLocalWeather({
           temp: '22°',
           condition: 'Sunny',
           location: 'Location unavailable'
         });
-        setLoading(false);
+        setLocalLoading(false);
       }
     };
 
@@ -754,7 +843,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
       fetchLocationAndWeather();
     }
     setMounted(true);
-  }, []);
+  }, [sharedWeather]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -813,8 +902,13 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
         </div>
 
         <div className="flex flex-col justify-center items-start h-full px-4 pl-6 relative z-10">
-          <div suppressHydrationWarning className={`text-xs sm:text-sm font-bold leading-none mb-1 ${isDark ? 'text-black' : 'text-black'
-            }`}>
+          <div suppressHydrationWarning className={`text-xs sm:text-sm font-bold leading-none mb-1 ${
+            widgetTextColor === 'auto'
+              ? (isDark ? 'text-white' : 'text-gray-900')
+              : widgetTextColor === 'black'
+                ? 'text-black'
+                : 'text-white'
+          }`}>
             {mounted ? (loading ? 'Loading...' : error ? 'Location unavailable' : weather.location) : 'Loading...'}
           </div>
           <div className="flex items-center gap-1.5 relative z-10">
@@ -827,7 +921,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
                         weather.condition === 'Clear' ? '🌙' : '⚡') : '⏳'}
             </div>
             <div suppressHydrationWarning className={`text-xs leading-none ${widgetTextColor === 'auto'
-              ? (isDark ? 'text-black' : 'text-black')
+              ? (isDark ? 'text-white/90' : 'text-gray-700')
               : widgetTextColor === 'black'
                 ? 'text-black'
                 : 'text-white'
@@ -836,7 +930,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
             </div>
           </div>
           <div suppressHydrationWarning className={`text-xs leading-none mb-2 ${widgetTextColor === 'auto'
-            ? (isDark ? 'text-black/80' : 'text-black/80')
+            ? (isDark ? 'text-white/70' : 'text-gray-500')
             : widgetTextColor === 'black'
               ? 'text-black/80'
               : 'text-white/80'
@@ -844,7 +938,7 @@ function WeatherWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundIm
             {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }) : ''}
           </div>
           <div className={`text-2xl sm:text-3xl font-bold leading-none ${widgetTextColor === 'auto'
-            ? (isDark ? 'text-blue-800' : 'text-blue-800')
+            ? (isDark ? 'text-blue-200' : 'text-blue-800')
             : widgetTextColor === 'black'
               ? 'text-black'
               : 'text-white'
@@ -956,31 +1050,40 @@ function CalendarWidget({ widget, isDark, onRemove, isEditModalOpen, backgroundI
         {/* Subtle accent */}
         <div className="pointer-events-none absolute -top-6 -right-8 w-20 h-20 bg-gradient-to-br from-indigo-500/15 via-violet-500/15 to-fuchsia-500/15 blur-2xl" />
 
-        {/* Center current day number overlay with top margin */}
-        <div className="absolute inset-0 flex justify-center items-start z-0 pointer-events-none">
-          <div className={`text-[10rem] sm:text-[12rem] font-black select-none ${glassmorphismEnabled
-              ? (isDark ? 'text-white/20' : 'text-gray-900/20')
-              : (isDark ? 'text-white/12' : 'text-gray-900/12')
-            }`}>
-            {currentDate}
+        {/* Clean iOS-style Calendar Layout */}
+        <div className="flex flex-col items-center justify-between h-full w-full p-2.5 sm:p-3 relative z-10 select-none">
+          {/* Header: Month (uppercase, bold, colored red/rose in typical iOS calendar style) */}
+          <div suppressHydrationWarning className={`text-[9px] sm:text-[10px] md:text-xs font-extrabold tracking-widest uppercase ${
+            widgetTextColor === 'black'
+              ? 'text-rose-600'
+              : widgetTextColor === 'white'
+                ? 'text-rose-400'
+                : 'text-rose-500'
+          }`}>
+            {currentMonth}
           </div>
-        </div>
 
-
-        <div className="flex flex-col justify-start items-start h-full p-3 pt-6 relative z-10">
-          {/* Current Date Display */}
-          <div className="flex items-center justify-center w-full mt-[12px] mb-3">
-            <div suppressHydrationWarning className={`text-[13px] sm:text-sm font-semibold leading-none ${widgetTextColor === 'auto'
-              ? (isDark ? 'text-white' : 'text-gray-900')
+          {/* Body: Big Date Number (centered, crisp, fits box perfectly) */}
+          <div suppressHydrationWarning className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-none my-auto tracking-tighter ${
+            widgetTextColor === 'auto'
+              ? (isDark ? 'text-white' : 'text-gray-800')
               : widgetTextColor === 'black'
                 ? 'text-black'
                 : 'text-white'
-              }`}>
-              {currentMonth}
-            </div>
+          }`}>
+            {currentDate}
           </div>
 
-          {/* Week View removed for minimal look */}
+          {/* Footer: Weekday (short name, clean, muted) */}
+          <div suppressHydrationWarning className={`text-[9px] sm:text-[10px] md:text-xs font-semibold uppercase tracking-wider ${
+            widgetTextColor === 'auto'
+              ? (isDark ? 'text-white/60' : 'text-gray-500')
+              : widgetTextColor === 'black'
+                ? 'text-black/60'
+                : 'text-white/70'
+          }`}>
+            {mounted ? date.toLocaleDateString('en-US', { weekday: 'short' }) : new Date().toLocaleDateString('en-US', { weekday: 'short' })}
+          </div>
         </div>
       </div>
 
@@ -1975,10 +2078,10 @@ export default function Home() {
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [backgroundBlur, setBackgroundBlur] = useState<number>(0);
   const [bgContrast, setBgContrast] = useState<number>(100);
-  const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(false);
+  const [glassmorphismEnabled, setGlassmorphismEnabled] = useState<boolean>(true);
   const [appTitleColor, setAppTitleColor] = useState<'auto' | 'black' | 'white'>('auto');
   const [widgetTextColor, setWidgetTextColor] = useState<'auto' | 'black' | 'white'>('auto');
-  const [normalModeEnabled, setNormalModeEnabled] = useState<boolean>(true);
+  const [normalModeEnabled, setNormalModeEnabled] = useState<boolean>(false);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Add loading flag
@@ -2101,6 +2204,13 @@ export default function Home() {
   const [editAppUrl, setEditAppUrl] = useState<string>('');
   const [fontFamily, setFontFamily] = useState<'default' | 'serif' | 'mono' | 'sans' | 'elegant' | 'poppins' | 'fun'>('default');
 
+  // Weather state shared with dropdown and widget
+  const [weatherState, setWeatherState] = useState<{ temp: string; condition: string; location: string } | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState<boolean>(true);
+  const [weatherError, setWeatherError] = useState<boolean>(false);
+  const [isTimePillDropdownOpen, setIsTimePillDropdownOpen] = useState<boolean>(false);
+  const timeDropdownRef = useRef<HTMLDivElement | null>(null);
+
 
 
   const displayName = userName.trim() || 'user';
@@ -2139,6 +2249,92 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch weather and reverse-geocode location on mount
+  useEffect(() => {
+    const fetchLocationAndWeather = async () => {
+      try {
+        setWeatherLoading(true);
+        setWeatherError(false);
+
+        if (typeof window === 'undefined') return;
+
+        if (!navigator.geolocation) {
+          throw new Error('Geolocation not supported');
+        }
+
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            timeout: 15000,
+            enableHighAccuracy: false,
+            maximumAge: 300000
+          });
+        });
+
+        const { latitude, longitude } = position.coords;
+
+        const locationResponse = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+        );
+
+        if (!locationResponse.ok) {
+          throw new Error('Failed to fetch location data');
+        }
+
+        const locationData = await locationResponse.json();
+
+        const mockConditions = ['Sunny', 'Cloudy', 'Rainy', 'Partly Cloudy', 'Clear'];
+        const mockCondition = mockConditions[Math.floor(Math.random() * mockConditions.length)];
+
+        setWeatherState({
+          temp: `${Math.round(15 + Math.random() * 20)}°`,
+          condition: mockCondition,
+          location: locationData.city || locationData.locality || locationData.countryName || 'Unknown'
+        });
+        setWeatherLoading(false);
+      } catch (error) {
+        console.error('Error fetching location/weather in parent:', error);
+        setWeatherError(true);
+        setWeatherState({
+          temp: '22°',
+          condition: 'Sunny',
+          location: 'Location unavailable'
+        });
+        setWeatherLoading(false);
+      }
+    };
+
+    fetchLocationAndWeather();
+  }, []);
+
+  // Close time pill weather dropdown on outside click
+  useEffect(() => {
+    if (!isTimePillDropdownOpen) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (timeDropdownRef.current && !timeDropdownRef.current.contains(target)) {
+        setIsTimePillDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsTimePillDropdownOpen(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleClick, true);
+      document.addEventListener('keydown', handleKeyDown);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isTimePillDropdownOpen]);
 
   // Update fluid theme color CSS variable when color changes
 
@@ -2562,10 +2758,10 @@ export default function Home() {
         setGlassmorphismEnabled(true);
         console.log('✅ Glassmorphism mode restored from localStorage');
       } else {
-        // No modes saved, default to normal
-        setNormalModeEnabled(true);
-        setGlassmorphismEnabled(false);
-        console.log('🔄 No modes saved, defaulting to normal mode');
+        // No modes saved, default to glass
+        setNormalModeEnabled(false);
+        setGlassmorphismEnabled(true);
+        console.log('🔄 No modes saved, defaulting to glassmorphism mode');
       }
 
       // Load app card border radius
@@ -2700,8 +2896,8 @@ export default function Home() {
       // Fallback to defaults on error
       setApps(defaultApps);
       setWidgets(defaultWidgets);
-      setNormalModeEnabled(true);
-      setGlassmorphismEnabled(false);
+      setNormalModeEnabled(false);
+      setGlassmorphismEnabled(true);
 
       setIsLoading(false); // Mark loading as complete even on error
     }
@@ -3059,9 +3255,9 @@ export default function Home() {
     setCompactSearchBar(false);
     setBackgroundImage('');
     setBackgroundBlur(0);
-    setGlassmorphismEnabled(false);
+    setGlassmorphismEnabled(true);
 
-    setNormalModeEnabled(true);
+    setNormalModeEnabled(false);
     setAppTitleColor('auto');
     setWidgetTextColor('auto');
     setMonochromeIcons(false);
@@ -3080,8 +3276,8 @@ export default function Home() {
         localStorage.setItem('hideAppTitleText', 'false');
         localStorage.setItem('backgroundImage', '');
         localStorage.setItem('animatedGradientBackground', 'false');
-        localStorage.setItem('normalModeEnabled', 'true');
-        localStorage.setItem('glassmorphismEnabled', 'false');
+        localStorage.setItem('normalModeEnabled', 'false');
+        localStorage.setItem('glassmorphismEnabled', 'true');
         localStorage.setItem('fluidModeEnabled', 'false');
 
         localStorage.setItem('appTitleColor', 'auto');
@@ -3165,9 +3361,9 @@ export default function Home() {
     setShowSearchBar(false);
     setBackgroundImage('');
     setBackgroundBlur(0);
-    setGlassmorphismEnabled(false);
+    setGlassmorphismEnabled(true);
 
-    setNormalModeEnabled(true);
+    setNormalModeEnabled(false);
     setAppTitleColor('auto');
     setWidgetTextColor('auto');
     setAnimateIconsEnabled(false);
@@ -3188,8 +3384,8 @@ export default function Home() {
         localStorage.setItem('hideAppTitleText', 'false');
         localStorage.setItem('backgroundImage', '');
         localStorage.setItem('animatedGradientBackground', 'false');
-        localStorage.setItem('normalModeEnabled', 'true');
-        localStorage.setItem('glassmorphismEnabled', 'false');
+        localStorage.setItem('normalModeEnabled', 'false');
+        localStorage.setItem('glassmorphismEnabled', 'true');
         localStorage.setItem('appTitleColor', 'auto');
         localStorage.setItem('widgetTextColor', 'auto');
         localStorage.setItem('animateIconsEnabled', 'false');
@@ -3580,7 +3776,7 @@ export default function Home() {
       {/* Top pills: merged centered group OR separate left/right */}
       {mergeTopPillsCenter ? (
         /* Merged: both pills centered at top */
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
+        <div ref={timeDropdownRef} className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
           {topPillStyle === 'card' ? (
             /* Single unified pill card */
             <div className={`inline-flex items-center ${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold ${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 ${
@@ -3590,19 +3786,60 @@ export default function Home() {
             }`}>
               {/* Time section */}
               {showTopTime && (
-                <>
-                  <span className={`${topPillSize === 'small' ? 'px-2 py-0.5' : topPillSize === 'large' ? 'px-4 py-1.5' : 'px-3 py-1'}`} aria-live="polite">
+                <div className="relative flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsTimePillDropdownOpen(prev => !prev);
+                      setIsGreetingDropdownOpen(false);
+                    }}
+                    className={`${topPillSize === 'small' ? 'px-2 py-0.5' : topPillSize === 'large' ? 'px-4 py-1.5' : 'px-3 py-1'} transition-all duration-200 focus:outline-none hover:opacity-80`}
+                    aria-live="polite"
+                    aria-expanded={isTimePillDropdownOpen}
+                    aria-controls="time-weather-dropdown-menu-merged"
+                  >
                     {topClockLabel}
-                  </span>
+                  </button>
+                  {isTimePillDropdownOpen && (
+                    <div
+                      id="time-weather-dropdown-menu-merged"
+                      className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 rounded-2xl shadow-lg ring-1 overflow-hidden backdrop-blur-md transition-all p-3.5 z-50 ${
+                        glassmorphismEnabled
+                          ? isDarkMode
+                            ? 'bg-blue-400/20 backdrop-blur-md text-black border-[1.5px] border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                            : 'bg-blue-300/20 backdrop-blur-md text-black border-[1.5px] border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
+                          : isDarkMode
+                            ? 'bg-gradient-to-br from-blue-400 via-gray-300 to-blue-400 text-white ring-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+                            : 'bg-gradient-to-br from-blue-300 via-gray-200 to-blue-300 text-white ring-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+                      }`}
+                    >
+                      {/* Rain droplet effect */}
+                      <div className="absolute inset-0 opacity-20 pointer-events-none">
+                        <div className="absolute top-2 left-3 w-1 h-1 bg-white rounded-full"></div>
+                        <div className="absolute top-4 right-4 w-0.5 h-0.5 bg-white rounded-full"></div>
+                        <div className="absolute top-6 left-6 w-0.5 h-0.5 bg-white rounded-full"></div>
+                        <div className="absolute top-8 right-2 w-1 h-1 bg-white rounded-full"></div>
+                        <div className="absolute top-10 left-4 w-0.5 h-0.5 bg-white rounded-full"></div>
+                        <div className="absolute top-12 right-6 w-0.5 h-0.5 bg-white rounded-full"></div>
+                      </div>
+                      <WeatherDropdownContent
+                        weatherState={weatherState}
+                        weatherLoading={weatherLoading}
+                        weatherError={weatherError}
+                        glassmorphismEnabled={glassmorphismEnabled}
+                        isDarkMode={isDarkMode}
+                      />
+                    </div>
+                  )}
                   {/* Divider */}
                   <span className={`w-px mx-0.5 h-3 self-center rounded-full ${backgroundImage || isDarkMode ? 'bg-white/15' : 'bg-gray-300/60'}`} />
-                </>
+                </div>
               )}
               {/* Greeting section */}
               <div ref={greetingDropdownRef} className="relative">
                 <button
                   type="button"
-                  onClick={() => { setIsGreetingDropdownOpen(prev => !prev); setIsNameEditorOpen(false); }}
+                  onClick={() => { setIsGreetingDropdownOpen(prev => !prev); setIsNameEditorOpen(false); setIsTimePillDropdownOpen(false); }}
                   className={`${topPillSize === 'small' ? 'px-2 py-0.5' : topPillSize === 'large' ? 'px-4 py-1.5' : 'px-3 py-1'} transition-all duration-200 focus:outline-none hover:opacity-80`}
                   title="Click to see options"
                   aria-expanded={isGreetingDropdownOpen}
@@ -3657,12 +3894,55 @@ export default function Home() {
             /* Text-only mode: two items side by side */
             <div className="flex items-center gap-3">
               {showTopTime && (
-                <span className={`${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold bg-transparent ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`} aria-live="polite">
-                  {topClockLabel}
-                </span>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsTimePillDropdownOpen(prev => !prev);
+                      setIsGreetingDropdownOpen(false);
+                    }}
+                    className={`${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold bg-transparent hover:opacity-80 transition-all duration-200 focus:outline-none ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`}
+                    aria-live="polite"
+                    aria-expanded={isTimePillDropdownOpen}
+                    aria-controls="time-weather-dropdown-menu-merged-text"
+                  >
+                    {topClockLabel}
+                  </button>
+                  {isTimePillDropdownOpen && (
+                    <div
+                      id="time-weather-dropdown-menu-merged-text"
+                      className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 rounded-2xl shadow-lg ring-1 overflow-hidden backdrop-blur-md transition-all p-3.5 z-50 ${
+                        glassmorphismEnabled
+                          ? isDarkMode
+                            ? 'bg-blue-400/20 backdrop-blur-md text-black border-[1.5px] border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                            : 'bg-blue-300/20 backdrop-blur-md text-black border-[1.5px] border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
+                          : isDarkMode
+                            ? 'bg-gradient-to-br from-blue-400 via-gray-300 to-blue-400 text-white ring-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+                            : 'bg-gradient-to-br from-blue-300 via-gray-200 to-blue-300 text-white ring-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+                      }`}
+                    >
+                      {/* Rain droplet effect */}
+                      <div className="absolute inset-0 opacity-20 pointer-events-none">
+                        <div className="absolute top-2 left-3 w-1 h-1 bg-white rounded-full"></div>
+                        <div className="absolute top-4 right-4 w-0.5 h-0.5 bg-white rounded-full"></div>
+                        <div className="absolute top-6 left-6 w-0.5 h-0.5 bg-white rounded-full"></div>
+                        <div className="absolute top-8 right-2 w-1 h-1 bg-white rounded-full"></div>
+                        <div className="absolute top-10 left-4 w-0.5 h-0.5 bg-white rounded-full"></div>
+                        <div className="absolute top-12 right-6 w-0.5 h-0.5 bg-white rounded-full"></div>
+                      </div>
+                      <WeatherDropdownContent
+                        weatherState={weatherState}
+                        weatherLoading={weatherLoading}
+                        weatherError={weatherError}
+                        glassmorphismEnabled={glassmorphismEnabled}
+                        isDarkMode={isDarkMode}
+                      />
+                    </div>
+                  )}
+                </div>
               )}
               <div ref={greetingDropdownRef} className="relative">
-                <button type="button" onClick={() => { setIsGreetingDropdownOpen(prev => !prev); setIsNameEditorOpen(false); }}
+                <button type="button" onClick={() => { setIsGreetingDropdownOpen(prev => !prev); setIsNameEditorOpen(false); setIsTimePillDropdownOpen(false); }}
                   className={`${topPillSize === 'small' ? 'text-xs' : topPillSize === 'large' ? 'text-base' : 'text-sm'} font-semibold bg-transparent hover:opacity-80 transition-all duration-200 focus:outline-none ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`}
                   title="Click to see options" aria-expanded={isGreetingDropdownOpen} aria-controls="greeting-dropdown-menu">
                   {getGreeting()}
@@ -3716,23 +3996,62 @@ export default function Home() {
         <>
           {/* Time pill - top left */}
           {showTopTime && (
-            <div className="fixed top-4 left-8 z-40">
-              <span
-                className={`inline-flex items-center ${topPillSize === 'small' ? 'px-2 py-0.5 text-xs' : topPillSize === 'large' ? 'px-4 py-1.5 text-base' : 'px-3 py-1 text-sm'} font-semibold ${
+            <div ref={timeDropdownRef} className="fixed top-4 left-8 z-40">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsTimePillDropdownOpen(prev => !prev);
+                  setIsGreetingDropdownOpen(false);
+                }}
+                className={`inline-flex items-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 hover:opacity-85 active:scale-95 ${topPillSize === 'small' ? 'px-2 py-0.5 text-xs' : topPillSize === 'large' ? 'px-4 py-1.5 text-base' : 'px-3 py-1 text-sm'} font-semibold ${
                   topPillStyle === 'text'
-                    ? `bg-transparent ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
+                    ? `bg-transparent hover:opacity-80 ${isDarkMode ? 'text-white drop-shadow-md' : 'text-gray-900 drop-shadow-sm'}`
                     : `${topPillShape === 'squircle' ? 'rounded-xl' : 'rounded-full'} ring-1 ${
                       backgroundImage
-                        ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
+                        ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
                         : isDarkMode
-                          ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl shadow-lg'
-                          : 'bg-white text-black ring-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                          ? 'bg-white/10 text-white ring-white/20 backdrop-blur-xl hover:bg-white/15 shadow-lg'
+                          : 'bg-white text-black ring-gray-200 hover:bg-gray-50 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
                       }`
                 }`}
                 aria-live="polite"
+                aria-expanded={isTimePillDropdownOpen}
+                aria-controls="time-weather-dropdown-menu"
               >
                 {topClockLabel}
-              </span>
+              </button>
+
+              {isTimePillDropdownOpen && (
+                <div
+                  id="time-weather-dropdown-menu"
+                  className={`absolute left-0 mt-2 w-48 rounded-2xl shadow-lg ring-1 overflow-hidden backdrop-blur-md transition-all p-3.5 z-50 ${
+                    glassmorphismEnabled
+                      ? isDarkMode
+                        ? 'bg-blue-400/20 backdrop-blur-md text-black border-[1.5px] border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
+                        : 'bg-blue-300/20 backdrop-blur-md text-black border-[1.5px] border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
+                      : isDarkMode
+                        ? 'bg-gradient-to-br from-blue-400 via-gray-300 to-blue-400 text-white ring-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
+                        : 'bg-gradient-to-br from-blue-300 via-gray-200 to-blue-300 text-white ring-gray-200 shadow-[0_8px_32px_rgba(0,0,0,0.2)]'
+                  }`}
+                >
+                  {/* Rain droplet effect */}
+                  <div className="absolute inset-0 opacity-20 pointer-events-none">
+                    <div className="absolute top-2 left-3 w-1 h-1 bg-white rounded-full"></div>
+                    <div className="absolute top-4 right-4 w-0.5 h-0.5 bg-white rounded-full"></div>
+                    <div className="absolute top-6 left-6 w-0.5 h-0.5 bg-white rounded-full"></div>
+                    <div className="absolute top-8 right-2 w-1 h-1 bg-white rounded-full"></div>
+                    <div className="absolute top-10 left-4 w-0.5 h-0.5 bg-white rounded-full"></div>
+                    <div className="absolute top-12 right-6 w-0.5 h-0.5 bg-white rounded-full"></div>
+                  </div>
+                  <WeatherDropdownContent
+                    weatherState={weatherState}
+                    weatherLoading={weatherLoading}
+                    weatherError={weatherError}
+                    glassmorphismEnabled={glassmorphismEnabled}
+                    isDarkMode={isDarkMode}
+                  />
+                </div>
+              )}
             </div>
           )}
           {/* Greetings pill - top right */}
@@ -3743,6 +4062,7 @@ export default function Home() {
                 onClick={() => {
                   setIsGreetingDropdownOpen(prev => !prev);
                   setIsNameEditorOpen(false);
+                  setIsTimePillDropdownOpen(false);
                 }}
                 className={`inline-flex items-center ${topPillSize === 'small' ? 'px-2 py-0.5 text-xs' : topPillSize === 'large' ? 'px-4 py-1.5 text-base' : 'px-3 py-1 text-sm'} font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 ${
                   topPillStyle === 'text'
@@ -3985,6 +4305,9 @@ export default function Home() {
                           animateIconsEnabled={animateIconsEnabled}
                           animateWidgetsEnabled={animateWidgetsEnabled}
                           hoverAnimationStyle={hoverAnimationStyle}
+                          sharedWeather={weatherState}
+                          sharedLoading={weatherLoading}
+                          sharedError={weatherError}
                         />
                       ) : (
                         widget.type === 'calendar' ? (

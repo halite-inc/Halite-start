@@ -434,7 +434,7 @@ export default function LeftSidebar({
     { id: 'amazon', title: 'Amazon', href: 'https://amazon.com', icon: 'https://www.google.com/s2/favicons?domain=amazon.com&sz=32', category: 'Shopping' },
     { id: 'booking', title: 'Booking.com', href: 'https://booking.com', icon: 'https://www.google.com/s2/favicons?domain=booking.com&sz=32', category: 'Travel' },
     { id: 'google', title: 'Google', href: 'https://google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=32', category: 'Productivity' },
-    { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=32', category: 'Productivity' },
+    { id: 'gmail', title: 'Gmail', href: 'https://gmail.com', icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png', category: 'Productivity' },
     { id: 'twitter', title: 'Twitter', href: 'https://twitter.com', icon: 'https://www.google.com/s2/favicons?domain=twitter.com&sz=32', category: 'Social' },
     { id: 'chatgpt', title: 'ChatGPT', href: 'https://chatgpt.com', icon: 'https://www.google.com/s2/favicons?domain=chatgpt.com&sz=32', category: 'AI' },
     { id: 'claude', title: 'Claude', href: 'https://claude.ai', icon: 'https://www.google.com/s2/favicons?domain=claude.ai&sz=32', category: 'AI' },
@@ -938,7 +938,7 @@ export default function LeftSidebar({
               {/* Spacer to push theme toggle to bottom */}
               <div className="flex-1" />
               {/* Theme Toggle - Bottom Left */}
-              <div className="pt-2 border-t border-gray-200 dark:border-white/10 flex justify-start">
+              <div className="pt-2 flex justify-start">
                 <button
                   onClick={onToggleTheme}
                   className={`p-1.5 rounded-full transition-all duration-150 ${isDarkMode

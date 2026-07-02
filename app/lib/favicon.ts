@@ -93,6 +93,11 @@ export function getFaviconUrl(urlOrDomain: string, size = 64): string {
     return '/faceprep.png';
   }
   
+  // Custom favicon handling for gmail.com
+  if (hostname.includes('gmail.com')) {
+    return 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png';
+  }
+  
   return `https://www.google.com/s2/favicons?domain=${hostname}&sz=${size}`;
 }
 
@@ -120,6 +125,11 @@ export async function fetchBestFavicon(
   // Custom favicon handling for faceprep.online
   if (hostname.includes('faceprep.online')) {
     return '/faceprep.png';
+  }
+
+  // Custom favicon handling for gmail.com
+  if (hostname.includes('gmail.com')) {
+    return 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_32dp.png';
   }
 
   // ── Cache hit ──────────────────────────────────────────────────────────────
