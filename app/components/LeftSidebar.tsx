@@ -10,6 +10,10 @@ interface App {
   title: string;
   href: string;
   icon?: string;
+  type?: 'default' | 'halite';
+  haliteUrls?: string[];
+  haliteIcons?: string[];
+  haliteName?: string;
 }
 
 interface Widget {
@@ -22,7 +26,7 @@ interface LeftSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   apps: App[];
-  onAddApp: (app: App) => void;
+  onAddApp: (app: App) => void | Promise<void>;
   isDarkMode: boolean;
   onToggleTheme: () => void;
   showAppTitles: boolean;
@@ -79,12 +83,10 @@ interface LeftSidebarProps {
   onToggleTopTime?: () => void;
   showBigClock?: boolean;
   onToggleBigClock?: () => void;
+  groupOrder?: ('clock' | 'apps' | 'widgets')[];
+  onSetGroupOrder?: (order: ('clock' | 'apps' | 'widgets')[]) => void;
   greetingStyle?: 'hi' | 'welcome' | 'time-based';
   onSetGreetingStyle?: (style: 'hi' | 'welcome' | 'time-based') => void;
-  bigClockMarginTop?: number;
-  bigClockStandardPosition?: boolean;
-  onToggleBigClockStandardPosition?: () => void;
-  onSetBigClockMarginTop?: (value: number) => void;
   bigClockColor?: string;
   onSetBigClockColor?: (color: string) => void;
   bigClockFont?: string;
@@ -134,6 +136,7 @@ interface LeftSidebarProps {
   onSetAppCardGapX?: (value: number) => void;
   fontFamily?: 'default' | 'serif' | 'mono' | 'sans' | 'elegant' | 'poppins' | 'fun';
   onSetFontFamily?: (family: 'default' | 'serif' | 'mono' | 'sans' | 'elegant' | 'poppins' | 'fun') => void;
+  onOpenWhatsNew?: () => void;
 }
 
 interface ModernDropdownProps {
@@ -346,14 +349,10 @@ export default function LeftSidebar({
   onToggleTopTime,
   showBigClock,
   onToggleBigClock,
-  // fluidModeEnabled,
-  // onToggleFluidMode,
+  groupOrder = ['clock', 'apps', 'widgets'],
+  onSetGroupOrder,
   greetingStyle,
   onSetGreetingStyle,
-  bigClockMarginTop,
-  bigClockStandardPosition,
-  onToggleBigClockStandardPosition,
-  onSetBigClockMarginTop,
   bigClockColor,
   onSetBigClockColor,
   bigClockFont,
@@ -404,6 +403,7 @@ export default function LeftSidebar({
   onSetAppCardGapX,
   fontFamily,
   onSetFontFamily,
+  onOpenWhatsNew,
 }: LeftSidebarProps) {
   const [newApp, setNewApp] = useState({ title: '', href: '' });
   const [mounted, setMounted] = useState(false);
@@ -937,8 +937,8 @@ export default function LeftSidebar({
               />
               {/* Spacer to push theme toggle to bottom */}
               <div className="flex-1" />
-              {/* Theme Toggle - Bottom Left */}
-              <div className="pt-2 flex justify-start">
+              {/* Theme Toggle & What's New - Bottom Left */}
+              <div className="pt-2 flex items-center justify-between gap-1">
                 <button
                   onClick={onToggleTheme}
                   className={`p-1.5 rounded-full transition-all duration-150 ${isDarkMode
@@ -957,6 +957,21 @@ export default function LeftSidebar({
                     </svg>
                   )}
                 </button>
+
+                {onOpenWhatsNew && (
+                  <button
+                    onClick={() => {
+                      onOpenWhatsNew();
+                      onClose();
+                    }}
+                    className={`p-1.5 rounded-full transition-all duration-150 text-xs flex items-center justify-center ${
+                      isDarkMode ? 'text-blue-400 hover:bg-white/10' : 'text-blue-600 hover:bg-gray-200/50'
+                    }`}
+                    title="What's New (Release Notes)"
+                  >
+                    ✨
+                  </button>
+                )}
               </div>
             </div>
  
@@ -1036,6 +1051,101 @@ export default function LeftSidebar({
                 {openSection === 'layout' && (
                   <div className={panelClass}>
                      <div className="space-y-4">
+                        {/* Dashboard Groups Order Reordering */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <label className={`text-sm font-semibold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                              Dashboard Groups Order
+                            </label>
+                            <span className={`text-[11px] ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              Reorder groups
+                            </span>
+                          </div>
+                          <div className="space-y-1.5">
+                            {groupOrder.map((groupKey, index) => {
+                              const groupDetails: Record<'clock' | 'apps' | 'widgets', { name: string; icon: string; desc: string }> = {
+                                clock: { name: 'Clock Group', icon: '🕒', desc: 'Hero digital clock' },
+                                apps: { name: 'App Cards Group', icon: '📱', desc: 'Favorite shortcuts & folders' },
+                                widgets: { name: 'Widgets Group', icon: '🧩', desc: 'Interactive grid widgets' },
+                              };
+                              const item = groupDetails[groupKey];
+                              if (!item) return null;
+
+                              const moveUp = () => {
+                                if (index === 0 || !onSetGroupOrder) return;
+                                const newOrder = [...groupOrder];
+                                const temp = newOrder[index - 1];
+                                newOrder[index - 1] = newOrder[index];
+                                newOrder[index] = temp;
+                                onSetGroupOrder(newOrder);
+                              };
+
+                              const moveDown = () => {
+                                if (index === groupOrder.length - 1 || !onSetGroupOrder) return;
+                                const newOrder = [...groupOrder];
+                                const temp = newOrder[index + 1];
+                                newOrder[index + 1] = newOrder[index];
+                                newOrder[index] = temp;
+                                onSetGroupOrder(newOrder);
+                              };
+
+                              return (
+                                <div
+                                  key={groupKey}
+                                  className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
+                                    isDarkMode
+                                      ? 'bg-white/5 border-white/10 hover:bg-white/10'
+                                      : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <span className="text-base">{item.icon}</span>
+                                    <div className="truncate">
+                                      <p className={`text-xs font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                        {item.name}
+                                      </p>
+                                      <p className={`text-[10px] truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        {item.desc}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      disabled={index === 0}
+                                      onClick={moveUp}
+                                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${
+                                        index === 0
+                                          ? 'opacity-30 cursor-not-allowed'
+                                          : isDarkMode
+                                          ? 'bg-white/10 hover:bg-white/20 text-white cursor-pointer'
+                                          : 'bg-white hover:bg-gray-200 text-gray-800 shadow-sm cursor-pointer'
+                                      }`}
+                                      title="Move Up"
+                                    >
+                                      ▲
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={index === groupOrder.length - 1}
+                                      onClick={moveDown}
+                                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${
+                                        index === groupOrder.length - 1
+                                          ? 'opacity-30 cursor-not-allowed'
+                                          : isDarkMode
+                                          ? 'bg-white/10 hover:bg-white/20 text-white cursor-pointer'
+                                          : 'bg-white hover:bg-gray-200 text-gray-800 shadow-sm cursor-pointer'
+                                      }`}
+                                      title="Move Down"
+                                    >
+                                      ▼
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
 
                         <div className="flex items-center justify-between">
                           <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Hide App Title Text</label>
@@ -1058,24 +1168,6 @@ export default function LeftSidebar({
                          </div>
                          {showBigClock && (
                              <div className="space-y-4 mt-4">
-                               {/* Standard Position Toggle */}
-                               <div className="flex items-center justify-between">
-                                 <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Use Standard Position</label>
-                                 <button onClick={() => onToggleBigClockStandardPosition && onToggleBigClockStandardPosition()} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${bigClockStandardPosition ? 'bg-blue-500' : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}>
-                                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${bigClockStandardPosition ? 'translate-x-6' : 'translate-x-1'}`} />
-                                 </button>
-                               </div>
-
-                               {/* Margin */}
-                               {!bigClockStandardPosition && (
-                                 <div>
-                                   <label className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Top Margin</label>
-                                   <div className="mt-2 flex items-center gap-3">
-                                     <input type="range" min={-600} max={600} step={1} value={bigClockMarginTop ?? 128} onChange={(e) => onSetBigClockMarginTop && onSetBigClockMarginTop(Number(e.target.value))} className="flex-1 accent-blue-500 slider-with-dots" />
-                                     <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{bigClockMarginTop ?? 128}px</span>
-                                   </div>
-                                 </div>
-                               )}
 
                               {/* Size */}
                               <div className="flex items-center justify-between">

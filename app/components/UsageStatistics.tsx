@@ -132,7 +132,7 @@ export default function UsageStatistics({
           <div className="flex justify-center">
             <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 rounded-full p-1">
               <button 
-                onClick={() => setDateOffset(prev => prev - 1)}
+                onClick={() => setDateOffset(prev => Math.max(prev - 1, -90))}
                 className={`p-1 rounded-full transition-colors ${isDarkMode ? 'hover:bg-white/10 text-gray-400 hover:text-white' : 'hover:bg-gray-200 text-gray-600 hover:text-gray-900'}`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>

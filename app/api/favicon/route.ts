@@ -3,15 +3,10 @@
  *
  * Server-side favicon resolver. Fetches the target page HTML (bypassing browser
  * CORS entirely) and extracts the canonical favicon URLs from <link> tags.
- *
- * GET /api/favicon?domain=github.com
- * Response: { icons: string[] }  — ordered list of favicon URLs, highest priority first
- *
- * The returned URLs are absolute links to the actual icon files, ready to be
- * loaded directly as <img src=...> on the client.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp, getFromCache, setInCache } from '../../lib/rateLimit';
 
 // ─── Request validation ───────────────────────────────────────────────────────
 
@@ -29,12 +24,6 @@ function isValidHostname(hostname: string): boolean {
 
 // ─── HTML favicon extraction ──────────────────────────────────────────────────
 
-/**
- * Extracts all favicon-related URLs from raw HTML.
- * Handles: rel="icon", rel="shortcut icon", rel="apple-touch-icon",
- *          rel="apple-touch-icon-precomposed", rel="mask-icon"
- * Returns absolute URLs resolved against `baseUrl`.
- */
 function extractFaviconUrls(html: string, baseUrl: string): string[] {
   const seen = new Set<string>();
   const icons: string[] = [];
@@ -42,7 +31,6 @@ function extractFaviconUrls(html: string, baseUrl: string): string[] {
   const addIfNew = (href: string) => {
     try {
       const abs = new URL(href.trim(), baseUrl).toString();
-      // Skip data: URIs — they don't work as img.src in all browsers
       if (abs.startsWith('data:')) return;
       if (!seen.has(abs)) {
         seen.add(abs);
@@ -51,14 +39,11 @@ function extractFaviconUrls(html: string, baseUrl: string): string[] {
     } catch { /* skip unparseable hrefs */ }
   };
 
-  // Find all <link> tags (e.g. the first 20KB covers the <head> in all real pages)
   const linkTagRe = /<link\b([^>]+)>/gi;
   let match: RegExpExecArray | null;
 
   while ((match = linkTagRe.exec(html)) !== null) {
     const attrs = match[1];
-
-    // Check rel attribute (handles both attr orders)
     const relMatch = attrs.match(/\brel=["']([^"']+)["']/i);
     if (!relMatch) continue;
 
@@ -76,15 +61,6 @@ function extractFaviconUrls(html: string, baseUrl: string): string[] {
     if (hrefMatch?.[1]) addIfNew(hrefMatch[1]);
   }
 
-  // Also try to find manifest.json links and extract icons from there
-  // (Many PWAs declare icons only in manifest)
-  const manifestRe = /<link\b[^>]*rel=["']manifest["'][^>]*href=["']([^"']+)["']/i;
-  const manifestMatch = html.match(manifestRe);
-  if (manifestMatch?.[1]) {
-    // Return the manifest URL as a hint — caller can fetch it separately
-    // For now we just note it exists; icon extraction happens at a deeper level
-  }
-
   return icons;
 }
 
@@ -97,7 +73,6 @@ const FETCH_HEADERS = {
   'Accept-Language': 'en-US,en;q=0.5',
 };
 
-/** Reads at most `maxBytes` from a Response body, then cancels the stream. */
 async function readPartial(res: Response, maxBytes = 32_000): Promise<string> {
   const reader = res.body?.getReader();
   if (!reader) return (await res.text()).substring(0, maxBytes);
@@ -116,13 +91,6 @@ async function readPartial(res: Response, maxBytes = 32_000): Promise<string> {
   return result;
 }
 
-// ─── Additional CDN sources (probed server-side) ─────────────────────────────
-
-/**
- * Candidate URLs to probe server-side. These sources return 404 for unknown
- * domains, so we can't use them as browser-side image probes (they'd show in
- * the browser console). Instead we HEAD-check them here — 404s are invisible.
- */
 function cdnCandidates(domain: string): string[] {
   return [
     `https://logo.clearbit.com/${domain}`,
@@ -135,7 +103,6 @@ function cdnCandidates(domain: string): string[] {
   ];
 }
 
-/** Returns true if a URL likely points to a real image (HEAD check). */
 async function isValidImageUrl(url: string, timeoutMs = 3000): Promise<boolean> {
   try {
     const res = await fetch(url, {
@@ -155,15 +122,39 @@ async function isValidImageUrl(url: string, timeoutMs = 3000): Promise<boolean> 
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rateLimit = checkRateLimit(`favicon:${ip}`, 60, 60 * 1000);
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { icons: [] },
+      {
+        status: 429,
+        headers: { 'Retry-After': '60' },
+      }
+    );
+  }
+
   const domain = request.nextUrl.searchParams.get('domain')?.trim().toLowerCase();
 
   if (!domain || !isValidHostname(domain)) {
     return NextResponse.json({ icons: [] }, { status: 400 });
   }
 
+  const cacheKey = `favicon:${domain}`;
+  const cached = getFromCache<string[]>(cacheKey);
+  if (cached) {
+    return NextResponse.json(
+      { icons: cached },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=3600',
+        },
+      }
+    );
+  }
+
   const baseUrl = `https://${domain}`;
 
-  // Run HTML fetch + CDN HEAD checks in parallel
   const htmlFetchPromise = (async (): Promise<string[]> => {
     try {
       const controller = new AbortController();
@@ -190,7 +181,6 @@ export async function GET(request: NextRequest) {
 
   const cdnProbePromise = (async (): Promise<string[]> => {
     const candidates = cdnCandidates(domain);
-    // Race all HEAD checks in parallel; collect those that succeed
     const results = await Promise.allSettled(
       candidates.map(async (url) => ({ url, valid: await isValidImageUrl(url) }))
     );
@@ -204,12 +194,13 @@ export async function GET(request: NextRequest) {
   try {
     const [htmlIcons, cdnIcons] = await Promise.all([htmlFetchPromise, cdnProbePromise]);
 
-    // Merge: HTML-declared icons first (highest fidelity), then CDN sources
     const seen = new Set<string>();
     const icons: string[] = [];
     for (const url of [...htmlIcons, ...cdnIcons]) {
       if (!seen.has(url)) { seen.add(url); icons.push(url); }
     }
+
+    setInCache(cacheKey, icons, 86400); // 24 hours TTL
 
     return NextResponse.json(
       { icons },

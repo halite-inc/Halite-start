@@ -197,19 +197,31 @@ async function raceAll(
       probeImage(src, timeoutMs).then((ok) => (ok ? accept(src) : oneFailed()));
     };
 
+    // Global safety-net timeout — ensures promise never hangs forever
+    setTimeout(() => {
+      if (!won) {
+        won = true;
+        resolve(null);
+      }
+    }, timeoutMs + 6000);
+
     // Launch static probes immediately
     for (const src of staticUrls) {
       probeImage(src, timeoutMs).then((ok) => (ok ? accept(src) : oneFailed()));
     }
 
     // When proxy resolves, add its URLs to the race pool
-    proxyPromise.then((proxyUrls) => {
-      if (won) return;
-      if (proxyUrls.length === 0) return; // no extra candidates
-      for (const src of proxyUrls) {
-        if (!staticUrls.includes(src)) addSource(src);
-      }
-    });
+    proxyPromise
+      .then((proxyUrls) => {
+        if (won) return;
+        if (proxyUrls.length === 0) return; // no extra candidates
+        for (const src of proxyUrls) {
+          if (!staticUrls.includes(src)) addSource(src);
+        }
+      })
+      .catch(() => {
+        // Proxy failed — rely on static probes (or global timeout)
+      });
   });
 }
 

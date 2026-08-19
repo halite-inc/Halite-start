@@ -20,6 +20,7 @@ interface CommandPaletteProps {
   onOpenSettings: () => void;
   onToggleTheme: () => void;
   onOpenStatistics?: () => void;
+  onOpenWhatsNew?: () => void;
   glassmorphismEnabled?: boolean;
 }
 
@@ -41,6 +42,7 @@ export default function CommandPalette({
   onOpenSettings,
   onToggleTheme,
   onOpenStatistics,
+  onOpenWhatsNew,
   glassmorphismEnabled = false,
 }: CommandPaletteProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,6 +60,17 @@ export default function CommandPalette({
       icon: '⚙️',
       action: () => {
         onOpenSettings();
+        onClose();
+      },
+      category: 'action',
+    },
+    {
+      id: 'whats-new',
+      title: "What's New (Release Notes)",
+      subtitle: 'View latest features and updates',
+      icon: '✨',
+      action: () => {
+        onOpenWhatsNew?.();
         onClose();
       },
       category: 'action',
@@ -123,19 +136,7 @@ export default function CommandPalette({
       category: 'setting',
     },
     
-    // Visual Modes (if glassmorphism/liquid glass are available)
-    ...(glassmorphismEnabled !== undefined ? [{
-      id: 'toggle-glass',
-      title: glassmorphismEnabled ? 'Disable Glass Mode' : 'Enable Glass Mode',
-      subtitle: 'Toggle glassmorphism effect',
-      icon: '🪟',
-      action: () => {
-        // This would need to be passed as a prop
-        onClose();
-      },
-      category: 'setting' as const,
-    }] : []),
-    
+
 
     
     // Navigation
